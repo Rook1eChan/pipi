@@ -12,6 +12,8 @@ coverage/
 *.swp
 *.swo
 *~
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 
 # Environment and local secrets
 .env

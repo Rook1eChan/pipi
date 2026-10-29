@@ -1,0 +1,35 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "paths": {
+      "@pipi/llm": [
+        "../llm/dist/index.d.ts"
+      ],
+      "@pipi/llm/*": [
+        "../llm/dist/*.d.ts"
+      ],
+      "@pipi/agent": [
+        "../agent/dist/index.d.ts"
+      ],
+      "@pipi/agent/*": [
+        "../agent/dist/*.d.ts"
+      ],
+      "@pipi/tui": [
+        "../tui/dist/index.d.ts"
+      ],
+      "@pipi/tui/*": [
+        "../tui/dist/*.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.d.ts"
+  ]
+}

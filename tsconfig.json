@@ -1,0 +1,47 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@pipi/llm": [
+        "./packages/llm/src/index.ts"
+      ],
+      "@pipi/llm/*": [
+        "./packages/llm/src/*"
+      ],
+      "@pipi/agent": [
+        "./packages/agent/src/index.ts"
+      ],
+      "@pipi/agent/*": [
+        "./packages/agent/src/*"
+      ],
+      "@pipi/tui": [
+        "./packages/tui/src/index.ts"
+      ],
+      "@pipi/tui/*": [
+        "./packages/tui/src/*"
+      ],
+      "@pipi/harness": [
+        "./packages/harness/src/index.ts"
+      ],
+      "@pipi/harness/*": [
+        "./packages/harness/src/*"
+      ],
+      "@pipi/eval": [
+        "./packages/eval/src/index.ts"
+      ],
+      "@pipi/eval/*": [
+        "./packages/eval/src/*"
+      ]
+    }
+  },
+  "include": [
+    "vitest.base.ts",
+    "packages/*/src/**/*",
+    "packages/*/test/**/*"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**"
+  ]
+}
