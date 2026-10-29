@@ -1,8 +1,10 @@
-# D03 流式响应协议
+# 03 流式响应协议
 
-> 状态：文档已生成 / 步骤 A 未学 / 步骤 B 未学
-> 前置：D02
-> 产出：一套与 provider 无关的流式事件协议，让上层能实时显示文本、思考、工具参数，并统一处理错误与中止。
+> 课程状态：待学习
+> 前置课程：02
+> 覆盖模块：pi-ai 流式协议、增量 JSON 解析、延迟初始化
+> 课程文件：03-streaming-protocol.md
+> 本课产出：一套与 provider 无关的流式事件协议，让上层能实时显示文本、思考、工具参数，并统一处理错误与中止。
 
 ---
 
@@ -19,13 +21,13 @@
 
 ## 2. 前置知识与依赖
 
-- D02 的 `AssistantMessage`、`TextContent`、`ThinkingContent`、`ToolCall`
+- 02 的 `AssistantMessage`、`TextContent`、`ThinkingContent`、`ToolCall`
 - 了解 `AsyncIterable` / `AsyncIterator`
 - 了解 SSE（Server-Sent Events）的基本形态
 
 ---
 
-## 3. 步骤 A——概念与功能讲解
+## 3. A 阶段——概念与功能讲解（High-level）
 
 ### 3.1 为什么不能等完整回复
 
@@ -120,7 +122,7 @@ text_end:       content = [{ type:"text", text:"你好" }]
 - 消费者**不能保存历史事件的 `partial` 引用**，否则看到的都是最终状态
 - 需要历史时必须自己深拷贝
 
-这是一个典型的"性能换使用约束"的设计，必须在文档和测试中明确。
+这是一个典型的"性能换使用约束"的设计，必须在课程和测试中明确。
 
 ### 3.5 工具参数为什么要流式
 
@@ -195,7 +197,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 - 认证失败不会让通过 `Models` 发起的调用抛出异常，而是流里的一个 `error` 事件
 - 调用方的代码路径统一：永远是"拿流 → 消费 → 查 stopReason"
 
-例外：直接调用 API 适配器模块导出的 `streamSimple()` 时，它会在返回流之前同步检查 API key 是否存在（`getClientApiKey`），明显配置错误会立刻抛错。通过 `Models.streamSimple()` 调用时，这次检查发生在异步初始化内部，失败会被 `lazyStream` 捕获并编码成 `error` 事件。这个细节属于 D05。
+例外：直接调用 API 适配器模块导出的 `streamSimple()` 时，它会在返回流之前同步检查 API key 是否存在（`getClientApiKey`），明显配置错误会立刻抛错。通过 `Models.streamSimple()` 调用时，这次检查发生在异步初始化内部，失败会被 `lazyStream` 捕获并编码成 `error` 事件。这个细节属于 05。
 
 ### 3.8 为什么不用回调或 EventEmitter
 
@@ -229,9 +231,19 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 ---
 
-## 4. 步骤 B——具体实现规划
+## 4. 讨论与确认记录
 
-### 4.1 原项目实现
+> 尚无讨论。学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
+
+| 日期 | 类型 | 内容 | 对 B 的影响 |
+| --- | --- | --- | --- |
+| - | - | 尚无记录 | - |
+
+---
+
+## 5. B 阶段——具体实现规划（Low-level）
+
+### 5.1 原项目实现
 
 | 文件 | 作用 | 行数 |
 | --- | --- | --- |
@@ -250,19 +262,19 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 5. 结束时 `push(done)` + `end()`
 6. `catch`：设置 `stopReason`、`errorMessage`，`push(error)` + `end()`
 
-### 4.2 新项目文件清单
+### 5.2 新项目文件清单
 
 ```text
-packages/ai/src/
+packages/llm/src/
 ├── utils/
 │   ├── event-stream.ts     # EventStream + AssistantMessageEventStream
 │   └── json-parse.ts       # repairJson + parseJsonWithRepair + parseStreamingJson
 ├── api/
 │   └── lazy.ts             # lazyStream + lazyApi
-└── types.ts                # AssistantMessageEvent 联合类型（D02 已定义）
+└── types.ts                # AssistantMessageEvent 联合类型（02 已定义）
 ```
 
-### 4.3 `EventStream` 实现要点
+### 5.3 `EventStream` 实现要点
 
 ```ts
 class EventStream<T, R = T> implements AsyncIterable<T> {
@@ -290,9 +302,9 @@ class EventStream<T, R = T> implements AsyncIterable<T> {
 | 消费者在 `end` 后才开始迭代 | 先把队列取完，再结束 |
 | 多个消费者 | 不支持；事件会被分摊，不建议 |
 
-### 4.4 `AssistantMessageEvent` 定义
+### 5.4 `AssistantMessageEvent` 定义
 
-按 D02 的联合类型实现，重点是区分完成事件：
+按 02 的联合类型实现，重点是区分完成事件：
 
 ```ts
 type AssistantMessageEvent =
@@ -322,7 +334,7 @@ type AssistantMessageEvent =
 (event) => event.type === "done" ? event.message : event.error
 ```
 
-### 4.5 `parseStreamingJson` 实现要点
+### 5.5 `parseStreamingJson` 实现要点
 
 三层回退：
 
@@ -339,7 +351,7 @@ type AssistantMessageEvent =
 
 这一层不追求"解析出正确语义"，只追求"不崩、尽量可用"。
 
-### 4.6 测试清单
+### 5.6 测试清单
 
 | 测试 | 验证 |
 | --- | --- |
@@ -355,7 +367,7 @@ type AssistantMessageEvent =
 | 流式 JSON | 不完整、非法转义、纯文本都返回对象 |
 | `partial` 引用 | 消费过程中看到的是最新累积值（用测试固定这个语义） |
 
-### 4.7 与原项目的取舍
+### 5.7 与原项目的取舍
 
 | 特性 | 建议 | 说明 |
 | --- | --- | --- |
@@ -363,18 +375,18 @@ type AssistantMessageEvent =
 | `toolcall_delta` | 保留 | 工具参数流式是核心体验 |
 | `deferred` | 可后置 | 只有部分 provider 支持 |
 | `FifoQueue` 双栈 | 保留 | 实现简单，性能足够 |
-| 无背压 | 保留 | 对 LLM 流足够；文档中注明限制 |
+| 无背压 | 保留 | 对 LLM 流足够；课程中注明限制 |
 | `lazyApi` 动态导入 | 可后置 | 首个适配器可以直接静态导入 |
 
-### 4.8 待确认
+### 5.8 待确认决策
 
 - 是否在第一版就支持思考事件（取决于首个模型是否推理模型）
 - 是否需要 `lazyStream`（建议保留，认证失败路径更干净）
-- 是否要实现 `fetchDeferred`（Q-003）
+- 是否要实现 `fetchDeferred`（课程 05）
 
 ---
 
-## 5. 原源码对应关系
+## 6. 原源码对应关系
 
 | 主题 | 文件 | 行号 |
 | --- | --- | --- |
@@ -395,20 +407,20 @@ type AssistantMessageEvent =
 
 ---
 
-## 6. 与整体系统的关系
+## 7. 与整体系统的关系
 
-- 依赖：D02 的消息与内容块类型
+- 依赖：02 的消息与内容块类型
 - 支撑：
-  - D05 适配器（生产者）
-  - D09 Agent 循环（消费者，把 `message_update` 转成 `AgentEvent`）
-  - D18 会话（把最终消息落盘）
-  - D20 JSON/RPC 模式（事件直接序列化）
-  - D24 交互模式（增量渲染）
+  - 05 适配器（生产者）
+  - 09 Agent 循环（消费者，把 `message_update` 转成 `AgentEvent`）
+  - 18 会话（把最终消息落盘）
+  - 20 JSON/RPC 模式（事件直接序列化）
+  - 24 交互模式（增量渲染）
 - 如果这一层设计错了，后面每一层都要跟着改，因此它是"地基中的地基"
 
 ---
 
-## 7. 复现选项
+## 8. 复现选项与待确认决策
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |
@@ -420,7 +432,7 @@ type AssistantMessageEvent =
 
 ---
 
-## 8. 学习检查点
+## 9. 学习检查点
 
 1. 为什么 `result()` 在 `error` 时也 resolve，而不是 reject？
 2. `partial` 是同一个可变对象，这对消费者提出了什么约束？如果 UI 直接保存了历史事件会怎样？

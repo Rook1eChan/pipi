@@ -1,8 +1,10 @@
-# D02 核心类型层
+# 02 核心类型层
 
-> 状态：文档已生成 / 步骤 A 未学 / 步骤 B 未学
-> 前置：D01
-> 产出：跨 provider、跨层复用的统一类型定义，是流协议、Agent 循环、会话持久化、压缩的共同语言。
+> 课程状态：待学习
+> 前置课程：01
+> 覆盖模块：pi-ai 类型系统与公共导出
+> 课程文件：02-core-types.md
+> 本课产出：跨 provider、跨层复用的统一类型定义，是流协议、Agent 循环、会话持久化、压缩的共同语言。
 
 ---
 
@@ -22,13 +24,13 @@
 
 ## 2. 前置知识与依赖
 
-- D01 的包结构与 TypeScript 配置
+- 01 的包结构与 TypeScript 配置
 - 了解 JSON Schema / TypeBox 的基本概念
 - 了解 LLM API 中 messages、tools、usage 的常见形状
 
 ---
 
-## 3. 步骤 A——概念与功能讲解
+## 3. A 阶段——概念与功能讲解（High-level）
 
 ### 3.1 为什么需要统一类型
 
@@ -71,7 +73,7 @@ Pi 里有两个"消息"概念，必须区分：
 AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToLlm()──► Message[] ──► LLM
 ```
 
-这一步是 D09 的内容，但类型的边界在这里就要定好：**`convertToLlm` 必须能把任意 `AgentMessage` 映射成合法 `Message`，或安全地丢弃。**
+这一步是 09 的内容，但类型的边界在这里就要定好：**`convertToLlm` 必须能把任意 `AgentMessage` 映射成合法 `Message`，或安全地丢弃。**
 
 ### 3.3 内容块（Content Block）
 
@@ -215,7 +217,7 @@ interface Context {
 这是"一次 LLM 请求的全部输入"。它刻意保持最小：
 
 - 不包含 provider 配置（在 `Model` 与 `options` 里）
-- 不包含会话树（在 `coding-agent` 里）
+- 不包含会话树（在原项目 `coding-agent`，新项目对应 `harness` 里）
 - 不包含 UI 状态
 
 ### 3.10 跨 provider 的归一化
@@ -228,13 +230,23 @@ interface Context {
 - 孤立的工具调用 → 补一个空的错误结果，满足 API 对"每个 call 必须有 result"的要求
 - 失败/中止的助手消息 → 不回放，避免污染上下文
 
-这些规则属于 D06，但类型设计必须支持它们（例如 `thinkingSignature`、`redacted`、`toolCall.id` 可变）。
+这些规则属于 06，但类型设计必须支持它们（例如 `thinkingSignature`、`redacted`、`toolCall.id` 可变）。
 
 ---
 
-## 4. 步骤 B——具体实现规划
+## 4. 讨论与确认记录
 
-### 4.1 原项目实现
+> 尚无讨论。学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
+
+| 日期 | 类型 | 内容 | 对 B 的影响 |
+| --- | --- | --- | --- |
+| - | - | 尚无记录 | - |
+
+---
+
+## 5. B 阶段——具体实现规划（Low-level）
+
+### 5.1 原项目实现
 
 | 文件 | 内容 | 行数 |
 | --- | --- | --- |
@@ -249,16 +261,16 @@ interface Context {
 - 拆文件会产生大量循环导入
 - 类型只在编译期存在，单文件不影响运行时体积
 
-### 4.2 新项目建议结构
+### 5.2 新项目建议结构
 
 建议先保持单文件，等稳定后再拆：
 
 ```text
-packages/ai/src/
+packages/llm/src/
 ├── types.ts          # 所有公共类型
 ├── index.ts          # 导出 types 与 Type
 └── utils/
-    └── validation.ts # 工具参数校验（D11 使用）
+    └── validation.ts # 工具参数校验（11 使用）
 ```
 
 如果后续觉得太大，可以按主题拆分并由 `types.ts` 统一 re-export：
@@ -274,7 +286,7 @@ types/
 └── index.ts
 ```
 
-### 4.3 需要定义的类型（建议顺序）
+### 5.3 需要定义的类型（建议顺序）
 
 1. 基础别名：`Api`、`ProviderId`、`StopReason`、`ThinkingLevel`
 2. 内容块：`TextContent`、`ThinkingContent`、`ImageContent`、`ToolCall`
@@ -283,9 +295,9 @@ types/
 5. 工具：`Tool`
 6. 模型：`Model`、`ModelCost`、`ModelCostTier`
 7. 请求：`Context`、`StreamOptions`、`SimpleStreamOptions`
-8. 事件：`AssistantMessageEvent`（D03 详述）
+8. 事件：`AssistantMessageEvent`（03 详述）
 
-### 4.4 关键不变量
+### 5.4 关键不变量
 
 实现时必须用测试固定这些规则：
 
@@ -298,7 +310,7 @@ types/
 | `stopReason === "pending"` 只出现在流式中间态 | 最终消息必须是终态 |
 | `error` / `aborted` 消息必须带 `errorMessage`（`aborted` 可为空） | UI 需要展示原因 |
 
-### 4.5 工具参数校验
+### 5.5 工具参数校验
 
 `validateToolArguments()` 的职责：
 
@@ -310,7 +322,7 @@ types/
 
 为什么不让模型"自己保证格式"：模型输出不可信，必须本地校验；错误信息回填给模型后，它通常能自我修正。
 
-### 4.6 与原项目的取舍
+### 5.6 与原项目的取舍
 
 | 原项目字段 | 建议 | 理由 |
 | --- | --- | --- |
@@ -320,9 +332,9 @@ types/
 | `cacheWrite1h` | 保留 | Anthropic 计费准确 |
 | `ModelCostTier` | 可后置 | 只有少数模型有阶梯计价 |
 | `compat` 全量字段 | 先保留子集 | 只保留首个适配器需要的字段 |
-| `ImagesModel` / `AssistantImages` | 可后置到 D08 | 与文本 Agent 独立 |
+| `ImagesModel` / `AssistantImages` | 可后置到 08 | 与文本 Agent 独立 |
 
-### 4.7 测试
+### 5.7 测试
 
 | 测试 | 内容 |
 | --- | --- |
@@ -332,15 +344,15 @@ types/
 | 不变量 | `reasoning <= output`、工具结果能匹配调用 |
 | 跨 provider | 用 `transformMessages` 处理图片、thinking、孤立工具调用 |
 
-### 4.8 待确认
+### 5.8 待确认决策
 
-- 是否保留 `deferred` 相关类型（Q-003）
+- 是否保留 `deferred` 相关类型（课程 05）
 - `compat` 字段先支持哪些（取决于第一个适配器选 OpenAI Completions 还是 Responses）
-- 是否从一开始就支持图像（Q-006）
+- 是否从一开始就支持图像（课程 08）
 
 ---
 
-## 5. 原源码对应关系
+## 6. 原源码对应关系
 
 | 主题 | 文件 | 行号 |
 | --- | --- | --- |
@@ -361,15 +373,15 @@ types/
 
 ---
 
-## 6. 与整体系统的关系
+## 7. 与整体系统的关系
 
-- 依赖：D01 的包结构
-- 支撑：D03 流协议、D04 注册表、D09 循环、D11 工具执行、D14 会话持久化、D16 压缩
+- 依赖：01 的包结构
+- 支撑：03 流协议、04 注册表、09 循环、11 工具执行、14 会话持久化、16 压缩
 - 后续修改类型的成本很高，因此这一篇的检查点必须认真回答
 
 ---
 
-## 7. 复现选项
+## 8. 复现选项与待确认决策
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |
@@ -381,7 +393,7 @@ types/
 
 ---
 
-## 8. 学习检查点
+## 9. 学习检查点
 
 1. 为什么 `Message` 和 `AgentMessage` 要分开？如果合并，会话里的压缩摘要该怎么存？
 2. `reasoning` 为什么必须定义为 `output` 的子集？如果把它加进 `totalTokens` 会怎样？
