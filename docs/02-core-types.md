@@ -1,10 +1,9 @@
-# 02 核心类型层
+# 02 LLM 数据契约：一次请求与一次工具回合
 
-> 课程状态：待学习
-> 前置课程：01
-> 覆盖模块：pi-ai 类型系统与公共导出
+> 课程状态：A 学习中
+> 覆盖模块：`@pipi/llm` 的公共类型与数据契约
 > 课程文件：02-core-types.md
-> 本课产出：跨 provider、跨层复用的统一类型定义，是流协议、Agent 循环、会话持久化、压缩的共同语言。
+> 本课产出：定义 `@pipi/llm` 的公共数据契约，支撑一次请求、一次工具回合与跨 provider 回放。
 
 ---
 
@@ -22,231 +21,581 @@
 
 ---
 
-## 2. 前置知识与依赖
+## 2. A：概念与功能讲解
 
-- 01 的包结构与 TypeScript 配置
-- 了解 JSON Schema / TypeBox 的基本概念
-- 了解 LLM API 中 messages、tools、usage 的常见形状
+### 2.1 主线：一次请求从哪开始，到哪结束
+
+这一课讲 `packages/llm/src/types.ts`，也就是 `@pipi/llm` 的公共数据契约。它要回答的不是“有哪些类型”，而是：
+
+> 一次模型调用从构造输入到拿回结果，需要哪些数据？这些数据为什么必须长这样？
+
+用一个具体任务贯穿全课：
+
+```text
+用户：读取 src/a.ts，然后总结它的作用
+```
+
+完整的请求生命周期：
+
+```text
+1. 构造 Context
+   systemPrompt + 历史消息 + 可用工具（read）
+
+2. 选择 Model
+   告诉运行时用哪个模型、它支持什么、价格多少
+
+3. 发起调用
+   适配器把 Context + Model 翻译成 provider 的请求
+
+4. 得到 AssistantMessage
+   content = [thinking, text, toolCall(read, {path: "src/a.ts"})]
+   stopReason = "toolUse"
+
+5. 执行工具
+   读取文件，得到 ToolResultMessage
+   toolCallId 必须对应第 4 步的工具调用
+
+6. 把工具结果放回 Context
+   再次调用模型，得到最终总结
+
+7. 记录这次调用的账本
+   Usage：token 与费用；StopReason：为什么结束
+```
+
+后面每一节都对应这条线上的一个时刻。每个类型只回答三个问题：
+
+1. 它在生命周期的哪一步出现？
+2. 没有它，哪个下游功能会坏？
+3. 它必须守住什么不变量？
+
+这一课**不**实现网络请求、流式解析、工具执行或会话持久化。那些分别是课程 03、05、11、14。
 
 ---
 
-## 3. A 阶段——概念与功能讲解（High-level）
+### 2.2 请求容器：`Context`
 
-### 3.1 为什么需要统一类型
-
-假设没有统一类型，每个 provider 适配器都返回自己的结构：
+一次调用需要三样东西：
 
 ```ts
-// OpenAI 风格
-{ choices: [{ message: { content, tool_calls }, finish_reason }] }
-
-// Anthropic 风格
-{ content: [{ type: "text", text }, { type: "tool_use", id, name, input }], stop_reason }
+interface Context {
+	systemPrompt?: string;
+	messages: Message[];
+	tools?: Tool[];
+}
 ```
 
-那么上层会遇到三个问题：
+对应上面的例子：
 
-1. **Agent 循环要给每个 provider 写一遍**：判断有没有工具调用、提取文本、累加 usage
-2. **会话无法跨模型恢复**：昨天用 Claude 存的记录，今天换 GPT 就读不懂
-3. **UI 无法统一渲染**：每个 provider 的流事件形状不同
+```ts
+const context: Context = {
+	systemPrompt: "You are a coding agent. Read files before answering.",
+	messages: [
+		{
+			role: "user",
+			content: "读取 src/a.ts，然后总结它的作用",
+			timestamp: Date.now(),
+		},
+	],
+	tools: [readTool],
+};
+```
 
-统一类型的作用是定义一个**最小公共语义**：不管底层 API 怎么变，上层只看到 `Message`、`Tool`、`Usage`、`Model`。
+为什么只有这三个字段：
 
-### 3.2 三层消息模型
+- `systemPrompt`：本次调用的全局指令
+- `messages`：用户、助手、工具结果组成的历史
+- `tools`：本次允许模型调用的工具
 
-Pi 里有两个"消息"概念，必须区分：
+刻意**不**放进来：
+
+| 不放什么 | 放在哪里 |
+|---|---|
+| provider 的 API key、baseUrl | `Model` 与请求 options |
+| 会话树、分支、压缩摘要 | `coding-agent` 的会话层 |
+| UI 状态、主题、滚动位置 | `tui` / 交互层 |
+| 重试策略 | 请求层（课程 06） |
+
+`Context` 是“一次请求的输入快照”。它不关心这次请求属于哪个会话、第几轮。
+
+**不变量**
+
+- `messages` 按时间顺序排列
+- `tools` 的名字在本次请求内唯一且稳定
+- `systemPrompt` 为空时，适配器不能凭空补一个
+
+---
+
+### 2.3 用户输入：`UserMessage`
+
+用户消息的内容有两种写法：
+
+```ts
+interface UserMessage {
+	role: "user";
+	content: string | (TextContent | ImageContent)[];
+	timestamp: number;
+}
+```
+
+纯文字可以直接用字符串：
+
+```ts
+{ role: "user", content: "读取 src/a.ts", timestamp: Date.now() }
+```
+
+需要图片或混合内容时用块数组：
+
+```ts
+{
+	role: "user",
+	content: [
+		{ type: "text", text: "这张图里的错误是什么？" },
+		{ type: "image", data: "<base64>", mimeType: "image/png" },
+	],
+	timestamp: Date.now(),
+}
+```
+
+为什么允许两种写法：
+
+- 字符串是常见情况，写起来简单
+- 块数组是多模态与结构化内容的统一表示
+- 适配器在发送前会把字符串规范成文本块
+
+`ImageContent` 用 base64 而不是 URL：
+
+- 多数 provider 要求内联字节
+- URL 可能过期、需要鉴权、或根本不可访问
+- 由调用方负责读取和编码，适配器不猜
+
+**不变量**
+
+- `timestamp` 是毫秒
+- 图片必须带正确的 `mimeType`
+- 用户消息不包含 `ThinkingContent` 或 `ToolCall`
+
+---
+
+### 2.4 工具声明：`Tool`
+
+工具告诉模型“你能做什么”，但不负责执行：
+
+```ts
+interface Tool<TParameters extends TSchema = TSchema> {
+	name: string;
+	description: string;
+	parameters: TParameters;
+	constrainedSampling?: false | ConstrainedSamplingConfig;
+}
+```
+
+例子：
+
+```ts
+const readTool: Tool = {
+	name: "read",
+	description: "Read a text file from the workspace.",
+	parameters: Type.Object({
+		path: Type.String({ description: "File path relative to the workspace root" }),
+	}),
+};
+```
+
+三个字段各有职责：
+
+| 字段 | 给谁看 | 作用 |
+|---|---|---|
+| `name` | 模型与运行时 | 模型按名字发起调用；必须稳定 |
+| `description` | 模型 | 决定模型什么时候用它 |
+| `parameters` | 模型与校验器 | 参数 schema；模型据此生成 JSON，运行时据此校验 |
+
+为什么用 TypeBox 而不是普通 JSON Schema：
+
+- 同一份定义既能生成 provider 需要的 JSON Schema，又能做本地类型推导
+- 运行时可以用编译后的校验器检查模型输出
+- 参数错误可以在本地拦下，并把错误信息回填给模型
+
+`constrainedSampling` 是可选优化：让支持 grammar 的 provider 约束输出格式；不支持时退回普通函数调用。
+
+**不变量**
+
+- `name` 一旦发布不能随意改，否则历史会话里的工具调用会对不上
+- `parameters` 必须是对象 schema，不能是裸字符串
+- 工具声明不包含执行逻辑；执行在课程 11、12
+
+---
+
+### 2.5 模型描述：`Model`
+
+`Model` 是数据，不是类：
+
+```ts
+interface Model<TApi extends Api> {
+	id: string;
+	name: string;
+	api: TApi;
+	provider: ProviderId;
+	baseUrl: string;
+	reasoning: boolean;
+	input: ("text" | "image")[];
+	cost: ModelCost;
+	contextWindow: number;
+	maxTokens: number;
+	thinkingLevelMap?: ThinkingLevelMap;
+	samplingParams?: Record<string, unknown>;
+	headers?: Record<string, string>;
+	compat?: ...;
+}
+```
+
+例子：
+
+```ts
+const model: Model<"openai-completions"> = {
+	id: "gpt-4.1",
+	name: "GPT-4.1",
+	api: "openai-completions",
+	provider: "openai",
+	baseUrl: "https://api.openai.com/v1",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 2, output: 8, cacheRead: 0.5, cacheWrite: 0 },
+	contextWindow: 1_000_000,
+	maxTokens: 32_768,
+};
+```
+
+为什么是数据：
+
+- 模型目录可以从 JSON 生成
+- 自定义 provider 只需要提供一条记录
+- 测试可以构造任意模型，不需要网络
+
+关键字段的用途：
+
+| 字段 | 用途 |
+|---|---|
+| `api` | 选择哪个适配器（`openai-completions`、`anthropic-messages`…） |
+| `provider` | 认证、路由、显示 |
+| `contextWindow` | 压缩阈值（课程 16） |
+| `maxTokens` | 输出上限 |
+| `cost` | 把 `Usage` 换算成金额 |
+| `input` | 是否支持图片；不支持时降级 |
+| `compat` | 同一 API 家族内的端点差异 |
+
+`compat` 是现实妥协：OpenAI 兼容端点之间在 `developer` 角色、`reasoning_effort`、`max_completion_tokens` 等字段上并不一致。这些差异不能污染统一类型，所以放在按 API 区分的可选配置里，由适配器读取。
+
+**不变量**
+
+- `id` 在同一个 provider 内唯一
+- `api` 必须能映射到一个适配器
+- `contextWindow` 与 `maxTokens` 必须是正数
+
+---
+
+### 2.6 模型响应：`AssistantMessage`
+
+模型返回的是一条助手消息：
+
+```ts
+interface AssistantMessage {
+	role: "assistant";
+	content: (TextContent | ThinkingContent | ToolCall)[];
+	api: Api;
+	provider: ProviderId;
+	model: string;
+	usage: Usage;
+	stopReason: StopReason;
+	timestamp: number;
+	responseId?: string;
+	errorMessage?: string;
+	diagnostics?: AssistantMessageDiagnostic[];
+}
+```
+
+对应例子：
+
+```ts
+{
+	role: "assistant",
+	content: [
+		{ type: "thinking", thinking: "需要先读取文件" },
+		{ type: "text", text: "我先看一下这个文件。" },
+		{
+			type: "toolCall",
+			id: "call_1",
+			name: "read",
+			arguments: { path: "src/a.ts" },
+		},
+	],
+	api: "openai-completions",
+	provider: "openai",
+	model: "gpt-4.1",
+	usage: { input: 120, output: 45, cacheRead: 0, cacheWrite: 0, totalTokens: 165, cost: {...} },
+	stopReason: "toolUse",
+	timestamp: Date.now(),
+}
+```
+
+为什么 `content` 是数组：
+
+- 一条回复可以同时有思考、文本和多个工具调用
+- 顺序有意义：模型先生成什么，就按什么顺序放
+- 流式输出需要按块定位（`contentIndex`，课程 03）
+
+三种块的角色：
+
+| 块 | 谁产生 | 用途 |
+|---|---|---|
+| `TextContent` | 助手 | 给用户看的文本 |
+| `ThinkingContent` | 助手 | 推理内容，部分 provider 可回放 |
+| `ToolCall` | 助手 | 请求执行工具，包含 `id`、`name`、`arguments` |
+
+为什么 `ThinkingContent` 和 `ToolCall` 只出现在助手消息：
+
+- 用户不会“思考”
+- 工具不会“请求调用工具”
+- 角色语义决定了块集合
+
+`contentIndex` 不属于持久化消息。它只在流式事件里出现，指向 `content` 数组的位置。
+
+**不变量**
+
+- `stopReason` 为 `pending` 只出现在流式中间态
+- `error` / `aborted` 必须带 `errorMessage`
+- `toolCall.id` 在一条消息内唯一
+- `usage.reasoning` 必须是 `output` 的子集
+
+---
+
+### 2.7 工具结果：`ToolResultMessage`
+
+工具执行完，结果作为一条独立消息回到上下文：
+
+```ts
+interface ToolResultMessage<TDetails = any> {
+	role: "toolResult";
+	toolCallId: string;
+	toolName: string;
+	content: (TextContent | ImageContent)[];
+	details?: TDetails;
+	usage?: Usage;
+	addedToolNames?: string[];
+	isError: boolean;
+	timestamp: number;
+}
+```
+
+与 2.6 的工具调用配对：
+
+```ts
+{
+	role: "toolResult",
+	toolCallId: "call_1",
+	toolName: "read",
+	content: [{ type: "text", text: "export function add(a, b) { return a + b; }" }],
+	isError: false,
+	timestamp: Date.now(),
+}
+```
+
+关键点：
+
+- `toolCallId` 必须等于某个 `ToolCall.id`
+- `toolName` 用于显示与调试
+- `content` 可以是文本或图片：工具可能返回截图、图表
+- `isError` 表示工具执行失败，不是模型失败
+- `details` 给 UI 用（例如 diff、退出码），不一定要发给模型
+- `usage` 是工具自身的消耗，不进入主对话的 token 账本
+
+如果结果找不到对应的调用，或者调用没有结果，部分 provider 会直接拒绝请求。`transformMessages`（课程 06）会补一个“无结果”的错误结果兜底。
+
+**不变量**
+
+- 每个 `ToolCall` 最终必须有一个 `ToolResultMessage`
+- `toolCallId` 不能凭空编造
+- 工具错误用 `isError: true`，不要把错误文本伪装成正常结果
+
+---
+
+### 2.8 调用账本：`Usage` 与 `StopReason`
+
+一次调用结束，消息要回答两个问题：花了多少？为什么结束？
+
+```ts
+interface Usage {
+	input: number;
+	output: number;
+	cacheRead: number;
+	cacheWrite: number;
+	cacheWrite1h?: number;
+	reasoning?: number;
+	totalTokens: number;
+	cost: {
+		input: number;
+		output: number;
+		cacheRead: number;
+		cacheWrite: number;
+		total: number;
+	};
+}
+```
+
+计算口径：
+
+```text
+totalTokens = input + output + cacheRead + cacheWrite
+```
+
+注意：
+
+- `input` 是**扣除缓存读写之后**的输入 token，否则会重复计数
+- `reasoning` 是 `output` 的子集，不能再加进 `totalTokens`
+- `cost` 由 `Model.cost` 与 usage 计算，不能让 provider 直接给
+- provider 没报告的字段保持 `undefined`，不要伪造 0
+
+`StopReason` 决定循环下一步做什么：
+
+| 值 | 含义 | 循环行为 |
+|---|---|---|
+| `pending` | 流尚未结束 | 只出现在中间态 |
+| `stop` | 正常结束 | 结束本轮 |
+| `length` | 达到输出上限 | 结束本轮，通常提示用户 |
+| `toolUse` | 请求调用工具 | 执行工具并继续 |
+| `error` | 请求或解析失败 | 结束，错误已编码在消息里 |
+| `aborted` | 用户中止 | 结束，保留部分内容 |
+| `deferred` | provider 返回异步句柄 | 后续取回 |
+
+为什么错误不抛异常：
+
+- UI 需要展示已经生成的部分内容
+- 会话需要决定是否保存这次失败的尝试
+- 重试逻辑需要根据错误类型判断是否可重试
+
+所以错误是消息的一种状态，不是控制流异常。
+
+**不变量**
+
+- 最终消息的 `stopReason` 不能是 `pending`
+- `error` / `aborted` 必须有 `errorMessage`（`aborted` 可为空）
+- `totalTokens` 必须与四个分项一致
+
+---
+
+### 2.9 跨 provider：同一套类型如何映射
+
+统一类型只解决“形状”，不解决“语义差异”。适配器负责映射：
+
+| 统一类型 | OpenAI | Anthropic | Google |
+|---|---|---|---|
+| `TextContent` | `content` | `text` block | `text` part |
+| `ThinkingContent` | `reasoning_content` / `reasoning` | `thinking` block | `thought` part |
+| `ToolCall` | `tool_calls[]` | `tool_use` block | `functionCall` |
+| `ToolResultMessage` | `role: "tool"` | `tool_result` block | `functionResponse` |
+| `Usage` | `prompt_tokens` / `completion_tokens` | `input_tokens` / `output_tokens` | `promptTokenCount` / `candidatesTokenCount` |
+
+跨模型回放时还要处理：
+
+- 非视觉模型收到图片 → 替换为文本占位符
+- 同模型回放 thinking → 保留签名；跨模型 → 转成普通文本或丢弃
+- 跨 provider 的工具调用 ID → 归一化为合法字符集
+- 孤立的工具调用 → 补一个错误结果
+- `error` / `aborted` 的助手消息 → 不回放，避免污染上下文
+
+这些规则在课程 06 的 `transformMessages` 里实现。本课只需要知道：**类型必须为这些转换留出字段**，比如 `thinkingSignature`、`redacted`、`toolCall.id`。
+
+无法统一的部分：
+
+- provider 特有的签名与加密载荷
+- 端点兼容开关（`compat`）
+- 某些 provider 特有的请求参数
+
+它们不应该进入统一类型的主体，只能放在可选字段或适配器内部。
+
+---
+
+### 2.10 与上层边界：`AgentMessage` 与 `convertToLlm`
+
+`Message` 是给模型看的；`AgentMessage` 是给应用看的：
 
 | 概念 | 定义位置 | 能包含什么 | 谁使用 |
-| --- | --- | --- | --- |
-| `Message` | `pi-ai` | 只有 `user` / `assistant` / `toolResult` | LLM API、适配器 |
-| `AgentMessage` | `pi-agent-core` | `Message` + 应用自定义消息（通过 declaration merging） | Agent 循环、会话、UI |
+|---|---|---|---|
+| `Message` | `@pipi/llm` | `user` / `assistant` / `toolResult` | 适配器、模型 API |
+| `AgentMessage` | `@pipi/agent` | `Message` + 应用自定义消息 | Agent 循环、会话、UI |
 
 为什么需要 `AgentMessage`：
 
-- 会话里要记录"压缩摘要""分支摘要""bash 执行记录"这类**不发给模型**的内容
-- 扩展可能想插入自己的消息类型
+- 会话要记录“压缩摘要”“分支摘要”“bash 执行记录”这类不发给模型的内容
+- 扩展可能插入自己的消息类型
 - 但模型只认识三种角色
 
-于是 Agent 循环在每次调模型前做一次转换：
+转换发生在每次调模型前：
 
 ```text
 AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToLlm()──► Message[] ──► LLM
 ```
 
-这一步是 09 的内容，但类型的边界在这里就要定好：**`convertToLlm` 必须能把任意 `AgentMessage` 映射成合法 `Message`，或安全地丢弃。**
+`convertToLlm` 的契约：
 
-### 3.3 内容块（Content Block）
+- 必须把每条 `AgentMessage` 映射成合法的 `UserMessage` / `AssistantMessage` / `ToolResultMessage`，或者安全丢弃
+- 不能抛异常；抛异常会中断循环且没有正常事件序列
+- 纯 UI 消息、压缩摘要、分支摘要通常被过滤掉
 
-一条消息的内容不是纯字符串，而是块数组：
-
-| 块 | 字段 | 用途 |
-| --- | --- | --- |
-| `TextContent` | `text`、可选 `textSignature` | 普通文本；签名用于某些 provider 的多轮元数据 |
-| `ThinkingContent` | `thinking`、`thinkingSignature`、`redacted` | 推理内容；签名/加密载荷用于回放 |
-| `ImageContent` | `data`(base64)、`mimeType` | 图片输入或工具结果中的图片 |
-| `ToolCall` | `id`、`name`、`arguments`、`thoughtSignature`、`namespace` | 模型请求调用工具 |
-
-为什么要用块数组而不是字符串：
-
-1. 一条助手消息可以同时包含"思考 + 文本 + 多个工具调用"
-2. 流式输出需要按块定位（`contentIndex`）
-3. 不同块的生命周期不同（文本可以增量，工具参数是 JSON 片段）
-
-### 3.4 助手消息的元数据
-
-`AssistantMessage` 不只是内容，还携带"这次回复是怎么产生的"：
-
-| 字段 | 作用 | 为什么必须保留 |
-| --- | --- | --- |
-| `api` / `provider` / `model` | 来源标识 | 跨模型回放时判断是否需要转换 |
-| `responseModel` / `responseId` | 上游实际模型与响应 ID | 路由、调试、计费 |
-| `usage` | token 与费用 | 压缩判断、统计、成本显示 |
-| `stopReason` | 结束原因 | 决定循环是否继续、是否报错 |
-| `errorMessage` | 错误详情 | UI 展示与重试判断 |
-| `timestamp` | 毫秒时间戳 | 会话排序、UI 分组 |
-| `diagnostics` | 脱敏诊断 | 排查 provider 异常 |
-
-这些字段看起来多，但少一个就会在某个下游功能里缺失：
-
-- 没有 `provider/api/model`：跨 provider 交接时无法判断"这条 thinking 能不能回放"
-- 没有 `usage`：压缩无法判断何时触发
-- 没有 `stopReason`：循环不知道是否还有工具调用
-
-### 3.5 `stopReason` 的语义
-
-```ts
-type StopReason = "pending" | "stop" | "length" | "toolUse" | "error" | "aborted" | "deferred";
-```
-
-| 值 | 含义 | 循环行为 |
-| --- | --- | --- |
-| `pending` | 流尚未结束 | 不应出现在最终消息里 |
-| `stop` | 模型正常结束 | 结束本轮 |
-| `length` | 达到输出上限 | 结束本轮，通常提示用户 |
-| `toolUse` | 模型请求调用工具 | 执行工具并继续 |
-| `error` | 请求或解析失败 | 结束，错误已编码在消息里 |
-| `aborted` | 用户中止 | 结束，保留部分内容 |
-| `deferred` | provider 返回异步句柄 | 后续通过 `fetchDeferred` 取回 |
-
-关键设计：**错误不是异常，而是消息的一种状态**。这让 UI 在收到错误时仍然拥有完整的事件序列和部分内容。
-
-### 3.6 `Usage` 与费用
-
-```ts
-interface Usage {
-  input: number;
-  output: number;
-  cacheRead: number;
-  cacheWrite: number;
-  cacheWrite1h?: number;
-  reasoning?: number;
-  totalTokens: number;
-  cost: { input; output; cacheRead; cacheWrite; total };
-}
-```
-
-为什么字段这么多：
-
-- `cacheRead` / `cacheWrite`：提示缓存命中与写入，价格通常不同
-- `cacheWrite1h`：Anthropic 的 1 小时缓存写入，单独计价
-- `reasoning`：推理 token，是 `output` 的子集（不重复计入总数）
-- `cost`：按模型价格换算后的金额，UI 与统计直接使用
-
-设计约束：
-
-- `reasoning` 必须是 `output` 的子集，不能重复累加
-- 不同 provider 没有报告的字段保持 `undefined`，不要伪造 0
-- 费用由模型价格与 usage 计算，不能让 provider 直接给
-
-### 3.7 工具定义
-
-```ts
-interface Tool<TParameters extends TSchema = TSchema> {
-  name: string;
-  description: string;
-  parameters: TParameters;
-  constrainedSampling?: false | ConstrainedSamplingConfig;
-}
-```
-
-三个要点：
-
-1. **参数用 TypeBox schema**，不是手写 JSON Schema。这样既能生成 provider 需要的 schema，又能在本地做类型推导与校验
-2. **`name` 必须稳定**：模型按名字调用，改名会破坏历史会话
-3. **`constrainedSampling`** 是可选优化：让支持 grammar 的 provider 约束输出格式；不支持时退回普通函数调用
-
-### 3.8 模型描述
-
-```ts
-interface Model<TApi extends Api> {
-  id: string;
-  name: string;
-  api: TApi;
-  provider: ProviderId;
-  baseUrl: string;
-  reasoning: boolean;
-  input: ("text" | "image")[];
-  cost: ModelCost;
-  contextWindow: number;
-  maxTokens: number;
-  thinkingLevelMap?: ThinkingLevelMap;
-  samplingParams?: Record<string, unknown>;
-  headers?: Record<string, string>;
-  compat?: ...;
-}
-```
-
-为什么模型是"数据"而不是"类"：
-
-- 模型目录可以从 JSON 生成
-- 自定义 provider 只需要提供数据
-- 测试可以构造任意模型，不需要网络
-
-`compat` 是原项目的一个现实妥协：OpenAI 兼容端点之间存在大量差异（是否支持 `developer` 角色、`reasoning_effort`、`max_completion_tokens`、工具结果是否要 `name`）。这些差异不能污染统一类型，所以放进按 API 区分的可选配置。
-
-### 3.9 `Context`
-
-```ts
-interface Context {
-  systemPrompt?: string;
-  messages: Message[];
-  tools?: Tool[];
-}
-```
-
-这是"一次 LLM 请求的全部输入"。它刻意保持最小：
-
-- 不包含 provider 配置（在 `Model` 与 `options` 里）
-- 不包含会话树（在原项目 `coding-agent`，新项目对应 `harness` 里）
-- 不包含 UI 状态
-
-### 3.10 跨 provider 的归一化
-
-统一类型只解决"形状"，不解决"语义差异"。原项目用 `transformMessages()` 处理：
-
-- 非视觉模型收到图片 → 替换为文本占位符
-- 跨模型回放 thinking → 同模型保留签名，跨模型转成普通文本或丢弃
-- 跨 provider 的工具调用 ID → 归一化为合法字符集
-- 孤立的工具调用 → 补一个空的错误结果，满足 API 对"每个 call 必须有 result"的要求
-- 失败/中止的助手消息 → 不回放，避免污染上下文
-
-这些规则属于 06，但类型设计必须支持它们（例如 `thinkingSignature`、`redacted`、`toolCall.id` 可变）。
+本课只定边界：会话层的类型不放进 `@pipi/llm`，循环层的转换在课程 09 实现。
 
 ---
 
-## 4. 讨论与确认记录
+### 2.11 这一层不做什么，以及必须守住的不变量
 
-> 尚无讨论。学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
+`@pipi/llm` 的类型层**不负责**：
+
+- 发 HTTP 请求（课程 05、06）
+- 解析 SSE 流（课程 03、05）
+- 执行工具（课程 11、12）
+- 持久化会话（课程 14）
+- 压缩上下文（课程 16）
+- 渲染 UI（课程 22–24）
+
+它只负责“数据长什么样”和“跨层共识”。
+
+必须守住的不变量：
+
+| 不变量 | 违反后的后果 |
+|---|---|
+| `totalTokens = input + output + cacheRead + cacheWrite` | 成本统计与压缩阈值错误 |
+| `reasoning ⊆ output` | 重复计数 |
+| `toolResult.toolCallId` 对应某个 `ToolCall.id` | provider 拒绝请求 |
+| `timestamp` 为毫秒 | 会话排序错乱 |
+| `stopReason !== "pending"` 于最终消息 | 循环不知道是否继续 |
+| `error` / `aborted` 带 `errorMessage` | UI 无法解释失败 |
+| 工具名稳定 | 历史会话的工具调用无法回放 |
+
+带着这条主线进入 B 阶段：先定义 `Context`，再定义输入、工具、模型、输出、结果、账本，最后处理跨 provider 与上层边界。B 阶段会给出文件划分、类型顺序、测试和不变量清单。
+
+---
+
+### 2.12 与整体系统的关系
+
+- 依赖：01 的包结构
+- 支撑：03 流协议、04 注册表、09 循环、11 工具执行、14 会话持久化、16 压缩
+- 后续修改类型的成本很高，因此 A 阶段要重点理解这些不变量。
+
+---
+
+## 3. 讨论与确认记录
+
+> 学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
 
 | 日期 | 类型 | 内容 | 对 B 的影响 |
 | --- | --- | --- | --- |
-| - | - | 尚无记录 | - |
+| 2026-10-31 | 反馈 | 用户指出 A 阶段像类型词典，结构散 | 按请求生命周期重写为 2.1–2.11 |
+| 2026-10-31 | 讨论 | 课程主线改为“一次请求 + 一次工具回合” | B 4.3 的类型顺序同步调整 |
 
 ---
 
-## 5. B 阶段——具体实现规划（Low-level）
+## 4. B：具体实现规划
 
-### 5.1 原项目实现
+### 4.1 原项目实现
 
 | 文件 | 内容 | 行数 |
 | --- | --- | --- |
@@ -261,7 +610,7 @@ interface Context {
 - 拆文件会产生大量循环导入
 - 类型只在编译期存在，单文件不影响运行时体积
 
-### 5.2 新项目建议结构
+### 4.2 新项目建议结构
 
 建议先保持单文件，等稳定后再拆：
 
@@ -286,18 +635,18 @@ types/
 └── index.ts
 ```
 
-### 5.3 需要定义的类型（建议顺序）
+### 4.3 需要定义的类型（建议顺序）
 
-1. 基础别名：`Api`、`ProviderId`、`StopReason`、`ThinkingLevel`
-2. 内容块：`TextContent`、`ThinkingContent`、`ImageContent`、`ToolCall`
-3. 消息：`UserMessage`、`AssistantMessage`、`ToolResultMessage`、`Message`
-4. 用量：`Usage`
-5. 工具：`Tool`
-6. 模型：`Model`、`ModelCost`、`ModelCostTier`
-7. 请求：`Context`、`StreamOptions`、`SimpleStreamOptions`
+1. 请求容器：`Context`、`StreamOptions`、`SimpleStreamOptions`
+2. 输入：`UserMessage`、`TextContent`、`ImageContent`
+3. 工具声明：`Tool`
+4. 模型：`Model`、`ModelCost`、`ModelCostTier`
+5. 输出：`AssistantMessage`、`ThinkingContent`、`ToolCall`
+6. 结果：`ToolResultMessage`、`Usage`、`StopReason`
+7. 基础别名：`Api`、`ProviderId`、`ThinkingLevel`
 8. 事件：`AssistantMessageEvent`（03 详述）
 
-### 5.4 关键不变量
+### 4.4 关键不变量
 
 实现时必须用测试固定这些规则：
 
@@ -310,7 +659,7 @@ types/
 | `stopReason === "pending"` 只出现在流式中间态 | 最终消息必须是终态 |
 | `error` / `aborted` 消息必须带 `errorMessage`（`aborted` 可为空） | UI 需要展示原因 |
 
-### 5.5 工具参数校验
+### 4.5 工具参数校验
 
 `validateToolArguments()` 的职责：
 
@@ -322,7 +671,7 @@ types/
 
 为什么不让模型"自己保证格式"：模型输出不可信，必须本地校验；错误信息回填给模型后，它通常能自我修正。
 
-### 5.6 与原项目的取舍
+### 4.6 与原项目的取舍
 
 | 原项目字段 | 建议 | 理由 |
 | --- | --- | --- |
@@ -334,7 +683,7 @@ types/
 | `compat` 全量字段 | 先保留子集 | 只保留首个适配器需要的字段 |
 | `ImagesModel` / `AssistantImages` | 可后置到 08 | 与文本 Agent 独立 |
 
-### 5.7 测试
+### 4.7 测试
 
 | 测试 | 内容 |
 | --- | --- |
@@ -344,7 +693,7 @@ types/
 | 不变量 | `reasoning <= output`、工具结果能匹配调用 |
 | 跨 provider | 用 `transformMessages` 处理图片、thinking、孤立工具调用 |
 
-### 5.8 待确认决策
+### 4.8 待确认决策
 
 - 是否保留 `deferred` 相关类型（课程 05）
 - `compat` 字段先支持哪些（取决于第一个适配器选 OpenAI Completions 还是 Responses）
@@ -352,36 +701,7 @@ types/
 
 ---
 
-## 6. 原源码对应关系
-
-| 主题 | 文件 | 行号 |
-| --- | --- | --- |
-| API / Provider 标识 | `packages/ai/src/types.ts` | 13–61 |
-| 内容块 | 同上 | 327–357 |
-| `Usage` | 同上 | 359–380 |
-| `StopReason` | 同上 | 382 |
-| 消息 | 同上 | 398–446 |
-| `Tool` | 同上 | 493–498 |
-| `Context` | 同上 | 500–504 |
-| 流事件 | 同上 | 522–538 |
-| `StreamOptions` | 同上 | 158–202 |
-| `Model` | 同上 | 809–836 |
-| 兼容配置 | 同上 | 544–702 |
-| 参数校验 | `packages/ai/src/utils/validation.ts` | 302–350 |
-| 跨 provider 归一化 | `packages/ai/src/api/transform-messages.ts` | 64–223 |
-| Agent 消息与工具 | `packages/agent/src/types.ts` | 294–437 |
-
----
-
-## 7. 与整体系统的关系
-
-- 依赖：01 的包结构
-- 支撑：03 流协议、04 注册表、09 循环、11 工具执行、14 会话持久化、16 压缩
-- 后续修改类型的成本很高，因此这一篇的检查点必须认真回答
-
----
-
-## 8. 复现选项与待确认决策
+### 4.9 复现选项
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |
@@ -390,13 +710,3 @@ types/
 | 精简 usage | 只保留 input/output | 不推荐：压缩与统计会缺数据 |
 | 省略签名 | 简化实现 | 可选，但跨轮 thinking 会失效 |
 | 省略 `compat` | 简化模型类型 | 不推荐：第一个适配器就会遇到 |
-
----
-
-## 9. 学习检查点
-
-1. 为什么 `Message` 和 `AgentMessage` 要分开？如果合并，会话里的压缩摘要该怎么存？
-2. `reasoning` 为什么必须定义为 `output` 的子集？如果把它加进 `totalTokens` 会怎样？
-3. 工具参数为什么要用 TypeBox 而不是普通 JSON Schema？
-4. `stopReason` 为 `error` 时，为什么不让循环直接抛异常？
-5. 跨 provider 回放时，哪些字段必须丢弃或转换？为什么 thinking 不能无条件保留？

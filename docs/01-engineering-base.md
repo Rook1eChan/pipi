@@ -1,7 +1,6 @@
 # 01 工程基座
 
-> 课程状态：待用户验收
-> 前置课程：00
+> 课程状态：验收通过
 > 覆盖模块：根配置、构建脚本、测试设施、包骨架
 > 课程文件：01-engineering-base.md
 > 本课产出：一个可编译、可测试、可运行的 monorepo 骨架，后续所有模块都长在它上面。
@@ -21,19 +20,11 @@
 
 ---
 
-## 2. 前置知识与依赖
-
-- 00 的包划分与依赖方向
-- 了解 `package.json` 的 `workspaces`、`exports`、`type: module`
-- 了解 TypeScript 的 `module` / `moduleResolution` 配置
-
----
-
-## 3. A 阶段——概念与功能讲解（High-level）
+## 2. A：概念与功能讲解
 
 > 本阶段不写代码。先回答三个问题：工程基座是什么、为什么需要、每个选择在防什么问题。
 
-### 3.0 先把本课的名词说清楚
+### 2.0 先把本课的名词说清楚
 
 | 名词 | 在这里的意思 | 一个例子 |
 | --- | --- | --- |
@@ -53,7 +44,7 @@
 
 完整术语表在课程 00 第 0 节，遇到别的词可以回那里查。
 
-### 3.1 为什么需要"工程基座"
+### 2.1 为什么需要"工程基座"
 
 先看四个真实会发生的问题：
 
@@ -68,7 +59,7 @@
 
 它只提供一件事：**可重复性**。任何人、任何机器、任何时间，跑同样的命令，得到同样的结果。
 
-### 3.2 为什么是 monorepo
+### 2.2 为什么是 monorepo
 
 先假设你只有一个包。所有代码放一个目录，没问题。
 
@@ -95,7 +86,7 @@ Pi 选它的原因：
 
 对本项目来说，教学价值大于成本，所以沿用 monorepo。
 
-### 3.3 为什么是 ESM + NodeNext
+### 2.3 为什么是 ESM + NodeNext
 
 JavaScript 历史上出现过两套模块写法：
 
@@ -117,7 +108,7 @@ ESM 有一个硬性要求：导入路径必须写清楚文件从哪来。源码�
 - 测试可以直接跑 `.ts`
 - 发布出去的 `.js` 又能被 Node 正确找到
 
-### 3.4 为什么限制"可擦除语法"
+### 2.4 为什么限制"可擦除语法"
 
 Node 22 可以直接运行 `.ts` 文件，但它的做法只是**把类型标注删掉**，不会把 TypeScript 专有语法转换成 JavaScript。
 
@@ -141,7 +132,7 @@ enum Color { Red, Blue }
 
 代价是写起来略啰嗦，收益是测试环境和生产环境不会分叉。
 
-### 3.5 为什么测试直接跑源码
+### 2.5 为什么测试直接跑源码
 
 测试就是"自动运行代码并检查结果"。
 
@@ -178,7 +169,7 @@ Pi 用**别名（alias）**把包名指向源码：
 
 两层都不能省。
 
-### 3.6 为什么构建顺序是 tui → llm → agent → harness
+### 2.6 为什么构建顺序是 tui → llm → agent → harness
 
 build 像接力：
 
@@ -194,7 +185,7 @@ harness 读前三个包的类型，最后编译
 
 日常开发不需要手动按这个顺序，因为测试走源码别名；只有发布或验证 `exports` 时才需要完整构建。
 
-### 3.7 为什么测试要隔离 HOME 和 API key
+### 2.7 为什么测试要隔离 HOME 和 API key
 
 Agent 程序会读写这些东西：
 
@@ -214,7 +205,7 @@ Pi 的做法是：给测试一个临时 `HOME`，清空继承的环境变量，�
 
 新项目可以简化，但必须保证：**测试不依赖真实密钥和用户目录**。
 
-### 3.8 依赖锁定与供应链
+### 2.8 依赖锁定与供应链
 
 `package.json` 里写：
 
@@ -233,7 +224,7 @@ Pi 额外做了两件事：
 
 对新项目：至少保留"精确版本 + lockfile"。更严格的供应链审计可以后置到课程 25。
 
-### 3.9 本课小结
+### 2.9 本课小结
 
 如果只记住五句话：
 
@@ -245,16 +236,24 @@ Pi 额外做了两件事：
 
 ---
 
-## 4. 讨论与确认记录
+### 2.10 与整体系统的关系
+
+- 依赖：00 的包划分
+- 支撑：02 起的全部代码与测试
+- 后续在 25 会补充打包、发布、CI、原生模块
+
+---
+
+## 3. 讨论与确认记录
 
 > 学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
 
 | 日期 | 类型 | 内容 | 对 B 的影响 |
 | --- | --- | --- | --- |
-| 2026-10-29 | 反馈 | 用户指出教程门槛过高，`monorepo`、`ESM` 等名词没有解释 | A 阶段新增 3.0 名词表；课程 00 新增零基础术语表 |
+| 2026-10-29 | 反馈 | 用户指出教程门槛过高，`monorepo`、`ESM` 等名词没有解释 | A 阶段新增 2.0 名词表；课程 00 新增零基础术语表 |
 | 2026-10-29 | 决策 | 后续课程首次出现术语时，先用一句话解释，再给类比或例子 | 写入 `AGENTS.md` 教学约定 |
-| 2026-10-29 | 讨论 | 确认测试跑源码、发布测 `dist` 是两层验证，不是二选一 | 3.5 补充发行层说明 |
-| 2026-10-29 | 讨论 | 澄清 Vitest 触发时机、build/test 的区别、CI 只测源码、dist 测试放在发布前 | 3.5 与术语表保持两层验证说明 |
+| 2026-10-29 | 讨论 | 确认测试跑源码、发布测 `dist` 是两层验证，不是二选一 | 2.5 补充发行层说明 |
+| 2026-10-29 | 讨论 | 澄清 Vitest 触发时机、build/test 的区别、CI 只测源码、dist 测试放在发布前 | 2.5 与术语表保持两层验证说明 |
 | 2026-10-29 | A 完成 | 用户确认读完 01 的 A 阶段 | 进入 B 讨论 |
 | 2026-10-29 | B 确认 | 用户确认 01 的 B 阶段；三项待确认按建议执行 | B 定稿，转入 BUILD_PLAN |
 | 2026-10-29 | 决策 | 采用五份包级 CHANGELOG；Agent 每次提交自行维护并总结；不建根 changelog、不加脚本/hook | 新增 T-01-5，范围限定为建 changelog 与规则 |
@@ -263,10 +262,11 @@ Pi 额外做了两件事：
 | 2026-10-29 | 实现 | T-01-3 完成：五个空包、workspace 链接、每包 `tsconfig.build.json` 与 `vitest.config.ts`；根 `build` 改为显式拓扑顺序 | 包间依赖固定为 llm ← agent ← harness，tui 独立，harness ← eval |
 | 2026-10-29 | 实现 | T-01-4 完成：五包 smoke 测试；`build`、`test`、`tsc --noEmit`、`biome check .` 全部通过 | 课程进入待验收 |
 | 2026-10-29 | 实现 | T-01-5 完成：五份包级 `CHANGELOG.md`，含 `Breaking Changes/Added/Changed/Fixed/Removed` | 变更记录规则可执行 |
+| 2026-10-31 | 验收 | 用户进入课程 02，视为课程 01 验收通过 | 课程 01 完成 |
 
 ---
 
-## 5. B 阶段——具体实现规划（Low-level）
+## 4. B：具体实现规划
 
 > 读 B 之前先看文件角色。看到不认识的配置文件，回这张表查。
 
@@ -283,7 +283,7 @@ Pi 额外做了两件事：
 | `src/index.ts` | 公共出口 | 只从这里暴露包的能力 |
 | `test/smoke.test.ts` | 最小测试 | 证明包能被导入 |
 
-### 5.1 原项目实现
+### 4.1 原项目实现
 
 | 文件 | 作用 | 关键内容 |
 | --- | --- | --- |
@@ -297,7 +297,7 @@ Pi 额外做了两件事：
 | `test.sh` | 隔离测试环境 | 临时 HOME、清空环境变量 |
 | `scripts/sync-versions.js` | 版本锁步 | 所有包同一版本 |
 
-### 5.2 新项目文件清单
+### 4.2 新项目文件清单
 
 第一阶段创建：
 
@@ -323,7 +323,7 @@ pipi/
     └── eval/             （同上）
 ```
 
-### 5.3 根 `package.json` 建议
+### 4.3 根 `package.json` 建议
 
 ```json
 {
@@ -350,7 +350,7 @@ pipi/
 
 不建议一开始引入 `tsgo`（原生 TypeScript 预览版），先用 `tsc`，稳定后再替换。
 
-### 5.4 `tsconfig.base.json` 建议
+### 4.4 `tsconfig.base.json` 建议
 
 ```json
 {
@@ -376,7 +376,7 @@ pipi/
 
 与原项目的差异：这里直接使用 `NodeNext`，避免 `Node16` 与 `NodeNext` 两套配置叠加带来的理解成本。行为上对 ESM 项目等价。
 
-### 5.5 `tsconfig.json` 建议
+### 4.5 `tsconfig.json` 建议
 
 ```json
 {
@@ -400,7 +400,7 @@ pipi/
 }
 ```
 
-### 5.6 `vitest.base.ts` 建议
+### 4.6 `vitest.base.ts` 建议
 
 ```ts
 import { fileURLToPath } from "node:url";
@@ -427,7 +427,7 @@ export default defineConfig({
 
 单包 `vitest.config.ts` 只需 `export { default } from "../../vitest.base.ts";`（或合并包级配置）。
 
-### 5.7 包级 `package.json` 建议（以 `llm` 为例）
+### 4.7 包级 `package.json` 建议（以 `llm` 为例）
 
 ```json
 {
@@ -450,7 +450,7 @@ export default defineConfig({
 
 空包阶段不引入 `typebox`，课程 02 需要类型 schema 时再加入。后续新增子路径导出（例如 `@pipi/llm/providers/*`）时，`exports` 与 `tsconfig` 的 `paths` 要同步更新。
 
-### 5.8 测试隔离策略
+### 4.8 测试隔离策略
 
 第一阶段可以简化，但建议从一开始就做两件事：
 
@@ -467,7 +467,7 @@ trap 'rm -rf "$root"' EXIT
 HOME="$root/home" XDG_CONFIG_HOME="$root/config" npm test
 ```
 
-### 5.9 验证清单
+### 4.9 验证清单
 
 | 验证 | 命令 | 期望 |
 | --- | --- | --- |
@@ -477,13 +477,13 @@ HOME="$root/home" XDG_CONFIG_HOME="$root/config" npm test
 | 测试 | `npm test` | smoke 测试通过 |
 | 包解析 | `node -e "import('@pipi/llm')"` | 不因 `exports` 报错 |
 
-### 5.10 已确认决策
+### 4.10 已确认决策
 
 - 引入 Biome 作为格式化与 lint 工具。
 - 采用 `NodeNext` 单配置，不使用原项目的 `Node16` + `NodeNext` 双配置。
 - 测试隔离：先使用 `os.tmpdir()` 创建临时目录；完整隔离脚本后置到课程 25。
 
-### 5.11 变更记录
+### 4.11 变更记录
 
 - 五个包各维护 `packages/<pkg>/CHANGELOG.md`，只保留 `[Unreleased]` 段。
 - 分节：`Breaking Changes`、`Added`、`Changed`、`Fixed`、`Removed`。
@@ -493,31 +493,7 @@ HOME="$root/home" XDG_CONFIG_HOME="$root/config" npm test
 
 ---
 
-## 6. 原源码对应关系
-
-| 主题 | 文件 | 关键行 |
-| --- | --- | --- |
-| workspaces 与脚本 | `my-pi/package.json` | 5–12、13–58 |
-| 共享编译选项 | `my-pi/tsconfig.base.json` | 全文 |
-| 路径别名 | `my-pi/tsconfig.json` | `paths` 段 |
-| 测试别名 | `my-pi/vitest.base.ts` | `workspaceSourcePaths` |
-| 单包构建 | `packages/ai/tsconfig.build.json` | `outDir`、`module: NodeNext` |
-| 单包测试 | `packages/ai/vitest.config.ts` | `test` 段 |
-| 格式规则 | `my-pi/biome.json` | `formatter.indentStyle`、`lineWidth` |
-| 测试隔离 | `my-pi/test.sh` | 全文 |
-| 依赖锁定 | `my-pi/.npmrc` | `save-exact=true` |
-
----
-
-## 7. 与整体系统的关系
-
-- 依赖：00 的包划分
-- 支撑：02 起的全部代码与测试
-- 后续在 25 会补充打包、发布、CI、原生模块
-
----
-
-## 8. 复现选项与待确认决策
+### 4.12 复现选项
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |
@@ -526,13 +502,3 @@ HOME="$root/home" XDG_CONFIG_HOME="$root/config" npm test
 | 用 `tsgo` | 原项目的原生编译器 | 先用 `tsc`，稳定后再说 |
 | 跳过 `biome` | 少一个依赖 | 可选；但格式化一致性会下降 |
 | 跳过测试隔离 | 快速起步 | 不推荐，后面会付出更大代价 |
-
----
-
-## 9. 学习检查点
-
-1. `erasableSyntaxOnly` 禁止了哪些语法？为什么这与"直接跑 `.ts`"有关？
-2. 为什么测试走 `src` alias，而构建走 `dist`？两种方式各自能发现什么问题？
-3. `rewriteRelativeImportExtensions` 解决的是什么问题？如果没有它，源码里写 `./foo.ts` 会怎样？
-4. 为什么构建顺序必须是 `tui → ai → agent → coding-agent`？
-5. `test.sh` 为什么要清空 API key？如果不清理，可能出现哪两类假结果？

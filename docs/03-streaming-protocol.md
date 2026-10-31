@@ -1,8 +1,7 @@
 # 03 流式响应协议
 
 > 课程状态：待学习
-> 前置课程：02
-> 覆盖模块：pi-ai 流式协议、增量 JSON 解析、延迟初始化
+> 覆盖模块：`@pipi/llm` 流式协议、增量 JSON 解析、延迟初始化
 > 课程文件：03-streaming-protocol.md
 > 本课产出：一套与 provider 无关的流式事件协议，让上层能实时显示文本、思考、工具参数，并统一处理错误与中止。
 
@@ -19,17 +18,9 @@
 
 ---
 
-## 2. 前置知识与依赖
+## 2. A：概念与功能讲解
 
-- 02 的 `AssistantMessage`、`TextContent`、`ThinkingContent`、`ToolCall`
-- 了解 `AsyncIterable` / `AsyncIterator`
-- 了解 SSE（Server-Sent Events）的基本形态
-
----
-
-## 3. A 阶段——概念与功能讲解（High-level）
-
-### 3.1 为什么不能等完整回复
+### 2.1 为什么不能等完整回复
 
 最朴素的调用是：
 
@@ -46,7 +37,7 @@ const message = await client.chat(messages);
 
 流式协议把"一次回复"拆成"一系列事件"，让 UI 可以在 token 到达时立即渲染。
 
-### 3.2 为什么是"事件流 + 最终结果"双接口
+### 2.2 为什么是"事件流 + 最终结果"双接口
 
 只用 `AsyncIterable` 的问题：
 
@@ -74,7 +65,7 @@ const message = await stream.result();
 
 `result()` 的 Promise 在流终止时 resolve：`done` 事件给 `message`，`error` 事件给 `error` 消息。因此**无论成功失败，`result()` 都不会 reject**。这与"错误编码进流"的设计一致。
 
-### 3.3 事件语法
+### 2.3 事件语法
 
 ```text
 成功：
@@ -100,7 +91,7 @@ const message = await stream.result();
 5. `error.reason` 只能是 `aborted | error`
 6. `contentIndex` 指向 `message.content` 数组中的位置，从 0 开始
 
-### 3.4 `partial` 是什么
+### 2.4 `partial` 是什么
 
 每个事件都带一个 `partial: AssistantMessage`。它不是快照，而是**同一个可变对象的引用**：
 
@@ -124,7 +115,7 @@ text_end:       content = [{ type:"text", text:"你好" }]
 
 这是一个典型的"性能换使用约束"的设计，必须在课程和测试中明确。
 
-### 3.5 工具参数为什么要流式
+### 2.5 工具参数为什么要流式
 
 模型生成工具调用时，参数是 JSON 字符串：
 
@@ -151,7 +142,7 @@ parseStreamingJson('not json')      // {}
 
 设计原则：**永远返回一个对象，永不抛异常**。流式中间态的解析失败是常态，不是错误。
 
-### 3.6 错误与中止如何编码
+### 2.6 错误与中止如何编码
 
 | 场景 | 事件 | `AssistantMessage.stopReason` |
 | --- | --- | --- |
@@ -169,7 +160,7 @@ parseStreamingJson('not json')      // {}
 
 所以 `error` 事件携带完整的 `AssistantMessage`，其中 `errorMessage` 是脱敏后的可读文本。
 
-### 3.7 为什么需要 `lazyStream`
+### 2.7 为什么需要 `lazyStream`
 
 `Models.streamSimple()` 要做异步工作：
 
@@ -199,7 +190,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 例外：直接调用 API 适配器模块导出的 `streamSimple()` 时，它会在返回流之前同步检查 API key 是否存在（`getClientApiKey`），明显配置错误会立刻抛错。通过 `Models.streamSimple()` 调用时，这次检查发生在异步初始化内部，失败会被 `lazyStream` 捕获并编码成 `error` 事件。这个细节属于 05。
 
-### 3.8 为什么不用回调或 EventEmitter
+### 2.8 为什么不用回调或 EventEmitter
 
 | 方案 | 问题 |
 | --- | --- |
@@ -208,7 +199,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 | `AsyncGenerator` | 不能同时提供 `result()`；生成器函数体在第一次 `next()` 才执行，错误时机不直观 |
 | `AsyncIterable` + 独立结果 Promise | 兼顾增量、最终结果、取消；消费者可控 |
 
-### 3.9 背压与顺序
+### 2.9 背压与顺序
 
 `EventStream` 内部用两个 FIFO 队列：
 
@@ -231,7 +222,20 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 ---
 
-## 4. 讨论与确认记录
+### 2.10 与整体系统的关系
+
+- 依赖：02 的消息与内容块类型
+- 支撑：
+  - 05 适配器（生产者）
+  - 09 Agent 循环（消费者，把 `message_update` 转成 `AgentEvent`）
+  - 18 会话（把最终消息落盘）
+  - 20 JSON/RPC 模式（事件直接序列化）
+  - 24 交互模式（增量渲染）
+- 如果这一层设计错了，后面每一层都要跟着改，因此它是"地基中的地基"
+
+---
+
+## 3. 讨论与确认记录
 
 > 尚无讨论。学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
 
@@ -241,9 +245,9 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 ---
 
-## 5. B 阶段——具体实现规划（Low-level）
+## 4. B：具体实现规划
 
-### 5.1 原项目实现
+### 4.1 原项目实现
 
 | 文件 | 作用 | 行数 |
 | --- | --- | --- |
@@ -262,7 +266,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 5. 结束时 `push(done)` + `end()`
 6. `catch`：设置 `stopReason`、`errorMessage`，`push(error)` + `end()`
 
-### 5.2 新项目文件清单
+### 4.2 新项目文件清单
 
 ```text
 packages/llm/src/
@@ -274,7 +278,7 @@ packages/llm/src/
 └── types.ts                # AssistantMessageEvent 联合类型（02 已定义）
 ```
 
-### 5.3 `EventStream` 实现要点
+### 4.3 `EventStream` 实现要点
 
 ```ts
 class EventStream<T, R = T> implements AsyncIterable<T> {
@@ -302,7 +306,7 @@ class EventStream<T, R = T> implements AsyncIterable<T> {
 | 消费者在 `end` 后才开始迭代 | 先把队列取完，再结束 |
 | 多个消费者 | 不支持；事件会被分摊，不建议 |
 
-### 5.4 `AssistantMessageEvent` 定义
+### 4.4 `AssistantMessageEvent` 定义
 
 按 02 的联合类型实现，重点是区分完成事件：
 
@@ -334,7 +338,7 @@ type AssistantMessageEvent =
 (event) => event.type === "done" ? event.message : event.error
 ```
 
-### 5.5 `parseStreamingJson` 实现要点
+### 4.5 `parseStreamingJson` 实现要点
 
 三层回退：
 
@@ -351,7 +355,7 @@ type AssistantMessageEvent =
 
 这一层不追求"解析出正确语义"，只追求"不崩、尽量可用"。
 
-### 5.6 测试清单
+### 4.6 测试清单
 
 | 测试 | 验证 |
 | --- | --- |
@@ -367,7 +371,7 @@ type AssistantMessageEvent =
 | 流式 JSON | 不完整、非法转义、纯文本都返回对象 |
 | `partial` 引用 | 消费过程中看到的是最新累积值（用测试固定这个语义） |
 
-### 5.7 与原项目的取舍
+### 4.7 与原项目的取舍
 
 | 特性 | 建议 | 说明 |
 | --- | --- | --- |
@@ -378,7 +382,7 @@ type AssistantMessageEvent =
 | 无背压 | 保留 | 对 LLM 流足够；课程中注明限制 |
 | `lazyApi` 动态导入 | 可后置 | 首个适配器可以直接静态导入 |
 
-### 5.8 待确认决策
+### 4.8 待确认决策
 
 - 是否在第一版就支持思考事件（取决于首个模型是否推理模型）
 - 是否需要 `lazyStream`（建议保留，认证失败路径更干净）
@@ -386,41 +390,7 @@ type AssistantMessageEvent =
 
 ---
 
-## 6. 原源码对应关系
-
-| 主题 | 文件 | 行号 |
-| --- | --- | --- |
-| FIFO 队列 | `packages/ai/src/utils/event-stream.ts` | 3–23 |
-| `EventStream` | 同上 | 26–89 |
-| `push` | 同上 | 43–58 |
-| `end` | 同上 | 60–70 |
-| 异步迭代器 | 同上 | 72–84 |
-| `AssistantMessageEventStream` | 同上 | 91–105 |
-| 事件联合类型 | `packages/ai/src/types.ts` | 506–538 |
-| 延迟流 | `packages/ai/src/api/lazy.ts` | 46–61 |
-| 懒加载 API | 同上 | 73–98 |
-| JSON 修复 | `packages/ai/src/utils/json-parse.ts` | 32–95 |
-| 流式解析 | 同上 | 104–124 |
-| 事件生产示例 | `packages/ai/src/api/openai-completions.ts` | 311–724 |
-| 工具调用累积 | 同上 | 423–547 |
-| 错误终止 | 同上 | 697–720 |
-
----
-
-## 7. 与整体系统的关系
-
-- 依赖：02 的消息与内容块类型
-- 支撑：
-  - 05 适配器（生产者）
-  - 09 Agent 循环（消费者，把 `message_update` 转成 `AgentEvent`）
-  - 18 会话（把最终消息落盘）
-  - 20 JSON/RPC 模式（事件直接序列化）
-  - 24 交互模式（增量渲染）
-- 如果这一层设计错了，后面每一层都要跟着改，因此它是"地基中的地基"
-
----
-
-## 8. 复现选项与待确认决策
+### 4.9 复现选项
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |
@@ -429,13 +399,3 @@ type AssistantMessageEvent =
 | 用 `AsyncGenerator` | 少写一个类 | 不推荐：拿不到 `result()`，错误时机差 |
 | 有背压 | 更通用 | 可选；LLM 场景不需要 |
 | 错误抛异常 | 简单 | 不推荐：UI 会丢部分内容 |
-
----
-
-## 9. 学习检查点
-
-1. 为什么 `result()` 在 `error` 时也 resolve，而不是 reject？
-2. `partial` 是同一个可变对象，这对消费者提出了什么约束？如果 UI 直接保存了历史事件会怎样？
-3. 工具参数流式解析为什么"永远不能抛异常"？
-4. `start` 之前失败与 `start` 之后失败，事件序列有什么区别？调用方需要分别处理吗？
-5. `EventStream` 没有背压，什么场景下会出问题？为什么 LLM 流可以接受？
