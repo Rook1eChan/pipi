@@ -822,6 +822,7 @@
 | 图像生成、剪贴板图片、终端图像 | 简化 | 08、24 |
 | `packages/ai/src/providers/data/*`、`*.models.ts` 全量生成 | 了解生成流程，不复现全量目录 | 04 |
 | `core/export-html/vendor/*` 第三方高亮/Markdown | 最小实现或轻量依赖 | 24 |
+| `packages/ai/src/api/google-*.ts`、`mistral-conversations.ts`、`providers/google*.ts`、`mistral*.ts` | 舍弃（不纳入新项目） | 05、06 |
 
 ## 9. 附录：测试文件全量清单
 

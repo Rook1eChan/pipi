@@ -24,7 +24,7 @@
 
 ## 3. 当前已批准任务
 
-课程 01 的 B 阶段已由用户确认，以下任务获准执行。任务按顺序实现，前一项验收通过后再开始下一项。
+课程 01 已完成。课程 02 的 B 阶段已由用户确认，以下任务获准执行。任务按顺序实现，前一项验收通过后再开始下一项。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -33,6 +33,10 @@
 | T-01-3 | 01 | 创建五个空包：`llm`、`agent`、`tui`、`harness`、`eval`，建立单向依赖与构建配置 | `packages/*/package.json`、`packages/*/tsconfig.build.json`、`packages/*/vitest.config.ts`、`packages/*/src/index.ts` | T-01-2 | 每包 `npm run build -w @pipi/<pkg>` 生成 `dist/index.js` 与 `.d.ts`；`node -e "import('@pipi/llm')"` 可解析；`harness` 依赖 `llm`、`agent`、`tui`，`eval` 依赖 `harness` | 已验收 |
 | T-01-4 | 01 | 建立 smoke 测试与基线验证：每包可导入、全量构建、类型检查、测试通过 | `packages/*/test/smoke.test.ts`、根脚本 | T-01-3 | `npm run build`、`npm test`、`npx tsc --noEmit`、`npx biome check .` 全部通过；测试不写用户目录，需要临时目录时使用 `os.tmpdir()` | 已验收 |
 | T-01-5 | 01 | 建立变更记录：五个包各一份 CHANGELOG，写入维护规则 | `packages/*/CHANGELOG.md`、`AGENTS.md` | T-01-3 | 五份 changelog 存在，含 `[Unreleased]` 与五个分节（含 `Breaking Changes`）；AGENTS 规则与提交规范可执行 | 已验收 |
+| T-02-1 | 02 | 定义基础类型与内容块：API/Provider 标识、文本/思考/图片/工具调用、延期句柄 | `packages/llm/src/types.ts` | T-01-4 | `tsc --noEmit` 通过；类型可被 `index.ts` 导出；不引入运行时依赖 | 待用户验收 |
+| T-02-2 | 02 | 定义消息：用户、助手、工具结果与 `Message` 联合 | `packages/llm/src/types.ts` | T-02-1 | 类型构造与 JSON 序列化测试通过 | 待用户验收 |
+| T-02-3 | 02 | 定义工具、模型、用量与请求容器：`Tool`、`Model`、`Usage`、`Context`、`StreamOptions` | `packages/llm/src/types.ts` | T-02-2 | `totalTokens` 计算、`reasoning <= output`、工具结果配对测试通过 | 已验收 |
+| T-02-4 | 02 | 公共导出与测试：导出类型，补齐类型测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/types.test.ts`、`packages/llm/CHANGELOG.md` | T-02-3 | `npm run build`、`npm test`、`tsc --noEmit`、`biome check .` 通过；changelog 有 Added 条目 | 待用户验收 |
 
 ## 4. 任务模板
 
@@ -57,6 +61,11 @@
 | 2026-10-29 | T-01-3 实现完成：五个空包与 workspace 依赖；根 build 改为显式拓扑顺序；待用户验收 |
 | 2026-10-29 | 用户确认 T-01-3；T-01-4、T-01-5 实现完成，待用户验收 |
 | 2026-10-31 | 课程 01 验收通过；T-01-4、T-01-5 已验收；进入课程 02 A |
+| 2026-10-31 | 课程 02 B 确认；批准 T-02-1 至 T-02-4 |
+| 2026-10-31 | T-02-1 实现完成：基础类型与内容块；待用户验收 |
+| 2026-11-02 | T-02-2 实现完成：消息类型与序列化测试；待用户验收 |
+| 2026-11-02 | T-02-3 实现完成：工具、模型、请求容器与不变量测试；待用户验收 |
+| 2026-11-02 | T-02-4 实现完成：公共导出、类型测试与 changelog；课程 02 待验收 |
 
 ## 6. 最终验收目标
 

@@ -1,6 +1,6 @@
 # 02 LLM 数据契约：一次请求与一次工具回合
 
-> 课程状态：A 学习中
+> 课程状态：待用户验收
 > 覆盖模块：`@pipi/llm` 的公共类型与数据契约
 > 课程文件：02-core-types.md
 > 本课产出：定义 `@pipi/llm` 的公共数据契约，支撑一次请求、一次工具回合与跨 provider 回放。
@@ -590,6 +590,12 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 | --- | --- | --- | --- |
 | 2026-10-31 | 反馈 | 用户指出 A 阶段像类型词典，结构散 | 按请求生命周期重写为 2.1–2.11 |
 | 2026-10-31 | 讨论 | 课程主线改为“一次请求 + 一次工具回合” | B 4.3 的类型顺序同步调整 |
+| 2026-10-31 | 讨论 | `deferred` 在内置真实 provider 中没有实现，仅 `faux` 用于测试 | 保留枚举与 handle，方法后置 05 |
+| 2026-10-31 | B 确认 | 用户确认 02 B；只做类型与测试 | 写入 BUILD_PLAN |
+| 2026-10-31 | 实现 | T-02-1 完成：基础类型与内容块；类型导出通过 `dist/types.d.ts` 验证 | 无 |
+| 2026-11-02 | 实现 | T-02-2 完成：消息类型与 JSON 序列化测试 | 02 测试文件增加消息往返用例 |
+| 2026-11-02 | 实现 | T-02-3 完成：工具、模型、请求容器与不变量测试 | 引入 `typebox` 作为 llm 依赖 |
+| 2026-11-02 | 实现 | T-02-4 完成：公共导出、类型测试与 changelog | 课程 02 进入待验收 |
 
 ---
 
@@ -617,9 +623,7 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 ```text
 packages/llm/src/
 ├── types.ts          # 所有公共类型
-├── index.ts          # 导出 types 与 Type
-└── utils/
-    └── validation.ts # 工具参数校验（11 使用）
+└── index.ts          # 导出 types 与 Type
 ```
 
 如果后续觉得太大，可以按主题拆分并由 `types.ts` 统一 re-export：
@@ -643,8 +647,7 @@ types/
 4. 模型：`Model`、`ModelCost`、`ModelCostTier`
 5. 输出：`AssistantMessage`、`ThinkingContent`、`ToolCall`
 6. 结果：`ToolResultMessage`、`Usage`、`StopReason`
-7. 基础别名：`Api`、`ProviderId`、`ThinkingLevel`
-8. 事件：`AssistantMessageEvent`（03 详述）
+7. 延期响应与基础别名：`DeferredHandle`、`Api`、`ProviderId`、`ThinkingLevel`
 
 ### 4.4 关键不变量
 
@@ -659,17 +662,17 @@ types/
 | `stopReason === "pending"` 只出现在流式中间态 | 最终消息必须是终态 |
 | `error` / `aborted` 消息必须带 `errorMessage`（`aborted` 可为空） | UI 需要展示原因 |
 
-### 4.5 工具参数校验
+### 4.5 本课不做的部分
 
-`validateToolArguments()` 的职责：
+| 内容 | 归属课程 |
+| --- | --- |
+| 工具参数校验 `validateToolArguments` | 11 |
+| 跨 provider 归一化 `transformMessages` | 06 |
+| 流式事件 `AssistantMessageEvent` | 03 |
+| 图像生成 `ImagesModel` / `AssistantImages` | 08 |
+| `StreamOptions.deferred`、`fetchDeferred`、`cancelDeferred` | 05 |
 
-1. 深拷贝参数，避免修改模型返回的原对象
-2. 删除"可选字段的 null"（模型经常把可选字段填成 `null`）
-3. 用 `Value.Convert` 做基础类型转换（字符串数字 → 数字等）
-4. 用编译后的 TypeBox validator 校验
-5. 失败时生成带路径的错误信息，交给 Agent 作为工具错误结果返回给模型
-
-为什么不让模型"自己保证格式"：模型输出不可信，必须本地校验；错误信息回填给模型后，它通常能自我修正。
+本课只定义数据形状与不变量，不实现这些行为。
 
 ### 4.6 与原项目的取舍
 
@@ -682,24 +685,26 @@ types/
 | `ModelCostTier` | 可后置 | 只有少数模型有阶梯计价 |
 | `compat` 全量字段 | 先保留子集 | 只保留首个适配器需要的字段 |
 | `ImagesModel` / `AssistantImages` | 可后置到 08 | 与文本 Agent 独立 |
+| Google / Mistral 系列 | 舍弃 | 当前只复现 OpenAI、Anthropic、DeepSeek |
 
 ### 4.7 测试
 
 | 测试 | 内容 |
 | --- | --- |
-| 类型构造 | 构造一条包含文本、思考、工具调用的助手消息，能被 JSON 序列化/反序列化 |
+| 类型构造 | 构造一条包含文本、思考、工具调用的助手消息 |
+| 序列化 | 上述消息能被 JSON 序列化/反序列化，字段不丢失 |
 | usage 计算 | 给定 provider usage，计算 `totalTokens` 与 `cost` |
-| 参数校验 | 合法参数通过；缺字段、类型错误、可选字段为 null 的行为符合预期 |
 | 不变量 | `reasoning <= output`、工具结果能匹配调用 |
-| 跨 provider | 用 `transformMessages` 处理图片、thinking、孤立工具调用 |
 
-### 4.8 待确认决策
+### 4.8 决策记录
 
-- 是否保留 `deferred` 相关类型（课程 05）
-- `compat` 字段先支持哪些（取决于第一个适配器选 OpenAI Completions 还是 Responses）
-- 是否从一开始就支持图像（课程 08）
-
----
+| 项目 | 决策 | 状态 | 原因 | 影响 |
+| --- | --- | --- | --- | --- |
+| `deferred` | 简化实现（保留枚举与句柄，方法后置 05） | 已确认 | 内置真实 provider 没有实现，仅 `faux` 测试 | 05 实现 `fetchDeferred` / `cancelDeferred` |
+| `compat` | 简化实现（先做 OpenAI Completions 最小子集） | 已确认 | 首个适配器是 OpenAI 兼容 | 05/06 增补 |
+| 图像 | 简化实现（保留输入，生成后置 08） | 已确认 | 先做图像输入 | 08 图像生成 |
+| 课程范围 | 简化实现（只做类型与测试） | 已确认 | 校验归 11、归一化归 06、事件归 03 | 02 任务 |
+| Provider 范围 | 简化实现（只做 OpenAI、Anthropic、DeepSeek 系列） | 已确认 | 控制复现范围 | 05/06 只实现这三类适配器 |
 
 ### 4.9 复现选项
 

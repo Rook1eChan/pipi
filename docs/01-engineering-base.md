@@ -477,11 +477,13 @@ HOME="$root/home" XDG_CONFIG_HOME="$root/config" npm test
 | 测试 | `npm test` | smoke 测试通过 |
 | 包解析 | `node -e "import('@pipi/llm')"` | 不因 `exports` 报错 |
 
-### 4.10 已确认决策
+### 4.10 决策记录
 
-- 引入 Biome 作为格式化与 lint 工具。
-- 采用 `NodeNext` 单配置，不使用原项目的 `Node16` + `NodeNext` 双配置。
-- 测试隔离：先使用 `os.tmpdir()` 创建临时目录；完整隔离脚本后置到课程 25。
+| 项目 | 决策 | 状态 | 原因 | 影响 |
+| --- | --- | --- | --- | --- |
+| Biome | 原样实现（引入） | 已确认 | 格式化与 lint 成本低 | 01 使用 `biome.json` |
+| TypeScript 配置 | 简化实现（`NodeNext` 单配置） | 已确认 | 简化原项目 `Node16` + `NodeNext` 双配置 | 01 的 `tsconfig` |
+| 测试隔离 | 简化实现（先用 `os.tmpdir()`，脚本后置 25） | 已确认 | 避免测试读写真实 HOME | 01 测试 |
 
 ### 4.11 变更记录
 
