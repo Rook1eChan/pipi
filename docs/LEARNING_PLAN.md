@@ -21,8 +21,8 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 00 | 项目全景与构建地图 | 一个编码 Agent 由哪些能力组成？为什么按这个顺序构建？ | 全局认知 | 五包导航、入口、调用链、依赖方向 | 无 | `00-project-overview.md` | 已生成 | 验收通过 |
 | 01 | 工程基座 | 如何建立可编译、可测试、可发布的 monorepo？ | 工程骨架 | 根配置、构建脚本、测试设施、包边界 | 00 | `01-engineering-base.md` | 已生成 | 验收通过 |
-| 02 | LLM 数据契约 | 一次请求需要哪些数据？如何用一套类型覆盖多个 provider？ | 统一数据模型 | `llm/src/types.ts`、公共导出面 | 01 | `02-core-types.md` | 已生成 | 待用户验收 |
-| 03 | 流式响应协议 | 如何表达增量文本、工具参数、错误与中止？ | 事件流 | `event-stream.ts`、`json-parse.ts`、`lazy.ts` | 02 | `03-streaming-protocol.md` | 已生成 | 待学习 |
+| 02 | LLM 数据契约 | 一次请求需要哪些数据？如何用一套类型覆盖多个 provider？ | 统一数据模型 | `llm/src/types.ts`、公共导出面 | 01 | `02-core-types.md` | 已生成 | 验收通过 |
+| 03 | 流式响应协议 | 如何表达增量文本、工具参数、错误与中止？ | 事件流 | `event-stream.ts`、`json-parse.ts`、`lazy.ts` | 02 | `03-streaming-protocol.md` | 已生成 | 验收通过 |
 | 04 | Provider 注册表与模型目录 | 如何登记 provider、查找模型并分发请求？ | 注册与分发 | `ai/src/models.ts`、`providers/*`、`models-store.ts` | 03 | `04-provider-registry.md` | 未生成 | 待学习 |
 | 05 | 第一个 API 适配器（OpenAI 兼容） | 如何把一次真实请求映射成统一事件流？ | 模型接入 | `api/openai-completions.ts`、`simple-options.ts` | 04 | `05-openai-adapter.md` | 未生成 | 待学习 |
 | 06 | 多 API 家族与请求基础设施 | 如何兼容 Anthropic/Responses/Google/Mistral 并处理重试与归一化？ | 适配器矩阵 | `api/*`、`utils/retry.ts`、`transform-messages.ts` | 05 | `06-api-families.md` | 未生成 | 待学习 |
@@ -50,13 +50,13 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 当前课程 | 02 LLM 数据契约 |
-| 已完成课程 | 00（约定类）、01（工程基座） |
-| 已完成 A 的课程 | 00、01、02 |
-| 已确认 B 的课程 | 00、01、02 |
+| 当前课程 | 04 Provider 注册表与模型目录 |
+| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议） |
+| 已完成 A 的课程 | 00、01、02、03 |
+| 已确认 B 的课程 | 00、01、02、03 |
 | 已生成文档 | 00–03 |
-| 已实现课程 | 01 |
-| 当前阶段 | 课程 02 待用户验收（T-02-4 待确认） |
+| 已实现课程 | 01、02、03 |
+| 当前阶段 | 课程 03 验收通过；课程 04 待生成 |
 
 ## 4. 已确认的项目级约定
 

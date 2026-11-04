@@ -1,6 +1,6 @@
 # 02 LLM 数据契约：一次请求与一次工具回合
 
-> 课程状态：待用户验收
+> 课程状态：验收通过
 > 覆盖模块：`@pipi/llm` 的公共类型与数据契约
 > 课程文件：02-core-types.md
 > 本课产出：定义 `@pipi/llm` 的公共数据契约，支撑一次请求、一次工具回合与跨 provider 回放。
@@ -23,7 +23,7 @@
 
 ## 2. A：概念与功能讲解
 
-### 2.1 主线：一次请求从哪开始，到哪结束
+### 2.1 一次请求的生命周期
 
 这一课讲 `packages/llm/src/types.ts`，也就是 `@pipi/llm` 的公共数据契约。它要回答的不是“有哪些类型”，而是：
 
@@ -178,7 +178,7 @@ interface UserMessage {
 
 ### 2.4 工具声明：`Tool`
 
-工具告诉模型“你能做什么”，但不负责执行：
+工具告诉模型“能做什么”，但不负责执行：
 
 ```ts
 interface Tool<TParameters extends TSchema = TSchema> {
@@ -482,7 +482,7 @@ totalTokens = input + output + cacheRead + cacheWrite
 
 ---
 
-### 2.9 跨 provider：同一套类型如何映射
+### 2.9 跨 provider 的映射规则
 
 统一类型只解决“形状”，不解决“语义差异”。适配器负责映射：
 
@@ -545,7 +545,7 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 
 ---
 
-### 2.11 这一层不做什么，以及必须守住的不变量
+### 2.11 类型层的边界与不变量
 
 `@pipi/llm` 的类型层**不负责**：
 
@@ -580,6 +580,18 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 - 支撑：03 流协议、04 注册表、09 循环、11 工具执行、14 会话持久化、16 压缩
 - 后续修改类型的成本很高，因此 A 阶段要重点理解这些不变量。
 
+### 2.13 小结
+
+本课的核心结论：
+
+1. LLM 数据契约围绕一次请求的生命周期组织：请求容器、输入、工具、模型、输出、工具结果、调用账本。
+2. `Context` 是一次请求的输入快照，不包含 provider 配置、会话树或 UI 状态。
+3. 三类消息各自携带与来源相关的字段：用户消息最少，助手消息记录来源、用量、结束原因与诊断。
+4. 工具声明使用 TypeBox schema，模型描述是数据而不是类。
+5. `ToolCall` 与 `ToolResultMessage` 通过 `toolCallId` 配对，缺失结果会被归一化逻辑兜底。
+6. 跨 provider 的差异由适配器和 `transformMessages` 处理，类型层为转换保留必要字段。
+7. 这一层只定义数据形状与不变量，不发起请求、不执行工具、不持久化会话。
+
 ---
 
 ## 3. 讨论与确认记录
@@ -596,6 +608,7 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 | 2026-11-02 | 实现 | T-02-2 完成：消息类型与 JSON 序列化测试 | 02 测试文件增加消息往返用例 |
 | 2026-11-02 | 实现 | T-02-3 完成：工具、模型、请求容器与不变量测试 | 引入 `typebox` 作为 llm 依赖 |
 | 2026-11-02 | 实现 | T-02-4 完成：公共导出、类型测试与 changelog | 课程 02 进入待验收 |
+| 2026-11-02 | 验收 | 用户确认课程 02 验收通过 | 课程 02 完成，进入课程 03 |
 
 ---
 
