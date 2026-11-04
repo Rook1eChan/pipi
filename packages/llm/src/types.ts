@@ -164,6 +164,31 @@ export interface AssistantMessage {
 	timestamp: number;
 }
 
+/**
+ * 流式事件协议。
+ *
+ * 成功流以 `start` 开头，经过若干块事件，以 `done` 结束。生成开始前的失败只发
+ * `error`，生成开始后的失败也以 `error` 结束。`partial` 是到该事件为止的完整消息，
+ * 由生产者原地修改，不是快照。`done` 与 `error` 是互斥的终止事件。
+ */
+export type AssistantMessageEvent =
+	| { type: "start"; partial: AssistantMessage }
+	| { type: "text_start"; contentIndex: number; partial: AssistantMessage }
+	| { type: "text_delta"; contentIndex: number; delta: string; partial: AssistantMessage }
+	| { type: "text_end"; contentIndex: number; content: string; partial: AssistantMessage }
+	| { type: "thinking_start"; contentIndex: number; partial: AssistantMessage }
+	| { type: "thinking_delta"; contentIndex: number; delta: string; partial: AssistantMessage }
+	| { type: "thinking_end"; contentIndex: number; content: string; partial: AssistantMessage }
+	| { type: "toolcall_start"; contentIndex: number; partial: AssistantMessage }
+	| { type: "toolcall_delta"; contentIndex: number; delta: string; partial: AssistantMessage }
+	| { type: "toolcall_end"; contentIndex: number; toolCall: ToolCall; partial: AssistantMessage }
+	| {
+			type: "done";
+			reason: Extract<StopReason, "stop" | "length" | "toolUse" | "deferred">; // Extract 表示取交集
+			message: AssistantMessage;
+	  }
+	| { type: "error"; reason: Extract<StopReason, "aborted" | "error">; error: AssistantMessage };
+
 /** 工具执行结果。通过 toolCallId 与助手消息中的 ToolCall 配对。 */
 export interface ToolResultMessage<TDetails = unknown> {
 	role: "toolResult";

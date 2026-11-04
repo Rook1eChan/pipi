@@ -23,6 +23,12 @@
 		"lineWidth": 120
 	},
 	"files": {
-		"includes": ["packages/*/src/**/*.ts", "packages/*/test/**/*.ts", "!**/node_modules", "!**/dist"]
+		"includes": [
+			"packages/*/src/**/*.ts",
+			"packages/*/test/**/*.ts",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/.ipynb_checkpoints"
+		]
 	}
 }
