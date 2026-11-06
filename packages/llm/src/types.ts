@@ -72,24 +72,6 @@ export interface ToolCall {
 	namespace?: string;
 }
 
-/**
- * provider 返回的延期响应句柄。
- *
- * 只在 stopReason 为 "deferred" 时出现。这里只定义形状，
- * 取回结果的方法由模型运行时提供。
- */
-export interface DeferredHandle {
-	provider: ProviderId;
-	modelId: string;
-	api: Api;
-	/** provider 侧的响应 id、任务 id 或批次行 id。 */
-	id: string;
-	expiresAt?: number;
-	pollAfterMs?: number;
-	/** 重建最终消息所需的 provider 数据。 */
-	data?: JsonValue;
-}
-
 /** 一次调用的 token 用量与折算费用。 */
 export interface UsageCost {
 	input: number;
@@ -114,7 +96,7 @@ export interface Usage {
 }
 
 /** 一次回复的结束原因。 */
-export type StopReason = "pending" | "stop" | "length" | "toolUse" | "error" | "aborted" | "deferred";
+export type StopReason = "pending" | "stop" | "length" | "toolUse" | "error" | "aborted";
 
 /** 诊断中的错误摘要。 */
 export interface DiagnosticErrorInfo {
@@ -155,8 +137,6 @@ export interface AssistantMessage {
 	diagnostics?: AssistantMessageDiagnostic[];
 	usage: Usage;
 	stopReason: StopReason;
-	/** stopReason 为 deferred 时的取件句柄。 */
-	deferred?: DeferredHandle;
 	errorMessage?: string;
 	rawStopReason?: string;
 	/** provider 是否明确结束了本轮。 */
@@ -184,7 +164,7 @@ export type AssistantMessageEvent =
 	| { type: "toolcall_end"; contentIndex: number; toolCall: ToolCall; partial: AssistantMessage }
 	| {
 			type: "done";
-			reason: Extract<StopReason, "stop" | "length" | "toolUse" | "deferred">; // Extract 表示取交集
+			reason: Extract<StopReason, "stop" | "length" | "toolUse">; // Extract 表示取交集
 			message: AssistantMessage;
 	  }
 	| { type: "error"; reason: Extract<StopReason, "aborted" | "error">; error: AssistantMessage };
@@ -277,7 +257,7 @@ export interface ThinkingBudgets {
 	high?: number;
 }
 
-/** 模型描述。它是数据，不是类。 */
+/** 模型描述。*/
 export interface Model<TApi extends Api = Api> {
 	id: string;
 	name: string;
@@ -302,11 +282,22 @@ export interface Context {
 	tools?: Tool[];
 }
 
+/** provider 作用域的环境变量覆盖；同名键优先于 process.env。 */
 export type ProviderEnv = Record<string, string>;
+
+/** 自定义请求头；值为 null 时抑制同名默认头。 */
 export type ProviderHeaders = Record<string, string | null>;
+
+/** 可注入的 fetch 实现，用于测试、代理或自定义网络层；不影响 WebSocket 传输。 */
 export type FetchFunction = typeof globalThis.fetch;
+
+/** 首选传输方式；不支持该选项的 provider 会忽略。 */
 export type Transport = "sse" | "websocket" | "websocket-cached" | "auto";
+
+/** 提示缓存保留偏好，由 provider 映射到自身支持的档位。 */
 export type CacheRetention = "none" | "short" | "long";
+
+/** 简单请求的工具选择策略；省略时由 provider 决定默认行为。 */
 export type ToolChoice = "auto" | "none";
 
 export interface ProviderResponse {

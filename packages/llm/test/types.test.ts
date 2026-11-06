@@ -1,12 +1,4 @@
-import type {
-	AssistantMessage,
-	DeferredHandle,
-	ImageContent,
-	Message,
-	ToolResultMessage,
-	Usage,
-	UserMessage,
-} from "@pipi/llm";
+import type { AssistantMessage, ImageContent, Message, ToolResultMessage, Usage, UserMessage } from "@pipi/llm";
 import { describe, expect, it } from "vitest";
 
 const usage: Usage = {
@@ -22,14 +14,6 @@ const image: ImageContent = {
 	type: "image",
 	data: "aGVsbG8=",
 	mimeType: "image/png",
-};
-
-const deferredHandle: DeferredHandle = {
-	provider: "openai",
-	modelId: "test-model",
-	api: "openai-responses",
-	id: "resp_1",
-	expiresAt: 123,
 };
 
 const user: UserMessage = {
@@ -73,8 +57,8 @@ describe("message types", () => {
 		expect(roundTrip[2].role).toBe("toolResult");
 	});
 
-	it("serializes images and deferred handles", () => {
-		const payload = { image, deferredHandle };
+	it("serializes images", () => {
+		const payload = { image };
 		expect(JSON.parse(JSON.stringify(payload))).toEqual(payload);
 	});
 

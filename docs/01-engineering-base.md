@@ -254,17 +254,17 @@ Pi 额外做了两件事：
 
 ## 3. 讨论与确认记录
 
-> 学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
+> 学习本课程时，问题、解释、讨论结论以及对 B 阶段的影响记录在此；已确认决策见 `BUILD_PLAN.md` 决策表。
 
 | 日期 | 类型 | 内容 | 对 B 的影响 |
 | --- | --- | --- | --- |
 | 2026-10-29 | 反馈 | 用户指出教程门槛过高，`monorepo`、`ESM` 等名词没有解释 | A 阶段新增 2.0 名词表；课程 00 新增零基础术语表 |
-| 2026-10-29 | 决策 | 后续课程首次出现术语时，先用一句话解释，再给类比或例子 | 写入 `AGENTS.md` 教学约定 |
+| 2026-10-29 | 讨论 | 术语解释方式 | 已写入 `AGENTS.md` 教学约定 |
 | 2026-10-29 | 讨论 | 确认测试跑源码、发布测 `dist` 是两层验证，不是二选一 | 2.5 补充发行层说明 |
 | 2026-10-29 | 讨论 | 澄清 Vitest 触发时机、build/test 的区别、CI 只测源码、dist 测试放在发布前 | 2.5 与术语表保持两层验证说明 |
 | 2026-10-29 | A 完成 | 用户确认读完 01 的 A 阶段 | 进入 B 讨论 |
 | 2026-10-29 | B 确认 | 用户确认 01 的 B 阶段；三项待确认按建议执行 | B 定稿，转入 BUILD_PLAN |
-| 2026-10-29 | 决策 | 采用五份包级 CHANGELOG；Agent 每次提交自行维护并总结；不建根 changelog、不加脚本/hook | 新增 T-01-5，范围限定为建 changelog 与规则 |
+| 2026-10-29 | 讨论 | 变更记录方案 | 见 `BUILD_PLAN.md` 决策表 |
 | 2026-10-29 | 实现 | T-01-1 完成：根 `package.json`、`.npmrc`、`package-lock.json`；首次无 lockfile 时 npm 10.9.3 解析 vitest 可选 peer 报 `edgesOut`，生成 lockfile 后 `npm ci` 正常 | 使用 `npm ci` 作为可重复安装命令，不启用 `legacy-peer-deps` |
 | 2026-10-29 | 实现 | T-01-2 完成：`tsconfig.base.json`、`tsconfig.json`、`biome.json`、`vitest.base.ts`；`tsconfig` 的 `include` 加入 `vitest.base.ts`，保证空包阶段也有输入 | 空包阶段也能执行 `tsc --showConfig`；Biome 忽略规则按 2.2+ 语法调整 |
 | 2026-10-29 | 实现 | T-01-3 完成：五个空包、workspace 链接、每包 `tsconfig.build.json` 与 `vitest.config.ts`；根 `build` 改为显式拓扑顺序 | 包间依赖固定为 llm ← agent ← harness，tui 独立，harness ← eval |
@@ -485,15 +485,9 @@ HOME="$root/home" XDG_CONFIG_HOME="$root/config" npm test
 | 测试 | `npm test` | smoke 测试通过 |
 | 包解析 | `node -e "import('@pipi/llm')"` | 不因 `exports` 报错 |
 
-### 4.10 决策记录
+> 本课相关决策见 `BUILD_PLAN.md` 决策表。
 
-| 项目 | 决策 | 状态 | 原因 | 影响 |
-| --- | --- | --- | --- | --- |
-| Biome | 原样实现（引入） | 已确认 | 格式化与 lint 成本低 | 01 使用 `biome.json` |
-| TypeScript 配置 | 简化实现（`NodeNext` 单配置） | 已确认 | 简化原项目 `Node16` + `NodeNext` 双配置 | 01 的 `tsconfig` |
-| 测试隔离 | 简化实现（先用 `os.tmpdir()`，脚本后置 25） | 已确认 | 避免测试读写真实 HOME | 01 测试 |
-
-### 4.11 变更记录
+### 4.10 变更记录
 
 - 五个包各维护 `packages/<pkg>/CHANGELOG.md`，只保留 `[Unreleased]` 段。
 - 分节：`Breaking Changes`、`Added`、`Changed`、`Fixed`、`Removed`。
@@ -503,7 +497,7 @@ HOME="$root/home" XDG_CONFIG_HOME="$root/config" npm test
 
 ---
 
-### 4.12 复现选项
+### 4.11 复现选项
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |

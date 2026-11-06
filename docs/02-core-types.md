@@ -464,7 +464,6 @@ totalTokens = input + output + cacheRead + cacheWrite
 | `toolUse` | 请求调用工具 | 执行工具并继续 |
 | `error` | 请求或解析失败 | 结束，错误已编码在消息里 |
 | `aborted` | 用户中止 | 结束，保留部分内容 |
-| `deferred` | provider 返回异步句柄 | 后续取回 |
 
 为什么错误不抛异常：
 
@@ -473,6 +472,9 @@ totalTokens = input + output + cacheRead + cacheWrite
 - 重试逻辑需要根据错误类型判断是否可重试
 
 所以错误是消息的一种状态，不是控制流异常。
+
+原项目还有一个 `deferred` 结束原因，表示 provider 先返回异步句柄、稍后再取结果。pipi 不实现该能力，见 `BUILD_PLAN.md` 决策表。
+
 
 **不变量**
 
@@ -596,13 +598,13 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 
 ## 3. 讨论与确认记录
 
-> 学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
+> 学习本课程时，问题、解释、讨论结论以及对 B 阶段的影响记录在此；已确认决策见 `BUILD_PLAN.md` 决策表。
 
 | 日期 | 类型 | 内容 | 对 B 的影响 |
 | --- | --- | --- | --- |
 | 2026-10-31 | 反馈 | 用户指出 A 阶段像类型词典，结构散 | 按请求生命周期重写为 2.1–2.11 |
 | 2026-10-31 | 讨论 | 课程主线改为“一次请求 + 一次工具回合” | B 4.3 的类型顺序同步调整 |
-| 2026-10-31 | 讨论 | `deferred` 在内置真实 provider 中没有实现，仅 `faux` 用于测试 | 保留枚举与 handle，方法后置 05 |
+| 2026-10-31 | 讨论 | deferred response 取舍 | 见 `BUILD_PLAN.md` 决策表 |
 | 2026-10-31 | B 确认 | 用户确认 02 B；只做类型与测试 | 写入 BUILD_PLAN |
 | 2026-10-31 | 实现 | T-02-1 完成：基础类型与内容块；类型导出通过 `dist/types.d.ts` 验证 | 无 |
 | 2026-11-02 | 实现 | T-02-2 完成：消息类型与 JSON 序列化测试 | 02 测试文件增加消息往返用例 |
@@ -660,7 +662,7 @@ types/
 4. 模型：`Model`、`ModelCost`、`ModelCostTier`
 5. 输出：`AssistantMessage`、`ThinkingContent`、`ToolCall`
 6. 结果：`ToolResultMessage`、`Usage`、`StopReason`
-7. 延期响应与基础别名：`DeferredHandle`、`Api`、`ProviderId`、`ThinkingLevel`
+7. 基础别名：`Api`、`ProviderId`、`ThinkingLevel`
 
 ### 4.4 关键不变量
 
@@ -683,7 +685,6 @@ types/
 | 跨 provider 归一化 `transformMessages` | 06 |
 | 流式事件 `AssistantMessageEvent` | 03 |
 | 图像生成 `ImagesModel` / `AssistantImages` | 08 |
-| `StreamOptions.deferred`、`fetchDeferred`、`cancelDeferred` | 05 |
 
 本课只定义数据形状与不变量，不实现这些行为。
 
@@ -692,7 +693,7 @@ types/
 | 原项目字段 | 建议 | 理由 |
 | --- | --- | --- |
 | `TextSignatureV1` / `thinkingSignature` | 保留 | 多轮回放需要；可以简化解析 |
-| `DeferredHandle` / `deferred` | 可后置 | 只有部分 provider 支持异步响应 |
+| `DeferredHandle` / `deferred` | 舍弃 | 原项目只有基础设施与 faux 测试，没有真实 provider 使用 |
 | `namespace` | 可后置 | 只有 OpenAI Responses 的动态工具使用 |
 | `cacheWrite1h` | 保留 | Anthropic 计费准确 |
 | `ModelCostTier` | 可后置 | 只有少数模型有阶梯计价 |
@@ -709,17 +710,9 @@ types/
 | usage 计算 | 给定 provider usage，计算 `totalTokens` 与 `cost` |
 | 不变量 | `reasoning <= output`、工具结果能匹配调用 |
 
-### 4.8 决策记录
+> 本课相关决策见 `BUILD_PLAN.md` 决策表。
 
-| 项目 | 决策 | 状态 | 原因 | 影响 |
-| --- | --- | --- | --- | --- |
-| `deferred` | 简化实现（保留枚举与句柄，方法后置 05） | 已确认 | 内置真实 provider 没有实现，仅 `faux` 测试 | 05 实现 `fetchDeferred` / `cancelDeferred` |
-| `compat` | 简化实现（先做 OpenAI Completions 最小子集） | 已确认 | 首个适配器是 OpenAI 兼容 | 05/06 增补 |
-| 图像 | 简化实现（保留输入，生成后置 08） | 已确认 | 先做图像输入 | 08 图像生成 |
-| 课程范围 | 简化实现（只做类型与测试） | 已确认 | 校验归 11、归一化归 06、事件归 03 | 02 任务 |
-| Provider 范围 | 简化实现（只做 OpenAI、Anthropic、DeepSeek 系列） | 已确认 | 控制复现范围 | 05/06 只实现这三类适配器 |
-
-### 4.9 复现选项
+### 4.8 复现选项
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |

@@ -26,7 +26,7 @@ pipi/
 | [AGENTS.md](AGENTS.md) | 开发规则：代码质量、提交与 Changelog、网络 |
 | [docs/LEARNING_PLAN.md](docs/LEARNING_PLAN.md) | 26 门课程的顺序、依赖、覆盖范围与学习状态 |
 | [docs/SOURCE_COVERAGE.md](docs/SOURCE_COVERAGE.md) | 原项目逐文件覆盖、模块职责与课程归属 |
-| [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) | 已确认 B 阶段转化出的构建任务 |
+| [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) | 项目决策表、已批准构建任务与验收状态 |
 
 已生成的课程：
 
@@ -59,6 +59,6 @@ pipi/
 - 课程 00：验收通过（约定类，无代码）。
 - 课程 01：验收通过。
 - 课程 02：验收通过；课程 03：验收通过。
-- 课程 04–25 尚未生成。
-- `BUILD_PLAN.md`：课程 01、02、03 任务全部已验收。
-- 复现代码：课程 02 类型层、课程 03 流式协议完成。
+- 课程 04：验收通过；课程 05–25 尚未生成。
+- `BUILD_PLAN.md`：课程 01–04 任务均已验收。
+- 复现代码：课程 01 骨架、02 类型层、03 流式协议、04 Provider 注册表完成。

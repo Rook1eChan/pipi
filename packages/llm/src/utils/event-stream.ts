@@ -13,6 +13,8 @@ class FifoQueue<T> {
 	get length(): number {
 		return this.incoming.length + this.outgoing.length;
 	}
+	// get定义一个访问器。虽然是一个函数，但是需要像属性一样调用
+	// queue.length √  queue.length() ×
 
 	enqueue(value: T): void {
 		this.incoming.push(value);

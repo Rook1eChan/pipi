@@ -153,7 +153,7 @@ for await (const event of stream) {
 1. `start` 最多出现一次，且在任何块事件之前
 2. 每个内容块先 `*_start`，再若干 `*_delta`，最后 `*_end`
 3. `done` 与 `error` 互斥，且是最后一个事件
-4. `done.reason` 只能是 `stop`、`length`、`toolUse`、`deferred`
+4. `done.reason` 只能是 `stop`、`length`、`toolUse`
 5. `error.reason` 只能是 `aborted`、`error`
 6. `contentIndex` 指向 `AssistantMessage.content` 数组中的位置，从 0 开始
 
@@ -256,7 +256,6 @@ text_end:     content = [{ type: "text", text: "流式" }]
 | 解析结果 | `partial.content[i].arguments` | 对象，可能缺字段 | 只能展示 |
 | 最终参数 | `toolcall_end.toolCall.arguments` | 对象 | 仍需 schema 校验 |
 
-原始文本不出现在任何事件里。`arguments` 在所有阶段都是对象，没有哪个事件返回 JSON 字符串。
 
 三个阶段对应三种形态：
 
@@ -383,7 +382,8 @@ stream.push({ type: "toolcall_end", contentIndex: index, toolCall: block, partia
 | `error` | 请求或流错误 | 结束循环，可能触发重试 |
 | `aborted` | 用户中止 | 结束循环，不重试 |
 | `pending` | 流尚未结束 | 只存在于中间态，最终消息中不出现 |
-| `deferred` | 由延迟通道完成 | 交给 deferred 机制处理 |
+
+原项目的 `deferred` 响应未在 pipi 实现，见 `BUILD_PLAN.md` 决策表。
 
 Agent 循环对失败状态的处理（`packages/agent/src/agent-loop.ts:109`）：
 
@@ -420,15 +420,6 @@ const executedToolBatch =
 
 但调用方期望立即拿到流对象。`lazyStream` 解决这个矛盾：先同步创建一个外层流并返回，再在后台执行初始化，把初始化结果转发到外层流。
 
-```ts
-streamSimple(model: Model<Api>, context: Context, options?: ModelsSimpleStreamOptions): AssistantMessageEventStream {
-	return lazyStream(model, async () => {
-		const provider = this.requireProvider(model);
-		const { requestModel, requestOptions } = await this.applyAuth(model, options);
-		return provider.streamSimple(requestModel, context, requestOptions as SimpleStreamOptions);
-	});
-}
-```
 
 ```ts
 function lazyStream(model, setup): AssistantMessageEventStream {
@@ -503,7 +494,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 ## 3. 讨论与确认记录
 
-> 学习本课程时，问题、解释、结论、已确认决策以及对 B 阶段的影响记录在此。
+> 学习本课程时，问题、解释、讨论结论以及对 B 阶段的影响记录在此；已确认决策见 `BUILD_PLAN.md` 决策表。
 
 | 日期 | 类型 | 内容 | 对 B 的影响 |
 | --- | --- | --- | --- |
@@ -516,7 +507,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 | 2026-11-03 | 讨论 | `lazyStream` 与 `startJob` 同构，差别在错误转成事件 | `lazyStream` 需覆盖 setup 的同步抛错 |
 | 2026-11-03 | 讨论 | `EventStream` 的两个 FIFO 队列是真实实现，内部用双数组摊还 | 实现需避免 `Array.shift` |
 | 2026-11-03 | 讨论 | SSE 属于传输层，与本课协议分层 | SSE 解析归入课程 04、05；本次不写入 A |
-| 2026-11-03 | 决策 | B 的十项实现决策逐条确认 | 见 4.8 决策记录 |
+| 2026-11-03 | B 确认 | 十项实现方案逐条确认 | 见 `BUILD_PLAN.md` 决策表 |
 | 2026-11-03 | B 确认 | 用户确认课程 03 B | T-03-1 至 T-03-5 写入 `BUILD_PLAN.md` |
 
 ---
@@ -542,7 +533,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 5. 结束时 `push(done)` + `end()`
 6. `catch`：设置 `stopReason`、`errorMessage`，`push(error)` + `end()`
 
-### 4.2 新项目文件清单
+### 4.2 新项目实现建议
 
 ```text
 packages/llm/src/
@@ -601,7 +592,7 @@ type AssistantMessageEvent =
   | { type: "toolcall_start"; contentIndex: number; partial: AssistantMessage }
   | { type: "toolcall_delta"; contentIndex: number; delta: string; partial: AssistantMessage }
   | { type: "toolcall_end"; contentIndex: number; toolCall: ToolCall; partial: AssistantMessage }
-  | { type: "done"; reason: "stop" | "length" | "toolUse" | "deferred"; message: AssistantMessage }
+  | { type: "done"; reason: "stop" | "length" | "toolUse"; message: AssistantMessage }
   | { type: "error"; reason: "aborted" | "error"; error: AssistantMessage };
 ```
 
@@ -661,39 +652,13 @@ type AssistantMessageEvent =
 | --- | --- | --- |
 | `thinking_*` 事件 | 保留 | 推理模型需要，不做后置 |
 | `toolcall_delta` | 保留 | 工具参数流式是核心体验 |
-| `deferred` | 保留类型，后置实现 | 目前只有 faux provider 使用 |
+| `deferred` | 舍弃 | 原项目只有基础设施与 faux 测试，pipi 不实现 |
 | `partial-json` | 引入 `0.1.7` | 前缀补全的边界多，自研成本高 |
 | `FifoQueue` 双数组 | 保留 | 两个数组加一次反转，摊还 O(1) |
 | 无背压 | 保留 | 对 LLM 流足够；课程中注明限制 |
 | `lazyApi` 动态导入 | 后置到 04 | 没有适配器就没有调用点 |
 
-### 4.8 决策记录
-
-| 项目 | 决策 | 状态 | 原因 | 影响 |
-| --- | --- | --- | --- | --- |
-| 事件类型位置 | 原样实现（`src/types.ts`） | 已确认 | 与原项目一致；事件依赖消息类型，同文件避免循环导入 | 03 扩充 02 的 `types.ts` |
-| `partial-json` | 原样实现（引入 `0.1.7`） | 已确认 | 前缀补全边界多，自研测试成本高 | 新增运行时依赖 |
-| 文件布局 | 原样实现（`src/api/lazy.ts`） | 已确认 | 与原项目一致，04 可直接扩展 | 03 新建 `api/` 目录 |
-| `EventStream` 泛型 | 原样实现（`<T, R>`） | 已确认 | 09 的 Agent 事件流可复用 | 多约 30 行实现 |
-| `lazyApi` | 后置到 04 | 已确认 | 没有适配器就没有调用点 | 03 只实现 `lazyStream` |
-| 事件序列校验 | 原样实现（不提供校验器） | 已确认 | 原项目没有校验器，测试按用例断言 | 适配器正确性依赖测试 |
-| 中止测试 | 简化实现（手工 push `aborted`） | 已确认 | 真实 `AbortSignal` 接线属于 05 | 03 只验证事件与结果提取 |
-| 解析回退层级 | 重新设计（三步） | 已确认 | 原顺序中原文部分解析返回空对象会短路，修复级不可达 | 与参考实现行为不同，测试固定新顺序 |
-| 思考事件 | 保留 | 已确认 | 推理模型需要 | 协议包含 `thinking_*` |
-| `lazyStream` | 原样实现 | 已确认 | 初始化失败也进入流协议 | 影响流初始化 |
-| `fetchDeferred` | 后置到 05 | 已确认 | 本课只做事件流 | 不影响 03 范围 |
-
-### 4.9 复现选项
-
-| 选项 | 说明 | 建议 |
-| --- | --- | --- |
-| 完整事件协议 | 文本+思考+工具 | 推荐 |
-| 只做文本 | 最简单 | 不推荐：工具参数无法流式 |
-| 用 `AsyncGenerator` | 少写一个类 | 不推荐：拿不到 `result()`，错误时机差 |
-| 有背压 | 更通用 | 可选；LLM 场景不需要 |
-| 错误抛异常 | 简单 | 不推荐：UI 会丢部分内容 |
-
-### 4.10 实现顺序与验收
+### 4.8 实现顺序与验收
 
 | 任务 | 内容 | 文件 | 验收 |
 | --- | --- | --- | --- |
@@ -704,3 +669,14 @@ type AssistantMessageEvent =
 | T-03-5 | 补齐导出、changelog 与全量验证 | `src/index.ts`、`CHANGELOG.md` | `npm run build`、`npm test`、`tsc --noEmit`、`biome check .` 通过 |
 
 依赖顺序：T-03-1 → T-03-2 → T-03-3 → T-03-4 → T-03-5。T-03-2 与 T-03-3 之间没有耦合，可以交换，按表中顺序执行便于逐项验证。
+> 本课相关决策见 `BUILD_PLAN.md` 决策表。
+
+### 4.9 复现选项
+
+| 选项 | 说明 | 建议 |
+| --- | --- | --- |
+| 完整事件协议 | 文本+思考+工具 | 推荐 |
+| 只做文本 | 最简单 | 不推荐：工具参数无法流式 |
+| 用 `AsyncGenerator` | 少写一个类 | 不推荐：拿不到 `result()`，错误时机差 |
+| 有背压 | 更通用 | 可选；LLM 场景不需要 |
+| 错误抛异常 | 简单 | 不推荐：UI 会丢部分内容 |
