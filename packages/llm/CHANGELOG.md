@@ -21,6 +21,9 @@
 - 新增模型目录压平与 OpenAI、Anthropic、DeepSeek 最小目录。
 - 新增 `ModelsStore` 与动态刷新合并。
 - 新增 faux provider，以及注册表、认证、刷新测试。
+- 新增 context 用量估算：`estimateContextTokens`、`estimateMessageTokens`、`getUsageTokens`。
+- 新增 `simple-options`：`buildBaseOptions`、`clampMaxTokensToContext` 与思考预算计算。
+- 新增 OpenAI Chat Completions 消息与工具转换：`convertMessages`、`convertTools`、`resolveCompat`。
 
 ### Changed
 

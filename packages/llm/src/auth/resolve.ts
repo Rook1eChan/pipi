@@ -64,10 +64,10 @@ export async function resolveProviderAuth(
 ): Promise<AuthResult | undefined> {
 	const signal = operationSignal(overrides?.signal);
 	signal.throwIfAborted();
-	// 临时环境变量overrides
+	// 如果有临时环境变量，就在authContext上叠加一层
 	const ctx = overrides?.env ? overlayEnv(authContext, overrides.env) : authContext;
 
-	// 显式 apiKey 优先级最高：合成一个临时凭据，不读取存储。
+	// 如果调用方传了 apiKey，不读取存储。
 	if (overrides?.apiKey !== undefined && provider.auth.apiKey) {
 		return provider.auth.apiKey.resolve({
 			ctx,
@@ -76,7 +76,7 @@ export async function resolveProviderAuth(
 		});
 	}
 
-	// 读取存储凭据；存储失败属于认证基础设施错误，包装成 ModelsError("auth")。
+	// 读取credential的存储
 	let stored: Credential | undefined;
 	try {
 		stored = await credentials.read(provider.id, { signal });

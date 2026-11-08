@@ -1,4 +1,5 @@
 export * from "./api/lazy.ts";
+export * from "./api/simple-options.ts";
 export * from "./auth/helpers.ts";
 export * from "./auth/resolve.ts";
 export * from "./auth/types.ts";
@@ -10,5 +11,6 @@ export * from "./providers/catalog/deepseek.ts";
 export * from "./providers/catalog/openai.ts";
 export * from "./providers/faux.ts";
 export * from "./types.ts";
+export * from "./utils/estimate.ts";
 export * from "./utils/event-stream.ts";
 export * from "./utils/json-parse.ts";

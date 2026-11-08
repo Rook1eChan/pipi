@@ -57,7 +57,7 @@ export interface ProviderStreams {
 	streamSimple(model: Model<Api>, context: Context, options?: SimpleStreamOptions): AssistantMessageEventStream;
 }
 
-/** 一个 provider 的完整运行时描述。 */
+/** provider 不是类。通过createProvider 生成 */
 export interface Provider<TApi extends Api = Api> {
 	readonly id: string;
 	readonly name: string;
@@ -78,23 +78,51 @@ export interface Provider<TApi extends Api = Api> {
 
 /** provider 集合与请求入口。 */
 export interface Models {
+	/** 列出所有已注册的 provider。 */
 	getProviders(): readonly Provider[];
+
+	/** 按 id 查找 provider。 */
 	getProvider(id: string): Provider | undefined;
+
+	/** 列出模型；传入 provider id 时只返回该 provider 的模型。 */
 	getModels(provider?: string): readonly Model<Api>[];
+
+	/** 按 provider id 与模型 id 查找模型。 */
 	getModel(provider: string, id: string): Model<Api> | undefined;
+
+	/** 列出可用模型：没有 credential 的 provider 返回空，其余经 `filterModels` 过滤。 */
 	getAvailable(providerId?: string): Promise<readonly Model<Api>[]>;
+
+	/** 解析某个 provider 要用的 credential。 */
 	getAuth(providerId: string, overrides?: AuthResolutionOverrides): Promise<AuthResult | undefined>;
+
+	/** 解析某个模型所属 provider 要用的 credential。 */
 	getAuth(model: Model<Api>, overrides?: AuthResolutionOverrides): Promise<AuthResult | undefined>;
+
+	/** 用 provider 原生完整参数发起 streaming 请求。 */
 	stream<TApi extends Api>(model: Model<TApi>, context: Context, options?: StreamOptions): AssistantMessageEventStream;
+
+	/** 用 provider 无关的统一参数发起 streaming 请求。 */
 	streamSimple(model: Model<Api>, context: Context, options?: SimpleStreamOptions): AssistantMessageEventStream;
+
+	/** `stream` 的便捷封装：等整条回复结束后返回最终消息。 */
 	complete<TApi extends Api>(model: Model<TApi>, context: Context, options?: StreamOptions): Promise<AssistantMessage>;
+
+	/** `streamSimple` 的便捷封装：等整条回复结束后返回最终消息。 */
 	completeSimple(model: Model<Api>, context: Context, options?: SimpleStreamOptions): Promise<AssistantMessage>;
+
+	/** 刷新声明了 `refreshModels` 的 provider；单个失败记入返回值的 errors，不抛出。 */
 	refresh(options?: ModelsRefreshOptions): Promise<ModelsRefreshResult>;
 }
 
 export interface MutableModels extends Models {
+	/** 按 provider id 新增或替换 provider。 */
 	setProvider(provider: Provider): void;
+
+	/** 移除指定 provider 及其模型。 */
 	deleteProvider(id: string): void;
+
+	/** 清空所有 provider。 */
 	clearProviders(): void;
 }
 
@@ -117,6 +145,7 @@ export interface CreateProviderOptions<TApi extends Api = Api> {
 	api: ProviderStreams | Partial<Record<TApi, ProviderStreams>>;
 }
 
+// 合并两个 headers 对象，override 优先
 function mergeHeaders(
 	base: ProviderHeaders | undefined,
 	override: ProviderHeaders | undefined,
@@ -211,6 +240,11 @@ class ModelsImpl implements MutableModels {
 		return checks.flat();
 	}
 
+	// 方法重载：实际只有一个实现，前两个签名只是看起来更清楚
+	/**
+	 * 按 provider id 解析 provider 范围内的认证；若传入的是 model，则解析 provider 认证并附加该 model 的静态 headers。结果包含一个 source 标签，供状态 UI 使用。
+	 * 当 provider 未知或未配置时，解析为 undefined。
+	 */
 	getAuth(providerId: string, overrides?: AuthResolutionOverrides): Promise<AuthResult | undefined>;
 	getAuth(model: Model<Api>, overrides?: AuthResolutionOverrides): Promise<AuthResult | undefined>;
 	async getAuth(
@@ -221,6 +255,7 @@ class ModelsImpl implements MutableModels {
 		const provider = this.providers.get(providerId);
 		if (!provider) return undefined;
 		const result = await resolveProviderAuth(provider, this.credentials, this.authContext, overrides);
+		//
 		if (!result || typeof providerOrModel === "string" || !providerOrModel.headers) return result;
 		return {
 			...result,
@@ -313,11 +348,13 @@ class ModelsImpl implements MutableModels {
 		return provider;
 	}
 
+	// 认证provider
 	private async applyAuth(
 		model: Model<Api>,
 		options?: StreamOptions,
 	): Promise<{ requestModel: Model<Api>; requestOptions: StreamOptions }> {
 		this.requireProvider(model);
+		// 认证provider
 		const resolution = await this.getAuth(model, {
 			apiKey: options?.apiKey,
 			env: options?.env,
@@ -342,7 +379,8 @@ export function createModels(options?: CreateModelsOptions): MutableModels {
 	return new ModelsImpl(options);
 }
 
-/** 从部件构造 provider。支持静态模型、动态覆盖与按 API 分派。 */
+/** 构造 provider。*/
+// input: ProviderStreams | Partial<Record<TApi, ProviderStreams>>，一个流或者流的映射表
 export function createProvider<TApi extends Api = Api>(input: CreateProviderOptions<TApi>): Provider<TApi> {
 	const baselineModels = input.models;
 	let dynamicModels: readonly Model<TApi>[] = [];
@@ -356,11 +394,19 @@ export function createProvider<TApi extends Api = Api>(input: CreateProviderOpti
 		}
 		return merged;
 	};
+	// candidate = input.api
 	const candidate = input.api as ProviderStreams;
+
+	// 如果input.api是流（自带.stream），single就等于流
 	const single = typeof candidate.stream === "function" ? candidate : undefined;
+
+	// 如果single为空，说明input是映射表，byApi等于映射表
 	const byApi = single ? undefined : (input.api as Partial<Record<string, ProviderStreams>>);
+
+	// 返回model对应的流
 	const apiFor = (model: Model<Api>): ProviderStreams | undefined => single ?? byApi?.[model.api];
 
+	// 找到model对应的streams，然后根据run运行
 	const dispatch = (
 		model: Model<Api>,
 		run: (streams: ProviderStreams) => AssistantMessageEventStream,
@@ -411,6 +457,8 @@ export function createProvider<TApi extends Api = Api>(input: CreateProviderOpti
 		filterModels: input.filterModels,
 		stream: (model, context, options) =>
 			dispatch(model as Model<Api>, (streams) => streams.stream(model as Model<Api>, context, options)),
+
+		// 返回符合model的api格式的流
 		streamSimple: (model, context, options) =>
 			dispatch(model as Model<Api>, (streams) => streams.streamSimple(model as Model<Api>, context, options)),
 	};

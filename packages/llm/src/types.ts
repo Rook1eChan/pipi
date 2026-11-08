@@ -275,7 +275,7 @@ export interface Model<TApi extends Api = Api> {
 	compat?: TApi extends "openai-completions" ? OpenAICompletionsCompat : never;
 }
 
-/** 一次模型请求的输入。 */
+/** 一次请求的context */
 export interface Context {
 	systemPrompt?: string;
 	messages: Message[];
@@ -305,28 +305,90 @@ export interface ProviderResponse {
 	headers: Record<string, string>;
 }
 
-/** 请求相关的通用选项。 */
+/**
+ * 各个provider都有的基础请求参数，不一定全部使用。
+ * 各个provider还有一些含义相同命名不同的参数，比如比如thinkeffort/thinking，这里不包括。
+ */
 export interface StreamOptions {
 	signal?: AbortSignal;
 	apiKey?: string;
+	/**
+	 * 可选的 fetch 实现，用于 provider 的 HTTP 请求。
+	 * 默认使用 `globalThis.fetch`。无法注入自定义实现的 adapter 可能拒绝该选项。
+	 * 该选项不影响 WebSocket transport。
+	 */
 	fetch?: FetchFunction;
+	/**
+	 * provider 作用域的环境变量。用于区域设置、端点占位符、代理变量等 provider 配置时，
+	 * 优先于 process.env。
+	 */
 	env?: ProviderEnv;
+	/**
+	 * 可选回调：发送前检查或替换 provider 的 payload。
+	 * 返回 undefined 表示保持 payload 不变。
+	 */
 	onPayload?: (payload: unknown, model: Model<Api>) => unknown | undefined | Promise<unknown | undefined>;
+	/**
+	 * 可选回调：收到 HTTP 响应后、消费其 body 流之前调用。
+	 */
 	onResponse?: (response: ProviderResponse, model: Model<Api>) => void | Promise<void>;
+	/**
+	 * 可选的自定义 HTTP 请求头。
+	 * 与 provider 默认头合并，调用方传入的值覆盖默认值。
+	 * null 值会抑制同名的 provider/API 默认头。
+	 */
 	headers?: ProviderHeaders;
+	/**
+	 * HTTP 请求超时，单位毫秒，仅对支持该选项的 provider/SDK 生效。
+	 * 例如 OpenAI 与 Anthropic 的 SDK 客户端默认 10 分钟。
+	 */
 	timeoutMs?: number;
+	/**
+	 * 客户端重试的最大次数，仅对支持该选项的 provider/SDK 生效。
+	 * 例如 OpenAI 与 Anthropic 的 SDK 客户端默认 2 次。
+	 */
 	maxRetries?: number;
+	/**
+	 * 服务端要求较长等待时，重试的最大延迟，单位毫秒。
+	 * 超过该值时请求立即失败，并在错误中带上服务端要求的延迟，
+	 * 由上层重试逻辑带用户提示地处理。
+	 * 默认 60000（60 秒）。设为 0 关闭上限。
+	 */
 	maxRetryDelayMs?: number;
 	temperature?: number;
+	/**
+	 * 任意采样参数，原样合并进请求体，位置在具名字段之后，因此同名键会覆盖它们。
+	 * 用于让自定义 OpenAI 兼容服务（llama.cpp、vLLM、SGLang 等）收到 pi 未建模的参数，
+	 * 例如 `top_p`、`top_k`、`min_p`、`repetition_penalty`。
+	 * 按 key 覆盖 `Model.samplingParams`。仅 OpenAI 兼容 adapter 会应用；其它 API 忽略该选项。
+	 */
 	samplingParams?: Record<string, unknown>;
 	maxTokens?: number;
+	/**
+	 * 支持多种 transport 的 provider 的首选 transport。
+	 * 不支持该选项的 provider 会忽略它。
+	 */
 	transport?: Transport;
+	/**
+	 * prompt cache 的保留偏好。provider 会把它映射成自己支持的值。
+	 * 默认 "short"。
+	 */
 	cacheRetention?: CacheRetention;
+	/**
+	 * 可选的 session 标识，供支持基于 session 缓存的 provider 使用。
+	 * provider 可用它启用 prompt cache、请求路由或其它与 session 相关的特性。
+	 * 不支持该选项的 provider 会忽略它。
+	 */
 	sessionId?: string;
+	/**
+	 * 附加到 API 请求的可选 metadata。
+	 * provider 提取自己理解的字段，忽略其余内容。
+	 * 例如 Anthropic 用 `user_id` 做滥用追踪和限流。
+	 */
 	metadata?: Record<string, unknown>;
 }
 
-/** 统一思考档位与工具选择的简单请求选项。 */
+/** 把各家provider不同的字段做一个统一接口。上层调用不需要考虑provider的特有字段 */
 export interface SimpleStreamOptions extends StreamOptions {
 	toolChoice?: ToolChoice;
 	reasoning?: ThinkingLevel;
