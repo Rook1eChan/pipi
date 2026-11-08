@@ -18,10 +18,10 @@
 | 源码 | 你亲手写的 `.ts` 文件 | 菜谱手稿 |
 | 运行时 | 真正执行代码的程序，本课程是 Node.js | 厨房 |
 | Node.js | 让 JavaScript 能在浏览器之外运行的环境 | 一间通用厨房 |
-| 包（package） | 一个带 `package.json` 的代码目录，可以被安装、被引用 | 一盒配好的食材 |
-| 依赖（dependency） | A 的代码用到 B，就说 A 依赖 B | 做菜要用到盐 |
-| 模块（module） | 一个文件，通过 `import` / `export` 提供或使用能力 | 一个独立的功能抽屉 |
-| 仓库（repository） | 一个受 Git 管理的项目目录 | 一个带版本记录的储物间 |
+| package | 一个带 `package.json` 的代码目录，可以被安装、被引用 | 一盒配好的食材 |
+| dependency | A 的代码用到 B，就说 A 依赖 B | 做菜要用到盐 |
+| module | 一个文件，通过 `import` / `export` 提供或使用能力 | 一个独立的功能抽屉 |
+| repository | 一个受 Git 管理的项目目录 | 一个带版本记录的储物间 |
 | monorepo | 一个仓库里放多个包 | 一栋楼里有多间工作室 |
 | workspace | npm 管理 monorepo 多包的机制 | 楼里的门牌号系统 |
 | TypeScript | 带类型标注的 JavaScript | 带尺寸标注的图纸 |
@@ -36,7 +36,7 @@
 | API | 程序对外提供的调用接口 | 餐厅菜单 |
 | CLI | 命令行程序，靠输入文字使用 | 对讲机点单 |
 | TUI | 终端里的图形界面 | 对讲机上加了一块小屏幕 |
-| harness | 把模型、循环、工具、会话组装成可运行产品的产品层 | 把厨房、食材、菜谱组装成一家餐厅 |
+| harness | 把模型、循环、工具、session 组装成可运行产品的产品层 | 把厨房、食材、菜谱组装成一家餐厅 |
 
 ### 0.2 模型与 Agent 类
 
@@ -46,13 +46,13 @@
 | Agent | 会反复"问模型 → 用工具 → 再问模型"的程序 | 会自己尝味、加料、再尝的厨师 |
 | provider | 提供模型服务的厂商或服务 | 食材供应商 |
 | token | 模型计算长度和费用的单位，约等于一小段文字 | 按克计价的食材 |
-| 上下文窗口 | 模型一次最多能看多少 token | 砧板的大小 |
-| 流式（streaming） | 边生成边返回，而不是等全部生成完 | 边炒边上菜 |
+| context window | 模型一次最多能看多少 token | 砧板的大小 |
+| streaming | 边生成边返回，而不是等全部生成完 | 边炒边上菜 |
 | 工具（tool） | Agent 能调用的函数，比如读文件、执行命令 | 厨房里的锅和刀 |
-| 会话（session） | 一次持续对话的完整记录 | 一本点菜单 |
-| 压缩（compaction） | 上下文快满时，把旧历史总结成短文本 | 把剩菜做成高汤 |
-| 扩展（extension） | 给程序额外加功能的插件 | 给厨房加一台新机器 |
-| 系统提示（system prompt） | 每次对话前固定告诉模型的规则 | 厨房墙上贴的操作规范 |
+| session | 一次持续对话的完整记录 | 一本点菜单 |
+| compaction | context 快满时，把旧历史总结成短文本 | 把剩菜做成高汤 |
+| extension | 给程序额外加功能的插件 | 给厨房加一台新机器 |
+| system prompt | 每次对话前固定告诉模型的规则 | 厨房墙上贴的操作规范 |
 
 ---
 
@@ -62,7 +62,7 @@
 
 1. 编码 Agent 的能力组成。
 2. 能力之间的依赖关系，以及最小可运行系统的形态。
-3. 课程顺序的设计依据：类型 → 流协议 → 模型接入 → Agent 循环 → 工具 → 会话 → 编排 → TUI，而不是照原仓库目录逐个文件讲解。
+3. 课程顺序的设计依据：类型 → streaming 协议 → 模型接入 → Agent 循环 → 工具 → session → 编排 → TUI，而不是照原仓库目录逐个文件讲解。
 
 本篇不涉及具体实现，只建立地图。后续每门课程都是这张地图上的一个坐标。
 
@@ -79,10 +79,10 @@
 | 模型接入 | 不同厂商的 API 形状不同（OpenAI、Anthropic、DeepSeek…） | 每换一个模型就要改一遍业务代码 |
 | 循环控制 | 模型要求调用工具，工具结果要回填，然后再问模型 | 只能一问一答，不能完成多步任务 |
 | 工具执行 | 读写文件、运行命令、搜索代码，并保证安全与可回滚 | Agent 只能"说"，不能"做" |
-| 上下文管理 | 对话会超过上下文窗口，需要压缩、分支、恢复 | 长任务中途崩溃或丢失历史 |
+| context 管理 | 对话会超过 context window，需要 compaction、分支、恢复 | 长任务中途崩溃或丢失历史 |
 | 交互与集成 | 终端 UI、一次性输出、RPC、SDK | 只能手动调用，无法嵌入工作流 |
 
-Pi 的定位是一个"最小终端编码 harness"：核心保持小，能力通过扩展、技能、提示模板和包来扩展。这个定位直接决定了它的包划分。
+Pi 的定位是一个"最小终端编码 harness"：核心保持小，能力通过 extension、skill、prompt 模板和包来扩展。这个定位直接决定了它的包划分。
 
 ### 2.2 五个包的职责
 
@@ -103,11 +103,11 @@ Pi 的定位是一个"最小终端编码 harness"：核心保持小，能力通�
 
 | 包 | 职责 | 不负责什么 |
 | --- | --- | --- |
-| `pi-ai` | 消息/模型/工具类型、provider 注册、流式协议、API 适配、认证、图像 | 不知道"Agent"，不执行工具 |
-| `pi-agent-core` | 循环、事件、工具执行语义、消息队列、中止 | 不知道文件系统，不知道 CLI |
-| `pi-tui` | 终端能力、布局、组件、编辑器、按键 | 不知道 LLM，不知道会话 |
-| `pi-coding-agent` | CLI、会话、内置工具、压缩、扩展、模式、主题 | 不重复实现底层协议 |
-| `pi-evals` | 文档与扩展示例的冒烟评测 | 不参与运行时 |
+| `pi-ai` | 消息/模型/工具类型、provider 注册、streaming 协议、API 适配、认证、图像 | 不知道"Agent"，不执行工具 |
+| `pi-agent-core` | 循环、event、工具执行语义、消息队列、中止 | 不知道文件系统，不知道 CLI |
+| `pi-tui` | 终端能力、布局、组件、编辑器、按键 | 不知道 LLM，不知道 session |
+| `pi-coding-agent` | CLI、session、内置工具、compaction、extension、模式、主题 | 不重复实现底层协议 |
+| `pi-evals` | 文档与 extension 示例的冒烟评测 | 不参与运行时 |
 
 关键设计：**依赖是单向的**。`ai` 不知道 `agent`，`tui` 不知道 `ai`。产品层负责把三者粘起来。这让每个包都可以独立测试，也让课程可以逐层推进。
 
@@ -125,7 +125,7 @@ cli.ts                 进程环境初始化（PI_CODING_AGENT、AI_AGENT、HTTP
 main.ts                解析参数 → 选择模式 → 创建 AgentSessionRuntime
   │
   ▼
-AgentSession.submitUserInput()  组装消息、系统提示、工具列表；写入会话
+AgentSession.submitUserInput()  组装消息、系统提示、工具列表；写入 session
   │
   ▼
 Agent.prompt()         状态检查 → 启动一次 run
@@ -134,18 +134,18 @@ Agent.prompt()         状态检查 → 启动一次 run
 runAgentLoop()         ┌──────────────────────────────────────────┐
   │                    │ 1. 取 steering 队列                       │
   │                    │ 2. convertToLlm：AgentMessage → Message   │
-  │                    │ 3. streamSimple：调模型，消费增量事件      │
+  │                    │ 3. streamSimple：调模型，消费增量 event      │
   │                    │ 4. 若有 toolCall：校验参数 → 执行工具      │
   │                    │ 5. 工具结果回填 → 回到 2                   │
   │                    └──────────────────────────────────────────┘
   ▼
-Models.streamSimple()  解析认证 → 选择 provider → 调用 API 适配器
+Models.streamSimple()  解析认证 → 选择 provider → 调用 API adapter
   │
   ▼
-openai-completions     发请求 → 解析 SSE → push 事件 → done/error
+openai-completions     发请求 → 解析 SSE → push event → done/error
   │
   ▼
-事件回流               AgentEvent → AgentSession → 会话落盘 / 扩展 / UI
+event 回流               AgentEvent → AgentSession → session 落盘 / extension / UI
   │
   ▼
 TUI 或 print 输出
@@ -155,7 +155,7 @@ TUI 或 print 输出
 
 - `Agent` 只要求一个 `StreamFn`，不知道它是 OpenAI 还是 Anthropic
 - `runAgentLoop` 只要求工具满足 `AgentTool`，不知道 read/edit/bash 的区别
-- `AgentSession` 只要求事件，不知道 UI 是 TUI 还是 RPC
+- `AgentSession` 只要求 event，不知道 UI 是 TUI 还是 RPC
 
 ### 2.4 构建顺序的设计依据
 
@@ -165,16 +165,16 @@ TUI 或 print 输出
 | --- | --- | --- |
 | 1 | 工程基座 | 代码无法编译、测试、运行 |
 | 2 | 类型层 | 各层对"消息长什么样"没有共识，无法组合 |
-| 3 | 流式协议 | 只能等完整回复，无法显示进度，工具参数无法边生成边解析 |
-| 4 | Provider + 适配器 | 无法真正调用模型 |
+| 3 | streaming 协议 | 只能等完整回复，无法显示进度，工具参数无法边生成边解析 |
+| 4 | Provider + adapter | 无法真正调用模型 |
 | 5 | Agent 循环 | 无法把模型和工具串起来 |
 | 6 | 工具层 | Agent 无法真正读写代码 |
-| 7 | 会话与上下文 | 无法保存、恢复、压缩长对话 |
+| 7 | session 与 context | 无法保存、恢复、对长对话做 compaction |
 | 8 | 应用编排 | 无法作为 CLI 使用，也无法嵌入其他程序 |
 | 9 | TUI | 只能用一次性模式，没有交互体验 |
 | 10 | 工程设施 | 无法发布、回归、维护 |
 
-注意：**这不是原仓库的目录顺序**。原仓库把 `ai` 的 142 个文件（含生成文件）平铺在一起，课程则把它拆成"类型 → 流协议 → 注册表 → 适配器 → 认证"五步，因为后者才是从零构建的认知顺序。
+注意：**这不是原仓库的目录顺序**。原仓库把 `ai` 的 142 个文件（含生成文件）平铺在一起，课程则把它拆成"类型 → streaming 协议 → registry → adapter → 认证"五步，因为后者才是从零构建的认知顺序。
 
 ### 2.5 一个最小可运行系统
 
@@ -182,21 +182,21 @@ TUI 或 print 输出
 
 - 一个 `Models` 实例，注册了至少一个 provider
 - 一个 `Agent`，配置了模型、系统提示、工具
-- 一个循环：模型回复 → 工具调用 → 结果回填 → 再回复
-- 一个事件消费者：把增量文本打到 stdout
+- 一个循环：模型回复 → tool call → 结果回填 → 再回复
+- 一个 event 消费者：把增量文本打到 stdout
 - 一个 faux provider：测试时不访问真实 API
 
-这时还没有：会话持久化、压缩、扩展、TUI、CLI 参数。它们都是"让最小系统变成产品"的增量，而不是重写。
+这时还没有：session 持久化、compaction、extension、TUI、CLI 参数。它们都是"让最小系统变成产品"的增量，而不是重写。
 
 ### 2.6 设计取舍
 
 | 问题 | 常见做法 | Pi 的选择 | 取舍 |
 | --- | --- | --- | --- |
-| 多 provider | 每个 provider 一套消息类型 | 统一 `Message`，适配器负责转换 | 前期类型设计成本高，后期扩展便宜 |
-| 流式输出 | 回调 / Promise / 事件流 | `AsyncIterable` 事件流 + 最终结果 Promise | 消费端既能 `for await` 又能 `await result()` |
-| 错误处理 | 抛异常 | 错误编码进流事件，循环不中断 | 调用方必须检查 `stopReason`，但 UI 不会丢事件 |
+| 多 provider | 每个 provider 一套消息类型 | 统一 `Message`，adapter 负责转换 | 前期类型设计成本高，后期扩展便宜 |
+| streaming 输出 | 回调 / Promise / event stream | `AsyncIterable` event stream + 最终结果 Promise | 消费端既能 `for await` 又能 `await result()` |
+| 错误处理 | 抛异常 | 错误编码进 stream event，循环不中断 | 调用方必须检查 `stopReason`，但 UI 不会丢 event |
 | 工具执行 | 框架内置固定工具 | 工具是普通对象，由产品层注入 | Agent 核心与文件系统解耦 |
-| 上下文压缩 | 截断旧消息 | 摘要 + 保留最近轮次 + 分支摘要 | 复杂，但长任务可继续 |
+| context compaction | 截断旧消息 | 摘要 + 保留最近轮次 + 分支摘要 | 复杂，但长任务可继续 |
 | UI | 直接写终端 | 独立 TUI 包 + 组件树 + 差分渲染 | 学习曲线陡，但可测试、可复用 |
 
 ---
@@ -211,11 +211,11 @@ TUI 或 print 输出
 
 本课的核心结论：
 
-1. 编码 Agent 至少包含模型接入、循环控制、工具执行、上下文管理和交互集成五类能力。
+1. 编码 Agent 至少包含模型接入、循环控制、工具执行、context 管理和交互集成五类能力。
 2. 五个包按单向依赖组织：`llm` ← `agent` ← `harness`，`tui` 独立，`eval` 依赖产品层。
-3. 一次请求从 CLI 进入，经过会话编排、Agent 循环、模型适配，再通过事件回流到界面。
-4. 课程顺序由构建依赖决定，先有类型和协议，再有循环、工具、会话和界面。
-5. 最小可运行系统只需要模型、循环、工具和事件消费者，其余能力都是产品化增量。
+3. 一次请求从 CLI 进入，经过 session 编排、Agent 循环、模型适配，再通过 event 回流到界面。
+4. 课程顺序由构建依赖决定，先有类型和协议，再有循环、工具、session 和界面。
+5. 最小可运行系统只需要模型、循环、工具和 event 消费者，其余能力都是产品化增量。
 
 ---
 
@@ -253,13 +253,13 @@ TUI 或 print 输出
 
 | 原项目包 | 新包名 | 目录 | 职责 |
 | --- | --- | --- | --- |
-| `pi-ai` | `@pipi/llm` | `packages/llm` | 统一 LLM 层：类型、流协议、provider、认证 |
+| `pi-ai` | `@pipi/llm` | `packages/llm` | 统一 LLM 层：类型、streaming 协议、provider、认证 |
 | `pi-agent-core` | `@pipi/agent` | `packages/agent` | Agent 循环、状态、工具执行 |
 | `pi-tui` | `@pipi/tui` | `packages/tui` | 终端渲染、布局、组件、编辑器 |
-| `pi-coding-agent` | `@pipi/harness` | `packages/harness` | 产品组装层：CLI、会话、工具、模式、扩展 |
+| `pi-coding-agent` | `@pipi/harness` | `packages/harness` | 产品组装层：CLI、session、工具、模式、extension |
 | `pi-evals` | `@pipi/eval` | `packages/eval` | 评测（骨架阶段只建占位包） |
 
-`harness` 指把 LLM、Agent 循环、工具、会话、运行模式与扩展组装成可运行产品的产品层；它不实现模型协议，也不实现 Agent 循环。
+`harness` 指把 LLM、Agent 循环、工具、session、运行模式与 extension 组装成可运行产品的产品层；它不实现模型协议，也不实现 Agent 循环。
 
 ```text
 pipi/
@@ -323,11 +323,11 @@ pipi/
 | 阶段 | 课程 | 产出 |
 | --- | --- | --- |
 | 1 | 01 | 根配置、五个空包、测试基线 |
-| 2 | 02–03 | 类型层与流式协议 |
-| 3 | 04–08 | Provider、适配器、认证、图像 |
+| 2 | 02–03 | 类型层与 streaming 协议 |
+| 3 | 04–08 | Provider、adapter、认证、图像 |
 | 4 | 09–13 | Agent 循环、工具执行与治理 |
-| 5 | 14–16 | 会话、上下文装载、压缩 |
-| 6 | 17–21 | CLI、会话编排、运行模式、扩展 |
+| 5 | 14–16 | session、context 装载、compaction |
+| 6 | 17–21 | CLI、session 编排、运行模式、extension |
 | 7 | 22–24 | TUI 内核、组件、交互模式 |
 | 8 | 25 | 构建、发布、评测 |
 

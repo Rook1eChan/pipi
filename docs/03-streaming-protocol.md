@@ -1,9 +1,9 @@
-# 03 流式响应协议
+# 03 streaming 响应协议
 
 > 课程状态：验收通过
-> 覆盖模块：`@pipi/llm` 流式协议、增量 JSON 解析、延迟初始化
+> 覆盖模块：`@pipi/llm` streaming 协议、增量 JSON 解析、延迟初始化
 > 课程文件：03-streaming-protocol.md
-> 本课产出：一套与 provider 无关的流式事件协议，让上层能实时显示文本、思考、工具参数，并统一处理错误与中止。
+> 本课产出：一套与 provider 无关的 streaming event 协议，让上层能实时显示文本、思考、工具参数，并统一处理错误与中止。
 
 ---
 
@@ -13,7 +13,7 @@
 
 - 生产者可以随时 `push(event)`，消费者可以 `for await` 增量读取
 - 流结束时，消费者可以 `await stream.result()` 拿到完整的 `AssistantMessage`
-- 请求失败、解析失败、用户中止都通过事件表达，不抛异常
+- 请求失败、解析失败、用户中止都通过 event 表达，不抛异常
 - 支持"先返回流、后完成异步初始化"（认证、懒加载模块）
 
 ---
@@ -38,19 +38,19 @@ const message = await client.chat(messages);
 
 **长输出容易超时。** 很多网关、代理和移动网络对“长时间没有数据”的连接设有超时。模型生成长文本时，连接可能在中途被切断。
 
-流式响应把一次回复拆成一系列按时间到达的事件。文本、思考、工具参数在生成过程中逐步可见，调用方也能在任意时刻中止。这四个限制共同构成了引入流式协议的直接动机。
+streaming 响应把一次回复拆成一系列按时间到达的 event。文本、思考、工具参数在生成过程中逐步可见，调用方也能在任意时刻中止。这四个限制共同构成了引入 streaming 协议的直接动机。
 
-### 2.2 流式响应的定义与组成
+### 2.2 streaming 响应的定义与组成
 
-流式响应是一个**有序事件序列**，并在序列结束时给出完整结果。它由三部分组成：
+streaming 响应是一个**有序 event 序列**，并在序列结束时给出完整结果。它由三部分组成：
 
 | 组成 | 职责 |
 |---|---|
-| 生产者 | 把 provider 的流式响应翻译成统一事件 |
-| 事件序列 | 表达文本、思考、工具调用的增量变化 |
+| 生产者 | 把 provider 的 streaming 响应翻译成统一 event |
+| event 序列 | 表达文本、思考、tool call 的增量变化 |
 | 消费者 | 渲染增量、收集最终消息、决定是否继续 |
 
-`@pipi/llm` 的统一接口层（下称统一层）负责把不同 provider 的调用差异藏在适配器后面。它提供两个入口：`streamSimple()` 返回事件流，`result()` 返回最终消息。
+`@pipi/llm` 的统一接口层（下称统一层）负责把不同 provider 的调用差异藏在 adapter 后面。它提供两个入口：`streamSimple()` 返回 event stream，`result()` 返回最终消息。
 
 ```ts
 const stream = models.streamSimple(model, context);
@@ -82,9 +82,9 @@ const myAsyncIterable = {
 pi 的 `EventStream` 是一个实现了 `[Symbol.asyncIterator]()` 的类，因此可以直接用于 `for await...of`。
 
 
-### 2.3 一次流式调用的完整过程
+### 2.3 一次 streaming 调用的完整过程
 
-一次流式调用从创建流对象开始，到 `done` 或 `error` 结束。过程如下：
+一次 streaming 调用从创建 stream 对象开始，到 `done` 或 `error` 结束。过程如下：
 
 ```text
 调用方
@@ -92,7 +92,7 @@ pi 的 `EventStream` 是一个实现了 `[Symbol.asyncIterator]()` 的类，因�
   ▼
 创建 AssistantMessageEventStream（同步返回）
   │
-  ├─ 异步初始化：解析认证、加载适配器、建立请求
+  ├─ 异步初始化：解析认证、加载 adapter、建立请求
   │
   ├─ start
   ├─ thinking_start → thinking_delta* → thinking_end
@@ -105,11 +105,11 @@ pi 的 `EventStream` 是一个实现了 `[Symbol.asyncIterator]()` 的类，因�
 result() 返回完整 AssistantMessage
 ```
 
-关键点是**同步返回、异步工作**。调用方立即拿到流对象（同步），真正的认证、网络请求和解析等操作在后台进行（异步）。这样调用方可以马上开始消费，不必等待初始化完成。异步的结果通过流对象返回。
+关键点是**同步返回、异步工作**。调用方立即拿到 stream 对象（同步），真正的认证、网络请求和解析等操作在后台进行（异步）。这样调用方可以马上开始消费，不必等待初始化完成。异步的结果通过 stream 对象返回。
 
 ```java
 function startJob() {
-    const stream = new EventStream(); // 创建事件流容器
+    const stream = new EventStream(); // 创建 event stream 容器
 
     // 这是一个立即执行的异步函数 (IIFE)
     void (async () => {
@@ -119,62 +119,62 @@ function startJob() {
         stream.end();
     })();
 
-    return stream; // 返回事件流容器
+    return stream; // 返回 event stream 容器
 }
 ```
 
 调用方：
 ```java
-const stream = startJob(); // 立刻拿到事件流容器
+const stream = startJob(); // 立刻拿到 event stream 容器
 console.log("已返回");     // 这行立刻执行
 
 for await (const event of stream) {
-    console.log(event);    // 遍历事件流
+    console.log(event);    // 遍历 event stream
 }
 ```
 
 
-### 2.4 事件的结构与顺序
+### 2.4 event 的结构与顺序
 
-事件流中获得的事件按内容块分组。一个内容块从 `*_start` 开始，经过若干 `*_delta`，以 `*_end` 结束。不同内容块可以按模型生成的顺序交错出现，但同一个块内部的事件必须连续。
+event stream 中获得的 event 按内容块分组。一个内容块从 `*_start` 开始，经过若干 `*_delta`，以 `*_end` 结束。不同内容块可以按模型生成的顺序交错出现，但同一个块内部的 event 必须连续。
 
 
-| 事件 | 作用 |
+| event | 作用 |
 |---|---|
 | `start` | 流开始，携带空的 `partial` |
 | `text_start` / `text_delta` / `text_end` | 文本块的生命周期 |
 | `thinking_start` / `thinking_delta` / `thinking_end` | 思考块的生命周期 |
-| `toolcall_start` / `toolcall_delta` / `toolcall_end` | 工具调用的生命周期 |
+| `toolcall_start` / `toolcall_delta` / `toolcall_end` | tool call 的生命周期 |
 | `done` | 正常结束，携带完整消息和结束原因 |
 | `error` | 异常结束，携带错误消息和原因 |
 
 必须满足以下条件：
 
-1. `start` 最多出现一次，且在任何块事件之前
+1. `start` 最多出现一次，且在任何块 event 之前
 2. 每个内容块先 `*_start`，再若干 `*_delta`，最后 `*_end`
-3. `done` 与 `error` 互斥，且是最后一个事件
+3. `done` 与 `error` 互斥，且是最后一个 event
 4. `done.reason` 只能是 `stop`、`length`、`toolUse`
 5. `error.reason` 只能是 `aborted`、`error`
 6. `contentIndex` 指向 `AssistantMessage.content` 数组中的位置，从 0 开始
 
-`contentIndex` 让消费者知道当前增量属于哪个内容块。文本块、思考块和工具调用块可以同时存在于一条消息中，单靠事件顺序不足以定位，所以需要显式索引。
+`contentIndex` 让消费者知道当前增量属于哪个内容块。文本块、思考块和 tool call 块可以同时存在于一条消息中，单靠 event 顺序不足以定位，所以需要显式索引。
 
-### 2.5 事件对象与 partial
+### 2.5 event 对象与 partial
 
-事件对象由四部分组成：
+event 对象由四部分组成：
 
 | 字段 | 含义 | 出现范围 |
 |---|---|---|
-| `type` | 事件类型，用于区分事件种类 | 所有事件 |
-| `contentIndex` | 该事件对应的内容块在 `partial.content` 中的下标 | 除 `start`、`done`、`error` 外 |
-| 本次负载 | `delta`、`content` 或 `toolCall` | 按事件类型而定 |
+| `type` | event 类型，用于区分 event 种类 | 所有 event |
+| `contentIndex` | 该 event 对应的内容块在 `partial.content` 中的下标 | 除 `start`、`done`、`error` 外 |
+| 本次负载 | `delta`、`content` 或 `toolCall` | 按 event 类型而定 |
 | `partial` | 到此刻为止的完整消息 | 除 `done`、`error` 外 |
 
 `delta` 是本次增量，`partial` 是累计状态。对同一个文本块，`partial.content[i].text` 等于此前所有 `text_delta` 的 `delta` 依次拼接，`text_end.content` 是它的最终值。协议同时给出两者：增量渲染直接用 `delta` 追加，不必重算整块；整体重绘直接读 `partial`，不必自己维护拼接状态。
 
-`partial` 由 provider 适配器创建并持续修改。
+`partial` 由 provider adapter 创建并持续修改。
 
-流开始时，适配器先构造一条空消息（`packages/ai/src/api/openai-responses.ts:125`）：
+流开始时，adapter 先构造一条空消息（`packages/ai/src/api/openai-responses.ts:125`）：
 
 ```ts
 const output: AssistantMessage = {
@@ -198,7 +198,7 @@ const output: AssistantMessage = {
 
 `"pending"` 是占位值，表示流尚未结束、结束原因未定。`StopReason` 包含 `"pending"` 正是为了这个阶段。
 
-解析响应时，适配器先在 `output.content` 中追加一个块，再把整个对象作为 `partial` 推入事件（`packages/ai/src/api/openai-responses-shared.ts:476`）：
+解析响应时，adapter 先在 `output.content` 中追加一个块，再把整个对象作为 `partial` 推入 event（`packages/ai/src/api/openai-responses-shared.ts:476`）：
 
 ```ts
 const block: TextContent = { type: "text", text: "" };
@@ -215,25 +215,25 @@ slot.block.text += event.delta;
 stream.push({ type: "text_delta", contentIndex: slot.contentIndex, delta: event.delta, partial: output });
 ```
 
-`EventStream.push()` 不做拷贝（`packages/ai/src/utils/event-stream.ts:43`）。它把事件对象直接交给等待中的消费者，或放入队列；消费者拿到的 `event.partial` 与生产者的 `output` 是同一个引用。
+`EventStream.push()` 不做拷贝（`packages/ai/src/utils/event-stream.ts:43`）。它把 event 对象直接交给等待中的消费者，或放入队列；消费者拿到的 `event.partial` 与生产者的 `output` 是同一个引用。
 
-事件推进时，`content` 的内容按如下方式增长：
+event 推进时，`content` 的内容按如下方式增长：
 
 ```ts
 start:        content = []
 text_start:   content = [{ type: "text", text: "" }]
 text_delta:   content = [{ type: "text", text: "流" }]
-text_delta:   content = [{ type: "text", text: "流式" }]
-text_end:     content = [{ type: "text", text: "流式" }]
+text_delta:   content = [{ type: "text", text: "streaming" }]
+text_end:     content = [{ type: "text", text: "streaming" }]
 ```
 
-每次事件到来时，生产者在原对象上追加内容，消费者看到的是“到目前为止的完整消息”。
+每次 event 到来时，生产者在原对象上追加内容，消费者看到的是“到目前为止的完整消息”。
 
 共享引用带来两个直接后果。消费者不需要自己拼接文本，读 `event.partial` 就能得到当前完整状态，也避免了每到达一个 token 就复制整条消息。消费者也不能把 `event.partial` 存进数组当作历史快照，因为之后读取到的都是同一个对象的最新状态；需要保留历史时必须主动深拷贝。
 
-并非所有事件都带 `partial`：
+并非所有 event 都带 `partial`：
 
-| 事件 | 携带字段 |
+| event | 携带字段 |
 |---|---|
 | `start`、各 `*_start` / `*_delta` / `*_end` | `partial` |
 | `done` | `message`（最终消息） |
@@ -241,18 +241,18 @@ text_end:     content = [{ type: "text", text: "流式" }]
 
 `done` 和 `error` 终止流，携带的就是最终结果，再附一个 `partial` 会造成重复。
 
-测试用的 faux provider 写成 `partial: { ...partial }`（`packages/ai/src/providers/faux.ts:354`），这是浅拷贝：外层对象是新的，`content` 数组仍与原对象共享。生产环境的适配器都直接传同一个对象。
+测试用的 faux provider 写成 `partial: { ...partial }`（`packages/ai/src/providers/faux.ts:354`），这是浅拷贝：外层对象是新的，`content` 数组仍与原对象共享。生产环境的 adapter 都直接传同一个对象。
 
 
 ### 2.6 工具参数 JSON 的解析策略
 
-工具参数在事件里是对象，在 provider 的响应里是 JSON 文本，并按片段到达。解析策略要同时解决两个问题：任意时刻的文本都可能不合法，而界面又需要在生成过程中显示参数。
+工具参数在 event 里是对象，在 provider 的响应里是 JSON 文本，并按片段到达。解析策略要同时解决两个问题：任意时刻的文本都可能不合法，而界面又需要在生成过程中显示参数。
 
 **三层数据**
 
 | 层 | 保存在哪 | 形态 | 是否可信 |
 |---|---|---|---|
-| 原始文本 | 适配器内部的临时缓冲区 | 字符串 | 未解析 |
+| 原始文本 | adapter 内部的临时缓冲区 | 字符串 | 未解析 |
 | 解析结果 | `partial.content[i].arguments` | 对象，可能缺字段 | 只能展示 |
 | 最终参数 | `toolcall_end.toolCall.arguments` | 对象 | 仍需 schema 校验 |
 
@@ -283,11 +283,11 @@ toolcall_end
   toolCall.arguments = { path: "src/a.ts", oldText: "foo", newText: "bar" }
 ```
 
-`toolcall_delta` 状态的 `arguments` 是provider的适配器处理后的结果。比如第一个 `delta` 之后 `path` 的值已经完整，因此出现在解析结果里；`oldText` 的键名还没结束，不会被保留。
+`toolcall_delta` 状态的 `arguments` 是 provider 的 adapter 处理后的结果。比如第一个 `delta` 之后 `path` 的值已经完整，因此出现在解析结果里；`oldText` 的键名还没结束，不会被保留。
 
-**适配器处理**
+**adapter 处理**
 
-适配器收到 `input_json_delta` 后立即追加并重解析（`packages/ai/src/api/anthropic-messages.ts:694`）：
+adapter 收到 `input_json_delta` 后立即追加并重解析（`packages/ai/src/api/anthropic-messages.ts:694`）：
 
 ```ts
 block.partialJson += event.delta.partial_json;
@@ -328,12 +328,12 @@ export function parseStreamingJson<T = Record<string, unknown>>(text: string | u
 
 修复和部分解析合成一步，是因为修复只会把字符串内部的非法内容变成合法转义，不会破坏结构；未闭合的括号交由部分解析器补全。
 
-永不抛异常，流式中间态的解析失败是常态，不能中断整个流。
+永不抛异常，streaming 中间态的解析失败是常态，不能中断整个流。
 
 
 **结束时再解析一次**
 
-`content_block_stop` 时适配器用完整缓冲区重新解析，写入 `arguments`，删除缓冲区，再推 `toolcall_end`（`anthropic-messages.ts:731`）：
+`content_block_stop` 时 adapter 用完整缓冲区重新解析，写入 `arguments`，删除缓冲区，再推 `toolcall_end`（`anthropic-messages.ts:731`）：
 
 ```ts
 block.arguments = parseStreamingJson(block.partialJson);
@@ -341,11 +341,11 @@ delete (block as { partialJson?: string }).partialJson;
 stream.push({ type: "toolcall_end", contentIndex: index, toolCall: block, partial: output });
 ```
 
-再解析一次是为了让结束事件与缓冲区保持一致；删除缓冲区则避免持久化时重复保存原始文本。
+再解析一次是为了让结束 event 与缓冲区保持一致；删除缓冲区则避免持久化时重复保存原始文本。
 
 **最终不等于可信**
 
-`toolcall_end` 的输出被 `length` 截断时，事件仍会发出，`arguments` 可能是部分结果或空对象。schema 校验属于工具执行层，流层不承担。
+`toolcall_end` 的输出被 `length` 截断时，event 仍会发出，`arguments` 可能是部分结果或空对象。schema 校验属于工具执行层，流层不承担。
 
 消费方需要遵守三条规则：
 
@@ -356,9 +356,9 @@ stream.push({ type: "toolcall_end", contentIndex: index, toolCall: block, partia
 
 ### 2.7 错误与中止
 
-流式协议不通过抛异常表达失败，而是把失败编码成消息状态：
+streaming 协议不通过抛异常表达失败，而是把失败编码成消息状态：
 
-| 场景 | 事件序列 | `stopReason` |
+| 场景 | event 序列 | `stopReason` |
 |---|---|---|
 | 认证失败、模块加载失败 | 只有 `error` | `error` |
 | 请求发出后网络中断 | `start` → `error` | `error` |
@@ -366,19 +366,19 @@ stream.push({ type: "toolcall_end", contentIndex: index, toolCall: block, partia
 | 达到输出上限 | `start` → ... → `done(length)` | `length` |
 | 正常结束 | `start` → ... → `done(stop)` | `stop` |
 
-`error` 事件携带完整的 `AssistantMessage`，其中 `errorMessage` 是脱敏后的可读文本。这样设计有三个原因：
+`error` event 携带完整的 `AssistantMessage`，其中 `errorMessage` 是脱敏后的可读文本。这样设计有三个原因：
 
 1. 界面需要展示已经生成的部分内容
-2. 会话需要决定是否保存这次失败的尝试
+2. session 需要决定是否保存这次失败的尝试
 3. 重试逻辑需要根据错误类型判断是否可重试
 
 `result()` 在成功和失败时都会 resolve。成功时返回 `done.message`，失败时返回 `error.error`。调用方不需要区分“正常返回”和“异常抛出”两条控制流，只需要检查 `stopReason`。
 
 | `stopReason` | 含义 | 调用方动作 |
 |---|---|---|
-| `stop` | 正常结束 | 没有工具调用就结束回合 |
+| `stop` | 正常结束 | 没有 tool call 就结束回合 |
 | `toolUse` | 模型要求调用工具 | 执行工具，结果回填，继续下一轮 |
-| `length` | 达到输出上限，内容被截断 | 有工具调用时全部判失败，不执行 |
+| `length` | 达到输出上限，内容被截断 | 有 tool call 时全部判失败，不执行 |
 | `error` | 请求或流错误 | 结束循环，可能触发重试 |
 | `aborted` | 用户中止 | 结束循环，不重试 |
 | `pending` | 流尚未结束 | 只存在于中间态，最终消息中不出现 |
@@ -395,7 +395,7 @@ if (message.stopReason === "error" || message.stopReason === "aborted") {
 }
 ```
 
-`error` 与 `aborted` 都终止循环，区别在会话层的重试策略：前者可能重试，后者不会。
+`error` 与 `aborted` 都终止循环，区别在 session 层的重试策略：前者可能重试，后者不会。
 
 `length` 的处理更严格（`agent-loop.ts:121`）：
 
@@ -406,7 +406,7 @@ const executedToolBatch =
 		: await executeToolCalls(currentContext, message, config, signal, emit);
 ```
 
-被截断的消息里仍可能有 `toolCall` 块，参数是半截 JSON 的解析结果。直接执行会拿不完整的 `path` 或 `oldText` 去改文件。因此 `length` 下的工具调用全部标记为失败，由模型在下一轮看到失败原因后重新生成。
+被截断的消息里仍可能有 `toolCall` 块，参数是半截 JSON 的解析结果。直接执行会拿不完整的 `path` 或 `oldText` 去改文件。因此 `length` 下的 tool call 全部标记为失败，由模型在下一轮看到失败原因后重新生成。
 
 `result()` 不 reject 消除了“正常返回”与“异常抛出”的分叉，代价是每个消费层都必须显式处理这些状态。漏掉 `error` 会把失败当成功继续下一轮；漏掉 `aborted` 会在用户取消后仍执行工具；漏掉 `length` 会用截断的参数执行工具。
 
@@ -415,10 +415,10 @@ const executedToolBatch =
 `Models.streamSimple()` 在返回流之前需要完成一些异步工作：
 
 - 解析认证信息，可能刷新 OAuth token
-- 加载对应的 API 适配器
+- 加载对应的 API adapter
 - ……
 
-但调用方期望立即拿到流对象。`lazyStream` 解决这个矛盾：先同步创建一个外层流并返回，再在后台执行初始化，把初始化结果转发到外层流。
+但调用方期望立即拿到 stream 对象。`lazyStream` 解决这个矛盾：先同步创建一个外层流并返回，再在后台执行初始化，把初始化结果转发到外层流。
 
 
 ```ts
@@ -440,7 +440,7 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 4. setup执行异步的applyAuth。遇到await，不等待，setup返回一个promise，applyAuth异步运行
 5. 在setup()处挂起一个promise，setup并没有执行完
 6. return outer，外部直接拿到管道
-7. await applyAuth结束，setup执行provider.streamSimple，返回provider的管道，也就是inner
+7. await applyAuth结束，setup执行 provider.streamSimple，返回 provider 的管道，也就是inner
 8. 执行then，forwardStream把两个管道连起来
 
 
@@ -452,28 +452,28 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 `EventStream` 内部维护两个 FIFO 队列：
 
-- 事件队列：生产者已经推送、消费者尚未取走的事件
+- event 队列：生产者已经推送、消费者尚未取走的 event
 - 等待队列：消费者正在等待、生产者尚未推送的 resolver
 
 规则如下：
 
-- 有等待者时，事件直接交付，不进入队列
-- 没有等待者时，事件进入队列
+- 有等待者时，event 直接交付，不进入队列
+- 没有等待者时，event 进入队列
 - `end()` 唤醒所有等待者并标记结束
 - 流结束后，新的 `push()` 被忽略
 
-这套实现保证事件顺序，但没有真正的背压。生产速度快于消费速度时，事件会在内存中堆积；消费速度快于生产速度时，消费者挂起等待。
+这套实现保证 event 顺序，但没有真正的背压。生产速度快于消费速度时，event 会在内存中堆积；消费速度快于生产速度时，消费者挂起等待。
 
-对 LLM 流来说，事件速率远低于内存上限，因此不做背压是可接受的简化。
+对 LLM 流来说，event 速率远低于内存上限，因此不做背压是可接受的简化。
 
 ### 2.10 与整体系统的关系
 
-流式协议位于类型层和上层消费者之间：
+streaming 协议位于类型层和上层消费者之间：
 
-- 上游依赖消息、内容块、工具调用等类型
-- 下游包括 API 适配器（生产者）、Agent 循环（消费者）、会话持久化、JSON/RPC 模式和交互界面
+- 上游依赖消息、内容块、tool call 等类型
+- 下游包括 API adapter（生产者）、Agent 循环（消费者）、session 持久化、JSON/RPC 模式和交互界面
 
-适配器负责把 provider 的 SSE 或 WebSocket 数据翻译成统一事件；Agent 循环把 `message_update` 转换成自己的事件；会话层把最终消息落盘；界面层用增量事件渲染。
+adapter 负责把 provider 的 SSE 或 WebSocket 数据翻译成统一 event；Agent 循环把 `message_update` 转换成自己的 event；session 层把最终消息落盘；界面层用增量 event 渲染。
 
 这一层的协议一旦改变，所有生产者和消费者都要跟着改。因此它属于系统的基础设施，而不是某个界面的内部实现。
 
@@ -481,14 +481,14 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 本课的核心结论：
 
-1. 流式响应解决首字延迟、工具参数不可见、无法中止和长连接超时四个问题。
-2. 统一层同时提供事件流和最终结果两个接口。
-3. 事件必须满足固定的顺序和不变量，`contentIndex` 用于定位内容块。
+1. streaming 响应解决首字延迟、工具参数不可见、无法中止和长连接超时四个问题。
+2. 统一层同时提供 event stream 和最终结果两个接口。
+3. event 必须满足固定的顺序和不变量，`contentIndex` 用于定位内容块。
 4. `partial` 是共享的可变消息，消费者不能保存历史引用。
 5. 工具参数在每个片段到达时解析，解析器容错且不抛异常，最终值仍需 schema 校验。
 6. 错误和中止编码成消息状态，`result()` 始终 resolve，调用方按 `stopReason` 分派。
 7. `lazyStream` 让异步初始化不破坏同步返回的接口。
-8. 事件流保证顺序，但没有背压，只支持单消费者。
+8. event stream 保证顺序，但没有背压，只支持单消费者。
 
 ---
 
@@ -500,11 +500,11 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 | --- | --- | --- | --- |
 | 2026-11-03 | 反馈 | A 阶段标题为设问式，像问答笔记 | 全课改为教材式陈述，标题用陈述句 |
 | 2026-11-03 | 讨论 | “统一层”与 `AsyncIterable` 未定义就使用 | 2.2 补充术语与异步迭代协议 |
-| 2026-11-03 | 讨论 | 内容块之间没有固定先后，只保证块内顺序 | 事件校验只检查块内不变量与 `contentIndex` |
-| 2026-11-03 | 讨论 | `partial` 由适配器创建并原地修改，`push` 不拷贝 | 实现需保证事件对象不被复制 |
-| 2026-11-03 | 讨论 | 工具参数在每个 delta 到达时重解析，中间值只用于展示 | 适配器推送前需写回 `arguments` |
-| 2026-11-03 | 讨论 | `stopReason` 是调用方分派依据，`length` 下不执行工具 | 循环层需处理 `length` 与工具调用的组合 |
-| 2026-11-03 | 讨论 | `lazyStream` 与 `startJob` 同构，差别在错误转成事件 | `lazyStream` 需覆盖 setup 的同步抛错 |
+| 2026-11-03 | 讨论 | 内容块之间没有固定先后，只保证块内顺序 | event 校验只检查块内不变量与 `contentIndex` |
+| 2026-11-03 | 讨论 | `partial` 由 adapter 创建并原地修改，`push` 不拷贝 | 实现需保证 event 对象不被复制 |
+| 2026-11-03 | 讨论 | 工具参数在每个 delta 到达时重解析，中间值只用于展示 | adapter 推送前需写回 `arguments` |
+| 2026-11-03 | 讨论 | `stopReason` 是调用方分派依据，`length` 下不执行工具 | 循环层需处理 `length` 与 tool call 的组合 |
+| 2026-11-03 | 讨论 | `lazyStream` 与 `startJob` 同构，差别在错误转成 event | `lazyStream` 需覆盖 setup 的同步抛错 |
 | 2026-11-03 | 讨论 | `EventStream` 的两个 FIFO 队列是真实实现，内部用双数组摊还 | 实现需避免 `Array.shift` |
 | 2026-11-03 | 讨论 | SSE 属于传输层，与本课协议分层 | SSE 解析归入课程 04、05；本次不写入 A |
 | 2026-11-03 | B 确认 | 十项实现方案逐条确认 | 见 `BUILD_PLAN.md` 决策表 |
@@ -518,18 +518,18 @@ function lazyStream(model, setup): AssistantMessageEventStream {
 
 | 文件 | 作用 | 行数 |
 | --- | --- | --- |
-| `packages/ai/src/utils/event-stream.ts` | 通用事件流 + 助手消息流 | 110 |
+| `packages/ai/src/utils/event-stream.ts` | 通用 event stream + 助手消息流 | 110 |
 | `packages/ai/src/types.ts` | `AssistantMessageEvent` 联合类型 | 506–538 |
 | `packages/ai/src/api/lazy.ts` | 延迟初始化与错误转发 | 98 |
-| `packages/ai/src/utils/json-parse.ts` | 流式 JSON 解析与修复 | 124 |
-| `packages/ai/src/api/openai-completions.ts` | 事件生产示例 | 311–724 |
+| `packages/ai/src/utils/json-parse.ts` | streaming JSON 解析与修复 | 124 |
+| `packages/ai/src/api/openai-completions.ts` | event 生产示例 | 311–724 |
 
 原项目的实现顺序（在 `openai-completions.ts` 中）：
 
 1. 同步创建 `AssistantMessageEventStream`
 2. 立即返回流
 3. 在 async IIFE 中：建 client → 发请求 → `push(start)`
-4. `for await (chunk of openaiStream)`：累积文本/思考/工具参数，push 对应事件
+4. `for await (chunk of openaiStream)`：累积文本/思考/工具参数，push 对应 event
 5. 结束时 `push(done)` + `end()`
 6. `catch`：设置 `stopReason`、`errorMessage`，`push(error)` + `end()`
 
@@ -572,13 +572,13 @@ class EventStream<T, R = T> implements AsyncIterable<T> {
 | --- | --- |
 | `push` 在 `end` 之后 | 忽略 |
 | `end` 调用两次 | 第二次无副作用 |
-| `end()` 不传 result，且此前没有 `done`/`error` 事件 | `result()` 一直 pending（调用方需避免） |
+| `end()` 不传 result，且此前没有 `done`/`error` event | `result()` 一直 pending（调用方需避免） |
 | 消费者在 `end` 后才开始迭代 | 先把队列取完，再结束 |
-| 多个消费者 | 不支持；事件会被分摊，不建议 |
+| 多个消费者 | 不支持；event 会被分摊，不建议 |
 
 ### 4.4 `AssistantMessageEvent` 定义
 
-02 只定义了消息与内容块，没有事件类型。本课在 `src/types.ts` 新增 `AssistantMessageEvent`，重点是区分块事件与完成事件：
+02 只定义了消息与内容块，没有 event 类型。本课在 `src/types.ts` 新增 `AssistantMessageEvent`，重点是区分块 event 与完成 event：
 
 ```ts
 type AssistantMessageEvent =
@@ -631,32 +631,32 @@ type AssistantMessageEvent =
 
 | 测试 | 验证 |
 | --- | --- |
-| 先 push 后消费 | 事件不丢失，顺序不变 |
-| 边生产边消费 | 消费者能及时拿到事件 |
+| 先 push 后消费 | event 不丢失，顺序不变 |
+| 边生产边消费 | 消费者能及时拿到 event |
 | 消费者在 `end` 后开始迭代 | 先取完队列，再结束 |
 | `done` 后 `result()` | resolve 为完整消息 |
 | `error` 后 `result()` | resolve 为错误消息，不 reject |
-| 手工 push `aborted` 事件 | `result()` 返回 `stopReason: "aborted"` 的消息 |
+| 手工 push `aborted` event | `result()` 返回 `stopReason: "aborted"` 的消息 |
 | `end()` 唤醒等待者 | 迭代正常结束 |
 | `end()` 两次 | 第二次无副作用 |
 | 完成后 `push` | 被忽略 |
-| 事件顺序 | 直接断言：`start` 在首位，块内 `*_start` / `*_delta` / `*_end` 连续，终态在末位 |
-| 初始化成功 | `lazyStream` 转发内层事件，`result()` 与内层一致 |
-| 初始化失败 | `lazyStream` 只产生一个 `error` 事件 |
-| 流式 JSON | 不完整、非法转义、纯文本都返回对象 |
+| event 顺序 | 直接断言：`start` 在首位，块内 `*_start` / `*_delta` / `*_end` 连续，终态在末位 |
+| 初始化成功 | `lazyStream` 转发内层 event，`result()` 与内层一致 |
+| 初始化失败 | `lazyStream` 只产生一个 `error` event |
+| streaming JSON | 不完整、非法转义、纯文本都返回对象 |
 | `partial` 引用 | 消费过程中看到的是最新累积值 |
 
 ### 4.7 与原项目的取舍
 
 | 特性 | 建议 | 说明 |
 | --- | --- | --- |
-| `thinking_*` 事件 | 保留 | 推理模型需要，不做后置 |
-| `toolcall_delta` | 保留 | 工具参数流式是核心体验 |
+| `thinking_*` event | 保留 | 推理模型需要，不做后置 |
+| `toolcall_delta` | 保留 | 工具参数 streaming 是核心体验 |
 | `deferred` | 舍弃 | 原项目只有基础设施与 faux 测试，pipi 不实现 |
 | `partial-json` | 引入 `0.1.7` | 前缀补全的边界多，自研成本高 |
 | `FifoQueue` 双数组 | 保留 | 两个数组加一次反转，摊还 O(1) |
 | 无背压 | 保留 | 对 LLM 流足够；课程中注明限制 |
-| `lazyApi` 动态导入 | 后置到 04 | 没有适配器就没有调用点 |
+| `lazyApi` 动态导入 | 后置到 04 | 没有 adapter 就没有调用点 |
 
 ### 4.8 实现顺序与验收
 
@@ -665,7 +665,7 @@ type AssistantMessageEvent =
 | T-03-1 | 新增 `AssistantMessageEvent` 并导出 | `src/types.ts`、`src/index.ts` | 类型编译通过，12 个成员齐全 |
 | T-03-2 | 实现 `repairJson`、`parseJsonWithRepair`、`parseStreamingJson` | `src/utils/json-parse.ts` | 四种残缺形态都返回对象，不抛异常 |
 | T-03-3 | 实现 `FifoQueue`、`EventStream`、`AssistantMessageEventStream` | `src/utils/event-stream.ts` | 顺序、结束、结果提取、完成后 push 忽略 |
-| T-03-4 | 实现 `lazyStream` | `src/api/lazy.ts` | 成功时转发事件并传递结果，失败时只产生一个 `error` 事件 |
+| T-03-4 | 实现 `lazyStream` | `src/api/lazy.ts` | 成功时转发 event 并传递结果，失败时只产生一个 `error` event |
 | T-03-5 | 补齐导出、changelog 与全量验证 | `src/index.ts`、`CHANGELOG.md` | `npm run build`、`npm test`、`tsc --noEmit`、`biome check .` 通过 |
 
 依赖顺序：T-03-1 → T-03-2 → T-03-3 → T-03-4 → T-03-5。T-03-2 与 T-03-3 之间没有耦合，可以交换，按表中顺序执行便于逐项验证。
@@ -675,8 +675,8 @@ type AssistantMessageEvent =
 
 | 选项 | 说明 | 建议 |
 | --- | --- | --- |
-| 完整事件协议 | 文本+思考+工具 | 推荐 |
-| 只做文本 | 最简单 | 不推荐：工具参数无法流式 |
+| 完整 event 协议 | 文本+思考+工具 | 推荐 |
+| 只做文本 | 最简单 | 不推荐：工具参数无法 streaming |
 | 用 `AsyncGenerator` | 少写一个类 | 不推荐：拿不到 `result()`，错误时机差 |
 | 有背压 | 更通用 | 可选；LLM 场景不需要 |
 | 错误抛异常 | 简单 | 不推荐：UI 会丢部分内容 |

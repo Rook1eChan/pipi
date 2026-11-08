@@ -91,7 +91,7 @@
 | 02 | 7 | 已生成 | 已实现 |
 | 03 | 4 | 已生成 | 已实现 |
 | 04 | 37 | 已生成 | 已实现 |
-| 05 | 2 | 未生成 | 未开始 |
+| 05 | 2 | 已生成 | 部分实现 |
 | 06 | 31 | 未生成 | 未开始 |
 | 07 | 23 | 未生成 | 未开始 |
 | 08 | 7 | 未生成 | 未开始 |
@@ -135,8 +135,8 @@
 | `api/mistral-conversations.ts` | 936 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 仅了解 |
 | `api/openai-codex-responses.lazy.ts` | 4 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 后置 |
 | `api/openai-codex-responses.ts` | 1653 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 后置 |
-| `api/openai-completions.lazy.ts` | 4 | API 适配器 | 05 | 已登记 | 未生成 | 未开始 | 复现 |
-| `api/openai-completions.ts` | 1667 | API 适配器 | 05 | 部分分析 | 未生成 | 未开始 | 复现 |
+| `api/openai-completions.lazy.ts` | 4 | API 适配器 | 05 | 已登记 | 已生成 | 未开始 | 复现 |
+| `api/openai-completions.ts` | 1667 | API 适配器 | 05 | 部分分析 | 已生成 | 部分实现 | 复现 |
 | `api/openai-prompt-cache.ts` | 8 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `api/openai-responses-shared.ts` | 793 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 后置 |
 | `api/openai-responses.lazy.ts` | 4 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 后置 |

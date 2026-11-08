@@ -14,8 +14,8 @@
 - OpenAI 的 `chat.completion.chunk`
 - Anthropic 的 `content_block_delta`
 - 本地 llama.cpp 的 OpenAI 兼容响应
-- Agent 内部的自定义消息（通知、压缩摘要、分支摘要）
-- 落盘后的 JSONL 会话记录
+- Agent 内部的自定义消息（通知、compaction 摘要、分支摘要）
+- 落盘后的 JSONL session 记录
 
 这一篇只定义"数据长什么样"和"不变量是什么"，不实现任何网络请求。
 
@@ -45,7 +45,7 @@
    告诉运行时用哪个模型、它支持什么、价格多少
 
 3. 发起调用
-   适配器把 Context + Model 翻译成 provider 的请求
+   adapter 把 Context + Model 翻译成 provider 的请求
 
 4. 得到 AssistantMessage
    content = [thinking, text, toolCall(read, {path: "src/a.ts"})]
@@ -53,7 +53,7 @@
 
 5. 执行工具
    读取文件，得到 ToolResultMessage
-   toolCallId 必须对应第 4 步的工具调用
+   toolCallId 必须对应第 4 步的 tool call
 
 6. 把工具结果放回 Context
    再次调用模型，得到最终总结
@@ -68,7 +68,7 @@
 2. 没有它，哪个下游功能会坏？
 3. 它必须守住什么不变量？
 
-这一课**不**实现网络请求、流式解析、工具执行或会话持久化。那些分别是课程 03、05、11、14。
+这一课**不**实现网络请求、streaming 解析、工具执行或 session 持久化。那些分别是课程 03、05、11、14。
 
 ---
 
@@ -111,17 +111,17 @@ const context: Context = {
 | 不放什么 | 放在哪里 |
 |---|---|
 | provider 的 API key、baseUrl | `Model` 与请求 options |
-| 会话树、分支、压缩摘要 | `coding-agent` 的会话层 |
+| session 树、分支、compaction 摘要 | `coding-agent` 的 session 层 |
 | UI 状态、主题、滚动位置 | `tui` / 交互层 |
 | 重试策略 | 请求层（课程 06） |
 
-`Context` 是“一次请求的输入快照”。它不关心这次请求属于哪个会话、第几轮。
+`Context` 是“一次请求的输入快照”。它不关心这次请求属于哪个 session、第几轮。
 
 **不变量**
 
 - `messages` 按时间顺序排列
 - `tools` 的名字在本次请求内唯一且稳定
-- `systemPrompt` 为空时，适配器不能凭空补一个
+- `systemPrompt` 为空时，adapter 不能凭空补一个
 
 ---
 
@@ -160,13 +160,13 @@ interface UserMessage {
 
 - 字符串是常见情况，写起来简单
 - 块数组是多模态与结构化内容的统一表示
-- 适配器在发送前会把字符串规范成文本块
+- adapter 在发送前会把字符串规范成文本块
 
 `ImageContent` 用 base64 而不是 URL：
 
 - 多数 provider 要求内联字节
 - URL 可能过期、需要鉴权、或根本不可访问
-- 由调用方负责读取和编码，适配器不猜
+- 由调用方负责读取和编码，adapter 不猜
 
 **不变量**
 
@@ -219,7 +219,7 @@ const readTool: Tool = {
 
 **不变量**
 
-- `name` 一旦发布不能随意改，否则历史会话里的工具调用会对不上
+- `name` 一旦发布不能随意改，否则历史 session 里的 tool call 会对不上
 - `parameters` 必须是对象 schema，不能是裸字符串
 - 工具声明不包含执行逻辑；执行在课程 11、12
 
@@ -267,7 +267,7 @@ const model: Model<"openai-completions"> = {
 
 为什么是数据：
 
-- 模型目录可以从 JSON 生成
+- model catalog 可以从 JSON 生成
 - 自定义 provider 只需要提供一条记录
 - 测试可以构造任意模型，不需要网络
 
@@ -275,20 +275,20 @@ const model: Model<"openai-completions"> = {
 
 | 字段 | 用途 |
 |---|---|
-| `api` | 选择哪个适配器（`openai-completions`、`anthropic-messages`…） |
+| `api` | 选择哪个 adapter（`openai-completions`、`anthropic-messages`…） |
 | `provider` | 认证、路由、显示 |
-| `contextWindow` | 压缩阈值（课程 16） |
+| `contextWindow` | compaction 阈值（课程 16） |
 | `maxTokens` | 输出上限 |
 | `cost` | 把 `Usage` 换算成金额 |
 | `input` | 是否支持图片；不支持时降级 |
 | `compat` | 同一 API 家族内的端点差异 |
 
-`compat` 是现实妥协：OpenAI 兼容端点之间在 `developer` 角色、`reasoning_effort`、`max_completion_tokens` 等字段上并不一致。这些差异不能污染统一类型，所以放在按 API 区分的可选配置里，由适配器读取。
+`compat` 是现实妥协：OpenAI 兼容端点之间在 `developer` 角色、`reasoning_effort`、`max_completion_tokens` 等字段上并不一致。这些差异不能污染统一类型，所以放在按 API 区分的可选配置里，由 adapter 读取。
 
 **不变量**
 
 - `id` 在同一个 provider 内唯一
-- `api` 必须能映射到一个适配器
+- `api` 必须能映射到一个 adapter
 - `contextWindow` 与 `maxTokens` 必须是正数
 
 ---
@@ -339,9 +339,9 @@ interface AssistantMessage {
 
 为什么 `content` 是数组：
 
-- 一条回复可以同时有思考、文本和多个工具调用
+- 一条回复可以同时有思考、文本和多个 tool call
 - 顺序有意义：模型先生成什么，就按什么顺序放
-- 流式输出需要按块定位（`contentIndex`，课程 03）
+- streaming 输出需要按块定位（`contentIndex`，课程 03）
 
 三种块的角色：
 
@@ -357,11 +357,11 @@ interface AssistantMessage {
 - 工具不会“请求调用工具”
 - 角色语义决定了块集合
 
-`contentIndex` 不属于持久化消息。它只在流式事件里出现，指向 `content` 数组的位置。
+`contentIndex` 不属于持久化消息。它只在 streaming event 里出现，指向 `content` 数组的位置。
 
 **不变量**
 
-- `stopReason` 为 `pending` 只出现在流式中间态
+- `stopReason` 为 `pending` 只出现在 streaming 中间态
 - `error` / `aborted` 必须带 `errorMessage`
 - `toolCall.id` 在一条消息内唯一
 - `usage.reasoning` 必须是 `output` 的子集
@@ -370,7 +370,7 @@ interface AssistantMessage {
 
 ### 2.7 工具结果：`ToolResultMessage`
 
-工具执行完，结果作为一条独立消息回到上下文：
+工具执行完，结果作为一条独立消息回到 context：
 
 ```ts
 interface ToolResultMessage<TDetails = any> {
@@ -386,7 +386,7 @@ interface ToolResultMessage<TDetails = any> {
 }
 ```
 
-与 2.6 的工具调用配对：
+与 2.6 的 tool call 配对：
 
 ```ts
 {
@@ -468,7 +468,7 @@ totalTokens = input + output + cacheRead + cacheWrite
 为什么错误不抛异常：
 
 - UI 需要展示已经生成的部分内容
-- 会话需要决定是否保存这次失败的尝试
+- session 需要决定是否保存这次失败的尝试
 - 重试逻辑需要根据错误类型判断是否可重试
 
 所以错误是消息的一种状态，不是控制流异常。
@@ -486,7 +486,7 @@ totalTokens = input + output + cacheRead + cacheWrite
 
 ### 2.9 跨 provider 的映射规则
 
-统一类型只解决“形状”，不解决“语义差异”。适配器负责映射：
+统一类型只解决“形状”，不解决“语义差异”。adapter 负责映射：
 
 | 统一类型 | OpenAI | Anthropic | Google |
 |---|---|---|---|
@@ -500,9 +500,9 @@ totalTokens = input + output + cacheRead + cacheWrite
 
 - 非视觉模型收到图片 → 替换为文本占位符
 - 同模型回放 thinking → 保留签名；跨模型 → 转成普通文本或丢弃
-- 跨 provider 的工具调用 ID → 归一化为合法字符集
-- 孤立的工具调用 → 补一个错误结果
-- `error` / `aborted` 的助手消息 → 不回放，避免污染上下文
+- 跨 provider 的 tool call ID → 归一化为合法字符集
+- 孤立的 tool call → 补一个错误结果
+- `error` / `aborted` 的助手消息 → 不回放，避免污染 context
 
 这些规则在课程 06 的 `transformMessages` 里实现。本课只需要知道：**类型必须为这些转换留出字段**，比如 `thinkingSignature`、`redacted`、`toolCall.id`。
 
@@ -512,7 +512,7 @@ totalTokens = input + output + cacheRead + cacheWrite
 - 端点兼容开关（`compat`）
 - 某些 provider 特有的请求参数
 
-它们不应该进入统一类型的主体，只能放在可选字段或适配器内部。
+它们不应该进入统一类型的主体，只能放在可选字段或 adapter 内部。
 
 ---
 
@@ -522,13 +522,13 @@ totalTokens = input + output + cacheRead + cacheWrite
 
 | 概念 | 定义位置 | 能包含什么 | 谁使用 |
 |---|---|---|---|
-| `Message` | `@pipi/llm` | `user` / `assistant` / `toolResult` | 适配器、模型 API |
-| `AgentMessage` | `@pipi/agent` | `Message` + 应用自定义消息 | Agent 循环、会话、UI |
+| `Message` | `@pipi/llm` | `user` / `assistant` / `toolResult` | adapter、模型 API |
+| `AgentMessage` | `@pipi/agent` | `Message` + 应用自定义消息 | Agent 循环、session、UI |
 
 为什么需要 `AgentMessage`：
 
-- 会话要记录“压缩摘要”“分支摘要”“bash 执行记录”这类不发给模型的内容
-- 扩展可能插入自己的消息类型
+- session 要记录“compaction 摘要”“分支摘要”“bash 执行记录”这类不发给模型的内容
+- extension 可能插入自己的消息类型
 - 但模型只认识三种角色
 
 转换发生在每次调模型前：
@@ -540,10 +540,10 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 `convertToLlm` 的契约：
 
 - 必须把每条 `AgentMessage` 映射成合法的 `UserMessage` / `AssistantMessage` / `ToolResultMessage`，或者安全丢弃
-- 不能抛异常；抛异常会中断循环且没有正常事件序列
-- 纯 UI 消息、压缩摘要、分支摘要通常被过滤掉
+- 不能抛异常；抛异常会中断循环且没有正常 event 序列
+- 纯 UI 消息、compaction 摘要、分支摘要通常被过滤掉
 
-本课只定边界：会话层的类型不放进 `@pipi/llm`，循环层的转换在课程 09 实现。
+本课只定边界：session 层的类型不放进 `@pipi/llm`，循环层的转换在课程 09 实现。
 
 ---
 
@@ -554,8 +554,8 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 - 发 HTTP 请求（课程 05、06）
 - 解析 SSE 流（课程 03、05）
 - 执行工具（课程 11、12）
-- 持久化会话（课程 14）
-- 压缩上下文（课程 16）
+- 持久化 session（课程 14）
+- context compaction（课程 16）
 - 渲染 UI（课程 22–24）
 
 它只负责“数据长什么样”和“跨层共识”。
@@ -564,13 +564,13 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 
 | 不变量 | 违反后的后果 |
 |---|---|
-| `totalTokens = input + output + cacheRead + cacheWrite` | 成本统计与压缩阈值错误 |
+| `totalTokens = input + output + cacheRead + cacheWrite` | 成本统计与 compaction 阈值错误 |
 | `reasoning ⊆ output` | 重复计数 |
 | `toolResult.toolCallId` 对应某个 `ToolCall.id` | provider 拒绝请求 |
-| `timestamp` 为毫秒 | 会话排序错乱 |
+| `timestamp` 为毫秒 | session 排序错乱 |
 | `stopReason !== "pending"` 于最终消息 | 循环不知道是否继续 |
 | `error` / `aborted` 带 `errorMessage` | UI 无法解释失败 |
-| 工具名稳定 | 历史会话的工具调用无法回放 |
+| 工具名稳定 | 历史 session 的 tool call 无法回放 |
 
 带着这条主线进入 B 阶段：先定义 `Context`，再定义输入、工具、模型、输出、结果、账本，最后处理跨 provider 与上层边界。B 阶段会给出文件划分、类型顺序、测试和不变量清单。
 
@@ -579,7 +579,7 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 ### 2.12 与整体系统的关系
 
 - 依赖：01 的包结构
-- 支撑：03 流协议、04 注册表、09 循环、11 工具执行、14 会话持久化、16 压缩
+- 支撑：03 streaming 协议、04 registry、09 循环、11 工具执行、14 session 持久化、16 compaction
 - 后续修改类型的成本很高，因此 A 阶段要重点理解这些不变量。
 
 ### 2.13 小结
@@ -587,12 +587,12 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 本课的核心结论：
 
 1. LLM 数据契约围绕一次请求的生命周期组织：请求容器、输入、工具、模型、输出、工具结果、调用账本。
-2. `Context` 是一次请求的输入快照，不包含 provider 配置、会话树或 UI 状态。
-3. 三类消息各自携带与来源相关的字段：用户消息最少，助手消息记录来源、用量、结束原因与诊断。
+2. `Context` 是一次请求的输入快照，不包含 provider 配置、session 树或 UI 状态。
+3. 三类消息各自携带与来源相关的字段：用户消息最少，助手消息记录来源、usage、结束原因与诊断。
 4. 工具声明使用 TypeBox schema，模型描述是数据而不是类。
 5. `ToolCall` 与 `ToolResultMessage` 通过 `toolCallId` 配对，缺失结果会被归一化逻辑兜底。
-6. 跨 provider 的差异由适配器和 `transformMessages` 处理，类型层为转换保留必要字段。
-7. 这一层只定义数据形状与不变量，不发起请求、不执行工具、不持久化会话。
+6. 跨 provider 的差异由 adapter 和 `transformMessages` 处理，类型层为转换保留必要字段。
+7. 这一层只定义数据形状与不变量，不发起请求、不执行工具、不持久化 session。
 
 ---
 
@@ -620,7 +620,7 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 
 | 文件 | 内容 | 行数 |
 | --- | --- | --- |
-| `packages/ai/src/types.ts` | 全部核心类型：消息、内容块、usage、tool、model、事件、兼容配置 | 843 |
+| `packages/ai/src/types.ts` | 全部核心类型：消息、内容块、usage、tool、model、event、兼容配置 | 843 |
 | `packages/ai/src/utils/validation.ts` | TypeBox 校验与参数强制转换 | 350 |
 | `packages/ai/src/api/transform-messages.ts` | 跨 provider 归一化 | 223 |
 | `packages/agent/src/types.ts` | `AgentMessage`、`AgentTool`、`AgentEvent`、循环配置 | 437 |
@@ -673,8 +673,8 @@ types/
 | `totalTokens === input + output + cacheRead + cacheWrite` | 原项目的计算口径；注意 `input` 已扣除缓存读写，否则会重复计数 |
 | `reasoning <= output` | 推理 token 是输出子集 |
 | `toolResult.toolCallId` 必须对应一条 `assistant` 消息中的 `toolCall.id` | 否则 API 会拒绝；由 `transformMessages` 兜底 |
-| `timestamp` 为毫秒 | 会话排序依赖 |
-| `stopReason === "pending"` 只出现在流式中间态 | 最终消息必须是终态 |
+| `timestamp` 为毫秒 | session 排序依赖 |
+| `stopReason === "pending"` 只出现在 streaming 中间态 | 最终消息必须是终态 |
 | `error` / `aborted` 消息必须带 `errorMessage`（`aborted` 可为空） | UI 需要展示原因 |
 
 ### 4.5 本课不做的部分
@@ -683,7 +683,7 @@ types/
 | --- | --- |
 | 工具参数校验 `validateToolArguments` | 11 |
 | 跨 provider 归一化 `transformMessages` | 06 |
-| 流式事件 `AssistantMessageEvent` | 03 |
+| streaming event `AssistantMessageEvent` | 03 |
 | 图像生成 `ImagesModel` / `AssistantImages` | 08 |
 
 本课只定义数据形状与不变量，不实现这些行为。
@@ -697,7 +697,7 @@ types/
 | `namespace` | 可后置 | 只有 OpenAI Responses 的动态工具使用 |
 | `cacheWrite1h` | 保留 | Anthropic 计费准确 |
 | `ModelCostTier` | 可后置 | 只有少数模型有阶梯计价 |
-| `compat` 全量字段 | 先保留子集 | 只保留首个适配器需要的字段 |
+| `compat` 全量字段 | 先保留子集 | 只保留首个 adapter 需要的字段 |
 | `ImagesModel` / `AssistantImages` | 可后置到 08 | 与文本 Agent 独立 |
 | Google / Mistral 系列 | 舍弃 | 当前只复现 OpenAI、Anthropic、DeepSeek |
 
@@ -705,7 +705,7 @@ types/
 
 | 测试 | 内容 |
 | --- | --- |
-| 类型构造 | 构造一条包含文本、思考、工具调用的助手消息 |
+| 类型构造 | 构造一条包含文本、思考、tool call 的助手消息 |
 | 序列化 | 上述消息能被 JSON 序列化/反序列化，字段不丢失 |
 | usage 计算 | 给定 provider usage，计算 `totalTokens` 与 `cost` |
 | 不变量 | `reasoning <= output`、工具结果能匹配调用 |
@@ -718,6 +718,6 @@ types/
 | --- | --- | --- |
 | 单文件 | 与原文一致 | 推荐 |
 | 按主题拆分 | 更清晰 | 可选，注意循环引用 |
-| 精简 usage | 只保留 input/output | 不推荐：压缩与统计会缺数据 |
+| 精简 usage | 只保留 input/output | 不推荐：compaction 与统计会缺数据 |
 | 省略签名 | 简化实现 | 可选，但跨轮 thinking 会失效 |
-| 省略 `compat` | 简化模型类型 | 不推荐：第一个适配器就会遇到 |
+| 省略 `compat` | 简化模型类型 | 不推荐：第一个 adapter 就会遇到 |

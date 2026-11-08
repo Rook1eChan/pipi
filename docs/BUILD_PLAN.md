@@ -65,6 +65,13 @@
 | D-035 | 真实 provider 工厂后置到 05/06 | 04 不创建真实 provider 工厂；05/06 实现适配器后再绑定 `api` | 待课程 05 时生效 | 2026-11-06 |
 | D-036 | 动态刷新远端实现后置到 19 | 04 实现接口与内存 store；远端拉取在 19 接入 | 待课程 19 时生效 | 2026-11-06 |
 | D-037 | `createProvider` 原样实现 | 支持单一 API、API 映射、静态模型 + 动态覆盖 | 生效 | 2026-11-06 |
+| D-038 | 05 使用原生 `fetch` + SSE | 不引入 `openai` SDK；自己实现 HTTP 请求、SSE 分帧与错误体解析 | 生效 | 2026-11-08 |
+| D-039 | 05 的 provider 范围 | 实现 OpenAI 与 DeepSeek 两个工厂，共用 `openai-completions` adapter；`lazyApi` 包装 | 生效 | 2026-11-08 |
+| D-040 | 工具只做 function + strict | 语法约束工具（`custom` + grammar）后置 | 生效 | 2026-11-08 |
+| D-041 | 思考字段只做两种 | 支持 `reasoning_content` 与 `reasoning`；`reasoning_details` 结构化回放后置 | 生效 | 2026-11-08 |
+| D-042 | 重试只做核心策略 | 429、5xx、网络错误重试；遵守 `Retry-After` 与 `maxRetryDelayMs` | 生效 | 2026-11-08 |
+| D-043 | maxTokens 收窄按原项目 | 实现 `estimateContextTokens` 与 `clampMaxTokensToContext`；思考预算按 `adjustMaxTokensForThinking` | 生效 | 2026-11-08 |
+| D-044 | 请求钩子按原项目实现 | `onPayload` 发送前可替换请求体；`onResponse` 在消费 body 前调用 | 生效 | 2026-11-08 |
 
 维护规则：
 
@@ -75,7 +82,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–04 已完成，T-02-5 与 T-04-1 至 T-04-6 均已验收。以下任务按顺序执行，前一项验收通过后再开始下一项。
+课程 01–04 已完成，T-05-1 已验收，T-05-2 已实现待验收，T-05-3 至 T-05-6 待执行。以下任务按顺序执行，前一项验收通过后再开始下一项。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -100,6 +107,12 @@
 | T-04-4 | 04 | 模型目录、三份静态目录与 faux provider | `packages/llm/src/model-catalog.ts`、`providers/catalog/*`、`providers/faux.ts` | T-04-2 | 目录压平、查找正确；faux 可流式返回 | 已验收 |
 | T-04-5 | 04 | `ModelsStore` 与刷新合并 | `packages/llm/src/models-store.ts`、`packages/llm/src/models.ts` | T-04-2 | 缓存恢复、动态覆盖、旧刷新不覆盖新结果 | 已验收 |
 | T-04-6 | 04 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-04-1..5 | `build`、`test`、`tsc --noEmit`、`biome check .` 通过 | 已验收 |
+| T-05-1 | 05 | context 估算与请求选项：`estimateContextTokens`、`buildBaseOptions`、`clampMaxTokensToContext`、思考预算 | `packages/llm/src/utils/estimate.ts`、`packages/llm/src/api/simple-options.ts`、`packages/llm/src/index.ts` | T-04-6 | 估算、收窄、选项合并、思考预算的单元测试通过 | 已验收 |
+| T-05-2 | 05 | 消息与工具转换：`convertMessages`、`convertTools` | `packages/llm/src/api/openai-completions.ts` | T-05-1 | 系统提示、用户文本/图片、助手文本/思考、工具结果、工具 schema 符合 OpenAI 格式 | 待用户验收 |
+| T-05-3 | 05 | 发送请求与 SSE 解析，产出文本与思考事件 | `packages/llm/src/api/openai-completions.ts` | T-05-2 | `text_*` / `thinking_*` 事件顺序与内容正确 | 待执行 |
+| T-05-4 | 05 | tool call 累积、usage、`stopReason`、`done` / `error` | `packages/llm/src/api/openai-completions.ts` | T-05-3 | 分片参数还原；usage 与终止原因正确 | 待执行 |
+| T-05-5 | 05 | 重试、错误归一化、中止与 `lazyApi` | `packages/llm/src/utils/retry.ts`、`packages/llm/src/api/lazy.ts` | T-05-4 | 429/5xx 重试；中止产生 `aborted`；错误进入流 | 待执行 |
+| T-05-6 | 05 | OpenAI / DeepSeek provider 工厂、导出、测试与 changelog | `packages/llm/src/providers/*`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-05-5 | `build`、`test`、`check` 通过 | 待执行 |
 
 ## 5. 任务模板
 
@@ -148,6 +161,9 @@
 | 2026-11-06 | 课程 04 B 确认；批准 T-04-1 至 T-04-6；lazyApi 改到课程 05 |
 | 2026-11-06 | T-04-1 至 T-04-6 实现完成；build、test、check 通过；待用户验收 |
 | 2026-11-06 | 用户验收 T-04-1 至 T-04-6；课程 04 完成 |
+| 2026-11-08 | 课程 05 A 完成；B 确认：原生 `fetch` + SSE、OpenAI + DeepSeek、function 工具、两种思考字段、核心重试；批准 T-05-1 至 T-05-6 |
+| 2026-11-08 | T-05-1 实现完成：context 估算与 `simple-options`；build、test、check 通过；待用户验收 |
+| 2026-11-08 | 用户验收 T-05-1；T-05-2 实现完成：消息与工具转换，30 项测试；build、test、check 通过；待用户验收 |
 
 ## 7. 最终验收目标
 

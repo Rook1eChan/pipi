@@ -30,9 +30,9 @@
 
 | 名词 | 含义 | 例子 |
 |---|---|---|
-| 包（package） | 一个带 `package.json` 的代码目录，可以被安装、被引用 | `packages/llm` |
-| 依赖（dependency） | A 的代码用到 B，A 就依赖 B | `agent` 依赖 `llm` |
-| 模块（module） | 一个文件，用 `import` / `export` 提供能力 | `types.ts` |
+| package | 一个带 `package.json` 的代码目录，可以被安装、被引用 | `packages/llm` |
+| dependency | A 的代码用到 B，A 就依赖 B | `agent` 依赖 `llm` |
+| module | 一个文件，用 `import` / `export` 提供能力 | `types.ts` |
 | monorepo | 一个 Git 仓库里放多个包 | `pipi/` 里放五个包 |
 | workspace | npm 管理 monorepo 多包的机制 | 根 `package.json` 的 `workspaces` |
 | TypeScript | 带类型标注的 JavaScript | `function add(a: number)` |
@@ -63,7 +63,7 @@
 
 它的目标只有一件事：**可重复性**。任何人、任何机器、任何时间，执行同样的命令，得到同样的结果。
 
-它不负责 LLM 调用、工具执行、会话管理或界面渲染。那些属于后续课程。
+它不负责 LLM 调用、工具执行、session 管理或界面渲染。那些属于后续课程。
 
 ### 2.3 monorepo 的结构与取舍
 
@@ -232,8 +232,8 @@ Pi 额外做了两件事：
 
 工程基座支撑从课程 02 开始的全部代码与测试：
 
-- 类型层和流协议依赖 TypeScript 配置与源码测试
-- 工具、会话、CLI、TUI 依赖 workspace 的包边界
+- 类型层和 streaming 协议依赖 TypeScript 配置与源码测试
+- 工具、session、CLI、TUI 依赖 workspace 的包边界
 - 构建、发布、CI、原生模块在课程 25 继续扩展
 
 这一课不产生业务能力，但后续每一课都建立在它提供的可重复构建和测试之上。
