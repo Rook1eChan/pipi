@@ -430,7 +430,7 @@ packages/llm/src/
 Models.streamSimple()
   → Provider.streamSimple()
   → openai-completions.stream()
-  → buildParams()
+  → buildRequest()
   → fetch / SSE
   → AssistantMessageEventStream
 ```

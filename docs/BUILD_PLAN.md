@@ -82,7 +82,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–04 已完成，T-05-1 已验收，T-05-2 已实现待验收，T-05-3 至 T-05-6 待执行。以下任务按顺序执行，前一项验收通过后再开始下一项。
+课程 01–04 已完成，T-05-1 至 T-05-3 已验收，T-05-4 已实现待验收，T-05-5、T-05-6 待执行。以下任务按顺序执行，前一项验收通过后再开始下一项。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -108,9 +108,9 @@
 | T-04-5 | 04 | `ModelsStore` 与刷新合并 | `packages/llm/src/models-store.ts`、`packages/llm/src/models.ts` | T-04-2 | 缓存恢复、动态覆盖、旧刷新不覆盖新结果 | 已验收 |
 | T-04-6 | 04 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-04-1..5 | `build`、`test`、`tsc --noEmit`、`biome check .` 通过 | 已验收 |
 | T-05-1 | 05 | context 估算与请求选项：`estimateContextTokens`、`buildBaseOptions`、`clampMaxTokensToContext`、思考预算 | `packages/llm/src/utils/estimate.ts`、`packages/llm/src/api/simple-options.ts`、`packages/llm/src/index.ts` | T-04-6 | 估算、收窄、选项合并、思考预算的单元测试通过 | 已验收 |
-| T-05-2 | 05 | 消息与工具转换：`convertMessages`、`convertTools` | `packages/llm/src/api/openai-completions.ts` | T-05-1 | 系统提示、用户文本/图片、助手文本/思考、工具结果、工具 schema 符合 OpenAI 格式 | 待用户验收 |
-| T-05-3 | 05 | 发送请求与 SSE 解析，产出文本与思考事件 | `packages/llm/src/api/openai-completions.ts` | T-05-2 | `text_*` / `thinking_*` 事件顺序与内容正确 | 待执行 |
-| T-05-4 | 05 | tool call 累积、usage、`stopReason`、`done` / `error` | `packages/llm/src/api/openai-completions.ts` | T-05-3 | 分片参数还原；usage 与终止原因正确 | 待执行 |
+| T-05-2 | 05 | 消息与工具转换：`convertMessages`、`convertTools` | `packages/llm/src/api/openai-completions.ts` | T-05-1 | 系统提示、用户文本/图片、助手文本/思考、工具结果、工具 schema 符合 OpenAI 格式 | 已验收 |
+| T-05-3 | 05 | 发送请求与 SSE 解析，产出文本与思考事件 | `packages/llm/src/api/openai-completions.ts` | T-05-2 | `text_*` / `thinking_*` 事件顺序与内容正确 | 已验收 |
+| T-05-4 | 05 | tool call 累积、usage、`stopReason`、`done` / `error` | `packages/llm/src/api/openai-completions.ts` | T-05-3 | 分片参数还原；usage 与终止原因正确 | 待用户验收 |
 | T-05-5 | 05 | 重试、错误归一化、中止与 `lazyApi` | `packages/llm/src/utils/retry.ts`、`packages/llm/src/api/lazy.ts` | T-05-4 | 429/5xx 重试；中止产生 `aborted`；错误进入流 | 待执行 |
 | T-05-6 | 05 | OpenAI / DeepSeek provider 工厂、导出、测试与 changelog | `packages/llm/src/providers/*`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-05-5 | `build`、`test`、`check` 通过 | 待执行 |
 
@@ -164,6 +164,8 @@
 | 2026-11-08 | 课程 05 A 完成；B 确认：原生 `fetch` + SSE、OpenAI + DeepSeek、function 工具、两种思考字段、核心重试；批准 T-05-1 至 T-05-6 |
 | 2026-11-08 | T-05-1 实现完成：context 估算与 `simple-options`；build、test、check 通过；待用户验收 |
 | 2026-11-08 | 用户验收 T-05-1；T-05-2 实现完成：消息与工具转换，30 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-10 | 用户验收 T-05-2；T-05-3 实现完成：请求构造与 SSE 解析，17 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-11 | 用户验收 T-05-3；T-05-4 实现完成：tool call 累积、usage 与 stopReason，9 项测试；build、test、check 通过；待用户验收 |
 
 ## 7. 最终验收目标
 
