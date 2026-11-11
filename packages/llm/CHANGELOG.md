@@ -24,8 +24,12 @@
 - 新增 context 用量估算：`estimateContextTokens`、`estimateMessageTokens`、`getUsageTokens`。
 - 新增 `simple-options`：`buildBaseOptions`、`clampMaxTokensToContext` 与思考预算计算。
 - 新增 OpenAI Chat Completions 消息与工具转换：`convertMessages`、`convertTools`、`resolveCompat`。
+- 新增 Chat Completions 请求构造与 SSE 解析：`buildRequest`、`stream`、`streamSimple`，产出文本与思考事件。
+- 新增 tool call 分片累积、usage 解析与 `finish_reason` 映射。
 
 ### Changed
+
+- 请求构造函数 `buildParams` 重命名为 `buildRequest`，请求体局部变量改用 `payload`。
 
 ### Fixed
 

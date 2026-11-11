@@ -187,18 +187,35 @@ export interface ToolResultMessage<TDetails = unknown> {
 /** 模型能理解的消息。 */
 export type Message = UserMessage | AssistantMessage | ToolResultMessage;
 
-/** OpenAI 兼容端点的兼容开关。只保留当前需要的子集。 */
+/** OpenAI-like api 的 可选参数 */
 export interface OpenAICompletionsCompat {
+	/** provider 是否支持 `store` 字段。默认按 baseUrl 推断。 */
 	supportsStore?: boolean;
+	/** provider 是否支持 `developer` 角色（否则用 `system`）。默认按 baseUrl 推断。 */
 	supportsDeveloperRole?: boolean;
+	/** provider 是否支持 `reasoning_effort`。默认按 baseUrl 推断。 */
 	supportsReasoningEffort?: boolean;
+	/** provider 是否支持 `stream_options: { include_usage: true }`。默认 true。 */
 	supportsUsageInStreaming?: boolean;
+	/** streaming 响应是否包含 `finish_reason`。为 false 时，流结束由内容推断 `stop` 或 `toolUse`。默认 true。 */
 	supportsFinishReason?: boolean;
+	/** 最大输出 token 使用哪个字段。默认按 baseUrl 推断。 */
 	maxTokensField?: "max_completion_tokens" | "max_tokens";
+	/** 工具结果是否必须带 `name` 字段。默认按 baseUrl 推断。 */
 	requiresToolResultName?: boolean;
+	/** 工具结果之后的 user 消息前是否必须插一条 assistant 消息。默认按 baseUrl 推断。 */
 	requiresAssistantAfterToolResult?: boolean;
+	/** 思考块是否必须转成带 `<thinking>` 标记的普通文本。默认按 baseUrl 推断。 */
 	requiresThinkingAsText?: boolean;
+	/** 开启思考时，回放的 assistant 消息是否必须带空的 `reasoning_content`。默认按 baseUrl 推断。 */
 	requiresReasoningContentOnAssistantMessages?: boolean;
+	/**
+	 * 思考参数的格式。openai 用 `reasoning_effort`；openrouter 用 `reasoning: { effort }`；
+	 * deepseek 用 `thinking: { type }`，并在支持时叠加 `reasoning_effort`；zai 用 `thinking: { type }`；
+	 * qwen 用顶层 `enable_thinking`；qwen-chat-template 用 `chat_template_kwargs.enable_thinking` 与
+	 * `preserve_thinking`；chat-template 用可配置的 `chat_template_kwargs`；
+	 * string-thinking 用顶层 `thinking: string`。默认 "openai"。
+	 */
 	thinkingFormat?:
 		| "openai"
 		| "openrouter"
@@ -208,24 +225,22 @@ export interface OpenAICompletionsCompat {
 		| "chat-template"
 		| "qwen-chat-template"
 		| "string-thinking";
+	/** provider 是否支持工具声明里的 `strict` 字段。默认 true。 */
 	supportsStrictMode?: boolean;
 }
 
-/** 工具参数的受限采样配置。
-目的是为了让provider输出json时出错更少。
-*/
 export type GrammarFormat = "openai_lark" | "openai_regex";
 export type GrammarVariants = Partial<Record<GrammarFormat, string>>;
 export type ConstrainedSamplingConfig =
-	| { type: "json_schema"; strict: "prefer" | "require" }
-	| { type: "grammar"; variants: GrammarVariants };
+	| { type: "json_schema"; strict: "prefer" | "require" } // json模式
+	| { type: "grammar"; variants: GrammarVariants }; // 语法模式
 
 /** 模型可调用的工具声明。parameters 使用 TypeBox schema。 */
 export interface Tool<TParameters extends TSchema = TSchema> {
 	name: string;
 	description: string;
 	parameters: TParameters;
-	constrainedSampling?: false | ConstrainedSamplingConfig;
+	constrainedSampling?: false | ConstrainedSamplingConfig; // 强迫模型按照指定格式输出
 }
 
 /** 模型价格，单位为美元 / 百万 token。 */
@@ -393,4 +408,14 @@ export interface SimpleStreamOptions extends StreamOptions {
 	toolChoice?: ToolChoice;
 	reasoning?: ThinkingLevel;
 	thinkingBudgets?: ThinkingBudgets;
+}
+
+/** OpenAI Chat Completions 的原生 tool_choice 取值。 */
+// auto：模型决定是否调用工具；none：禁止调用工具；required：至少调用一个工具；强制调用指定工具
+export type OpenAIToolChoice = "auto" | "none" | "required" | { type: "function"; function: { name: string } };
+
+/** OpenAI Chat Completions 的原生请求选项。 */
+export interface OpenAICompletionsOptions extends StreamOptions {
+	toolChoice?: OpenAIToolChoice;
+	reasoningEffort?: ThinkingLevel;
 }

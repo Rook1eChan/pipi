@@ -24,7 +24,7 @@ export function clampMaxTokensToContext(model: Model<Api>, context: Context, max
 	return Math.min(maxTokens, Math.max(MIN_MAX_TOKENS, available));
 }
 
-/** 把SimpleStreamOptions转换成StreamOptions */
+/** 把 SimpleStreamOptions 转换成 StreamOptions */
 export function buildBaseOptions(
 	model: Model<Api>,
 	context: Context,
