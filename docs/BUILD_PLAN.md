@@ -54,7 +54,7 @@
 | D-024 | 课程 02 只做类型与测试 | 工具参数校验归 11，跨 provider 归一化归 06，事件归 03 | 生效 | 2026-10-31 |
 | D-025 | 事件类型放在 types.ts | 事件依赖消息类型，同文件避免循环导入 | 生效 | 2026-11-03 |
 | D-026 | 引入 partial-json 0.1.7 | 流式 JSON 前缀补全使用该依赖，不自行实现 | 生效 | 2026-11-03 |
-| D-027 | lazyApi 后置到课程 05 | 课程 03 只实现 `lazyStream`；04 没有真实适配器，05 实现适配器后再加 `lazyApi` | 待课程 05 时生效 | 2026-11-06 |
+| D-027 | lazyApi 后置到课程 05 | 课程 03 只实现 `lazyStream`；04 没有真实适配器，05 实现适配器后再加 `lazyApi` | 生效 | 2026-11-06 |
 | D-028 | 不提供事件序列校验器 | 与原项目一致；适配器正确性由测试断言 | 生效 | 2026-11-03 |
 | D-029 | 中止测试手工 push aborted | 真实 AbortSignal 接线放到课程 05 | 生效 | 2026-11-03 |
 | D-030 | 解析回退改为三步 | 直接解析 → 修复后解析 → partial-json；测试固定新顺序 | 生效 | 2026-11-03 |
@@ -62,7 +62,7 @@
 | D-032 | lazyStream 原样实现 | 初始化失败也进入流协议 | 生效 | 2026-11-03 |
 | D-033 | 采用包级 CHANGELOG | 每包一份 `packages/<pkg>/CHANGELOG.md`；只在 `[Unreleased]` 下追加；不加脚本、hook 或 CI 门禁 | 生效 | 2026-10-29 |
 | D-034 | 04 只做注册表与目录 | 04 实现 Provider/Models、`createProvider`、`ModelsStore`、模型目录与 faux；不绑定真实适配器 | 生效 | 2026-11-06 |
-| D-035 | 真实 provider 工厂后置到 05/06 | 04 不创建真实 provider 工厂；05/06 实现适配器后再绑定 `api` | 待课程 05 时生效 | 2026-11-06 |
+| D-035 | 真实 provider 工厂后置到 05/06 | 04 不创建真实 provider 工厂；05/06 实现适配器后再绑定 `api` | 生效 | 2026-11-06 |
 | D-036 | 动态刷新远端实现后置到 19 | 04 实现接口与内存 store；远端拉取在 19 接入 | 待课程 19 时生效 | 2026-11-06 |
 | D-037 | `createProvider` 原样实现 | 支持单一 API、API 映射、静态模型 + 动态覆盖 | 生效 | 2026-11-06 |
 | D-038 | 05 使用原生 `fetch` + SSE | 不引入 `openai` SDK；自己实现 HTTP 请求、SSE 分帧与错误体解析 | 生效 | 2026-11-08 |
@@ -72,6 +72,8 @@
 | D-042 | 重试只做核心策略 | 429、5xx、网络错误重试；遵守 `Retry-After` 与 `maxRetryDelayMs` | 生效 | 2026-11-08 |
 | D-043 | maxTokens 收窄按原项目 | 实现 `estimateContextTokens` 与 `clampMaxTokensToContext`；思考预算按 `adjustMaxTokensForThinking` | 生效 | 2026-11-08 |
 | D-044 | 请求钩子按原项目实现 | `onPayload` 发送前可替换请求体；`onResponse` 在消费 body 前调用 | 生效 | 2026-11-08 |
+| D-045 | 07 的 credential 持久化用文件存储 | `FileCredentialStore` 读写 `auth.json`；权限 `0600`、目录 `0700`、临时文件加 `rename` 原子替换、进程内串行写入；跨进程文件锁后置 | 生效 | 2026-11-13 |
+| D-046 | 登录与登出放在 Models 层 | `ApiKeyAuth` 增加可选 `login`；`Models.login(providerId, interaction)` 负责调用并写入 store，`logout` 删除记录；登录交互只做 secret 文本输入 | 生效 | 2026-11-13 |
 
 维护规则：
 
@@ -82,7 +84,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–04 已完成，T-05-1 至 T-05-3 已验收，T-05-4 已实现待验收，T-05-5、T-05-6 待执行。以下任务按顺序执行，前一项验收通过后再开始下一项。
+课程 01–05 已完成，T-05-1 至 T-05-6 均已验收；课程 06 暂缓。课程 07 B 已确认，任务按顺序执行。以下任务按顺序执行，前一项验收通过后再开始下一项。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -110,9 +112,13 @@
 | T-05-1 | 05 | context 估算与请求选项：`estimateContextTokens`、`buildBaseOptions`、`clampMaxTokensToContext`、思考预算 | `packages/llm/src/utils/estimate.ts`、`packages/llm/src/api/simple-options.ts`、`packages/llm/src/index.ts` | T-04-6 | 估算、收窄、选项合并、思考预算的单元测试通过 | 已验收 |
 | T-05-2 | 05 | 消息与工具转换：`convertMessages`、`convertTools` | `packages/llm/src/api/openai-completions.ts` | T-05-1 | 系统提示、用户文本/图片、助手文本/思考、工具结果、工具 schema 符合 OpenAI 格式 | 已验收 |
 | T-05-3 | 05 | 发送请求与 SSE 解析，产出文本与思考事件 | `packages/llm/src/api/openai-completions.ts` | T-05-2 | `text_*` / `thinking_*` 事件顺序与内容正确 | 已验收 |
-| T-05-4 | 05 | tool call 累积、usage、`stopReason`、`done` / `error` | `packages/llm/src/api/openai-completions.ts` | T-05-3 | 分片参数还原；usage 与终止原因正确 | 待用户验收 |
-| T-05-5 | 05 | 重试、错误归一化、中止与 `lazyApi` | `packages/llm/src/utils/retry.ts`、`packages/llm/src/api/lazy.ts` | T-05-4 | 429/5xx 重试；中止产生 `aborted`；错误进入流 | 待执行 |
-| T-05-6 | 05 | OpenAI / DeepSeek provider 工厂、导出、测试与 changelog | `packages/llm/src/providers/*`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-05-5 | `build`、`test`、`check` 通过 | 待执行 |
+| T-05-4 | 05 | tool call 累积、usage、`stopReason`、`done` / `error` | `packages/llm/src/api/openai-completions.ts` | T-05-3 | 分片参数还原；usage 与终止原因正确 | 已验收 |
+| T-05-5 | 05 | 重试、错误归一化、中止与 `lazyApi` | `packages/llm/src/utils/retry.ts`、`packages/llm/src/utils/error-body.ts`、`packages/llm/src/api/lazy.ts` | T-05-4 | 429/5xx 重试；中止产生 `aborted`；错误进入流 | 已验收 |
+| T-05-6 | 05 | OpenAI / DeepSeek provider 工厂、导出、测试与 changelog | `packages/llm/src/providers/*`、`packages/llm/src/api/openai-completions.lazy.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-05-5 | `build`、`test`、`check` 通过 | 已验收 |
+| T-07-1 | 07 | `FileCredentialStore`：读写删除、原子替换、权限、串行写入、中止 | `packages/llm/src/auth/file-credential-store.ts`、`packages/llm/src/index.ts` | T-05-6 | 并发写入不丢数据；重启后可读；文件为 `0600` | 实现中 |
+| T-07-2 | 07 | `ApiKeyAuth.login` 与 `Models.login` / `logout` | `packages/llm/src/auth/types.ts`、`packages/llm/src/models.ts` | T-07-1 | 登录可持久化；登出可删除；失败不覆盖旧值 | 待执行 |
+| T-07-3 | 07 | 解析收尾：错误包装、`source`、`check` 行为 | `packages/llm/src/auth/resolve.ts`、`packages/llm/src/models.ts` | T-07-1 | 未配置与故障可区分 | 待执行 |
+| T-07-4 | 07 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-07-1..3 | `build`、`test`、`check` 通过 | 待执行 |
 
 ## 5. 任务模板
 
@@ -166,6 +172,12 @@
 | 2026-11-08 | 用户验收 T-05-1；T-05-2 实现完成：消息与工具转换，30 项测试；build、test、check 通过；待用户验收 |
 | 2026-11-10 | 用户验收 T-05-2；T-05-3 实现完成：请求构造与 SSE 解析，17 项测试；build、test、check 通过；待用户验收 |
 | 2026-11-11 | 用户验收 T-05-3；T-05-4 实现完成：tool call 累积、usage 与 stopReason，9 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-12 | 用户验收 T-05-4；T-05-5 实现完成：重试、错误归一化、超时与 `lazyApi`，20 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-13 | 用户确认 D-027、D-035 转为生效；T-05-5 已验收；T-05-6 实现完成：provider 工厂与导出，6 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-13 | 更正：上一条验收记录对应 T-05-5；T-05-6 仍待用户验收，课程 05 尚未完成 |
+| 2026-11-13 | 用户验收 T-05-6；课程 05 完成；课程 06 文档已生成 |
+| 2026-11-13 | 用户决定暂缓课程 06，先生成并学习课程 07 文档 |
+| 2026-11-13 | 课程 07 A、B 完成；用户确认 B；批准 T-07-1 至 T-07-4 |
 
 ## 7. 最终验收目标
 

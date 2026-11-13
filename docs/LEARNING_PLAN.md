@@ -24,9 +24,9 @@
 | 02 | LLM 数据契约 | 一次请求需要哪些数据？如何用一套类型覆盖多个 provider？ | 统一数据模型 | `llm/src/types.ts`、公共导出面 | 01 | `02-core-types.md` | 已生成 | 验收通过 |
 | 03 | 流式响应协议 | 如何表达增量文本、工具参数、错误与中止？ | 事件流 | `event-stream.ts`、`json-parse.ts`、`lazy.ts` | 02 | `03-streaming-protocol.md` | 已生成 | 验收通过 |
 | 04 | Provider 注册表与模型目录 | 如何登记 provider、查找模型并分发请求？ | 注册与分发 | `ai/src/models.ts`、`providers/*`、`models-store.ts` | 03 | `04-provider-registry.md` | 已生成 | 验收通过 |
-| 05 | 第一个 API 适配器（OpenAI 兼容） | 如何把一次真实请求映射成统一事件流？ | 模型接入 | `api/openai-completions.ts`、`simple-options.ts` | 04 | `05-openai-adapter.md` | 已生成 | 实现中 |
-| 06 | 多 API 家族与请求基础设施 | 如何兼容 Anthropic/Responses/Google/Mistral 并处理重试与归一化？ | 适配器矩阵 | `api/*`、`utils/retry.ts`、`transform-messages.ts` | 05 | `06-api-families.md` | 未生成 | 待学习 |
-| 07 | API Key 认证与凭据 | 如何解析、存储、注入 API key？ | 认证 | `ai/src/auth/{types,helpers,resolve}.ts`、`coding-agent/src/core/auth-storage.ts` | 04 | `07-auth-and-credentials.md` | 未生成 | 待学习 |
+| 05 | 第一个 API 适配器（OpenAI 兼容） | 如何把一次真实请求映射成统一事件流？ | 模型接入 | `api/openai-completions.ts`、`simple-options.ts` | 04 | `05-openai-adapter.md` | 已生成 | 验收通过 |
+| 06 | 多 API 家族与请求基础设施 | 如何兼容 Anthropic/Responses/Google/Mistral 并处理重试与归一化？ | 适配器矩阵 | `api/*`、`utils/retry.ts`、`transform-messages.ts` | 05 | `06-api-families.md` | 已生成 | 待学习 |
+| 07 | API Key 认证与凭据 | 如何解析、存储、注入 API key？ | 认证 | `ai/src/auth/{types,helpers,resolve}.ts`、`coding-agent/src/core/auth-storage.ts` | 04 | `07-auth-and-credentials.md` | 已生成 | 实现中 |
 | 08 | 图像输入与生成（可选） | 多模态输入与图像模型如何接入统一类型？ | 图像能力 | `ai/src/images*.ts`、`api/openrouter-images.ts` | 04 | `08-images.md` | 未生成 | 待学习 |
 | 09 | Agent 循环与事件协议 | 如何把"调模型 → 执行工具 → 再调模型"组织成循环？ | 循环控制 | `agent/src/agent-loop.ts`、`types.ts` | 05 | `09-agent-loop.md` | 未生成 | 待学习 |
 | 10 | Agent 状态机与消息队列 | 状态、steering/followUp 队列、中止与继续如何管理？ | 有状态 Agent | `agent/src/agent.ts`、`proxy.ts` | 09 | `10-agent-state.md` | 未生成 | 待学习 |
@@ -50,13 +50,13 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 当前课程 | 05 第一个 API 适配器（OpenAI 兼容） |
-| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表） |
-| 已完成 A 的课程 | 00、01、02、03、04、05 |
-| 已确认 B 的课程 | 00、01、02、03、04、05 |
-| 已生成文档 | 00–05 |
-| 已实现课程 | 01、02、03、04 |
-| 当前阶段 | 课程 05 实现中，T-05-4 待验收 |
+| 当前课程 | 07 API Key 认证与凭据 |
+| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表）、05（API adapter） |
+| 已完成 A 的课程 | 00、01、02、03、04、05、07 |
+| 已确认 B 的课程 | 00、01、02、03、04、05、07 |
+| 已生成文档 | 00–07 |
+| 已实现课程 | 01、02、03、04、05 |
+| 当前阶段 | 课程 06 暂缓；课程 07 实现中，T-07-1 实现中 |
 
 ## 4. 待确认前提索引
 
@@ -74,7 +74,7 @@
 
 ## 5. 课程生成规则
 
-- 当前生成到 05；06 起的课程在学到前不提前写详细 B。
+- 当前生成到 07；08 起的课程在学到前不提前写详细 B。
 - 每批生成后检查：编号连续、文件名一致、前置依赖已完成或已生成、覆盖范围无遗漏。
 - 新增课程或调整顺序时，同步更新本表、`SOURCE_COVERAGE.md` 的课程列与 `BUILD_PLAN.md` 的依赖。
 - 项目决策统一记录在 `BUILD_PLAN.md` 决策表；本文件不重复记录决策。

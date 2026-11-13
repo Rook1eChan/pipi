@@ -1,6 +1,6 @@
 # 05 第一个 API adapter（OpenAI 兼容）
 
-> 课程状态：待学习
+> 课程状态：验收通过
 > 覆盖模块：`@pipi/llm` 的 OpenAI Chat Completions adapter、请求构造、streaming 解析、usage 与错误映射
 > 课程文件：05-openai-adapter.md
 > 本课产出：把统一 `Context` 转成 OpenAI Chat Completions 请求，消费 SSE，产出统一 event stream。
