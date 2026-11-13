@@ -18,8 +18,10 @@ import type {
 	Usage,
 	UserMessage,
 } from "../types.ts";
+import { formatProviderErrorBody, ProviderHttpError } from "../utils/error-body.ts";
 import { AssistantMessageEventStream } from "../utils/event-stream.ts";
 import { parseStreamingJson } from "../utils/json-parse.ts";
+import { providerRequestWithRetry } from "../utils/retry.ts";
 import { buildBaseOptions } from "./simple-options.ts";
 
 /** OpenAI Chat Completions 的文本内容块。 */
@@ -698,25 +700,57 @@ export function stream(
 			const nextPayload = await options?.onPayload?.(payload, model);
 			if (nextPayload !== undefined) payload = nextPayload as ChatCompletionRequest;
 
+			// 请求超时与调用方 signal 合并，任一触发都会中止请求
+			const timeoutSignal = options?.timeoutMs ? AbortSignal.timeout(options.timeoutMs) : undefined;
+			const requestSignal = timeoutSignal
+				? options?.signal
+					? AbortSignal.any([options.signal, timeoutSignal])
+					: timeoutSignal
+				: options?.signal;
+
 			const fetchImpl = options?.fetch ?? globalThis.fetch; // globalThis.fetch是平台自带的网络请求函数
-			const response = await fetchImpl(`${model.baseUrl}/chat/completions`, {
-				method: "POST",
-				headers: buildHeaders(model, options),
-				body: JSON.stringify(payload),
-				signal: options?.signal,
-			});
+
+			// 把 fentch 包在重试机制里
+			// 429、5xx、网络错误按 Retry-After 重试；其它错误直接失败
+			const response = await providerRequestWithRetry(
+				async () => {
+					let result: Response;
+					try {
+						result = await fetchImpl(`${model.baseUrl}/chat/completions`, {
+							method: "POST",
+							headers: buildHeaders(model, options),
+							body: JSON.stringify(payload),
+							signal: requestSignal,
+						});
+					} catch (error) {
+						// abort
+						if (requestSignal?.aborted) throw error;
+						// 其余错误都归为网络连接错误
+						throw new ProviderHttpError({
+							message: `Network error: ${error instanceof Error ? error.message : String(error)}`,
+						});
+					}
+
+					// 4xx/5xx时不抛错，result.ok=false
+					if (!result.ok) {
+						const body = await result.text(); // 完整接收响应内容
+						throw new ProviderHttpError({
+							status: result.status,
+							headers: result.headers,
+							body,
+							message: formatProviderErrorBody(result.status, body),
+						});
+					}
+					return result;
+				},
+				{ maxRetries: options?.maxRetries, maxRetryDelayMs: options?.maxRetryDelayMs, signal: requestSignal },
+			);
 
 			// hook，收到响应头、读取body前调用
 			await options?.onResponse?.(
 				{ status: response.status, headers: Object.fromEntries(response.headers.entries()) },
 				model,
 			);
-
-			// 非 2xx 时把响应体带进错误，便于定位
-			if (!response.ok) {
-				const body = await response.text(); // 完整接收响应内容
-				throw new Error(`HTTP ${response.status}${body ? `: ${body.slice(0, 500)}` : ""}`);
-			}
 
 			// 开始往调用方推流
 			stream.push({ type: "start", partial: output });
@@ -808,11 +842,12 @@ export function stream(
 
 				// 工具调用：按 index 找块，找不到再按 id 找，都没有才新建
 				for (const toolCall of delta.tool_calls ?? []) {
-					const streamIndex = typeof toolCall.index === "number" ? toolCall.index : undefined;
+					const streamIndex = typeof toolCall.index === "number" ? toolCall.index : undefined; // 取出工具的index
 					const name = toolCall.function?.name ?? "";
-					let block = streamIndex !== undefined ? toolCallBlocksByIndex.get(streamIndex) : undefined;
-					if (!block && toolCall.id) block = toolCallBlocksById.get(toolCall.id);
+					let block = streamIndex !== undefined ? toolCallBlocksByIndex.get(streamIndex) : undefined; // 根据index找对应的tool block
+					if (!block && toolCall.id) block = toolCallBlocksById.get(toolCall.id); // index找不到用id找
 
+					// 找不到block，新建
 					if (!block) {
 						block = {
 							type: "toolCall",
@@ -822,12 +857,14 @@ export function stream(
 							partialArgs: "",
 							streamIndex,
 						};
+						//  保存block和index、id的映射
 						if (streamIndex !== undefined) toolCallBlocksByIndex.set(streamIndex, block);
 						if (toolCall.id) toolCallBlocksById.set(toolCall.id, block);
 						output.content.push(block);
 						stream.push({ type: "toolcall_start", contentIndex: output.content.length - 1, partial: output });
 					}
 
+					// block缺index，补上
 					if (streamIndex !== undefined && block.streamIndex === undefined) {
 						block.streamIndex = streamIndex;
 						toolCallBlocksByIndex.set(streamIndex, block);

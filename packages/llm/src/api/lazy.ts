@@ -1,3 +1,4 @@
+import type { ProviderStreams } from "../models.ts";
 import type { Api, AssistantMessage, AssistantMessageEvent, Model } from "../types.ts";
 import { AssistantMessageEventStream } from "../utils/event-stream.ts";
 
@@ -63,4 +64,18 @@ export function lazyStream(
 		});
 
 	return outer;
+}
+
+/**
+ * 把动态导入的 API 实现包装成 ProviderStreams。
+ *
+ * load 内容是 ()=>import("./openai-completions.ts")
+ */
+export function lazyApi(load: () => Promise<ProviderStreams>): ProviderStreams {
+	return {
+		stream: (model, context, options) =>
+			lazyStream(model, async () => (await load()).stream(model, context, options)),
+		streamSimple: (model, context, options) =>
+			lazyStream(model, async () => (await load()).streamSimple(model, context, options)),
+	};
 }

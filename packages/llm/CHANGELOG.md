@@ -26,6 +26,12 @@
 - 新增 OpenAI Chat Completions 消息与工具转换：`convertMessages`、`convertTools`、`resolveCompat`。
 - 新增 Chat Completions 请求构造与 SSE 解析：`buildRequest`、`stream`、`streamSimple`，产出文本与思考事件。
 - 新增 tool call 分片累积、usage 解析与 `finish_reason` 映射。
+- 新增 `providerRequestWithRetry`：429、5xx 与网络错误按 `Retry-After` 重试。
+- 新增 `ProviderHttpError` 与 `formatProviderErrorBody`，统一非 2xx 错误信息。
+- 新增 `lazyApi`，按需加载 API 实现。
+- `stream` 支持 `timeoutMs`，与调用方 `signal` 合并。
+- 新增 OpenAI 与 DeepSeek provider 工厂，并通过 `lazyApi` 绑定 `openai-completions` adapter。
+- 公共入口导出 provider 工厂与 lazy adapter。
 
 ### Changed
 
