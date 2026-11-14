@@ -115,10 +115,10 @@
 | T-05-4 | 05 | tool call 累积、usage、`stopReason`、`done` / `error` | `packages/llm/src/api/openai-completions.ts` | T-05-3 | 分片参数还原；usage 与终止原因正确 | 已验收 |
 | T-05-5 | 05 | 重试、错误归一化、中止与 `lazyApi` | `packages/llm/src/utils/retry.ts`、`packages/llm/src/utils/error-body.ts`、`packages/llm/src/api/lazy.ts` | T-05-4 | 429/5xx 重试；中止产生 `aborted`；错误进入流 | 已验收 |
 | T-05-6 | 05 | OpenAI / DeepSeek provider 工厂、导出、测试与 changelog | `packages/llm/src/providers/*`、`packages/llm/src/api/openai-completions.lazy.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-05-5 | `build`、`test`、`check` 通过 | 已验收 |
-| T-07-1 | 07 | `FileCredentialStore`：读写删除、原子替换、权限、串行写入、中止 | `packages/llm/src/auth/file-credential-store.ts`、`packages/llm/src/index.ts` | T-05-6 | 并发写入不丢数据；重启后可读；文件为 `0600` | 实现中 |
-| T-07-2 | 07 | `ApiKeyAuth.login` 与 `Models.login` / `logout` | `packages/llm/src/auth/types.ts`、`packages/llm/src/models.ts` | T-07-1 | 登录可持久化；登出可删除；失败不覆盖旧值 | 待执行 |
-| T-07-3 | 07 | 解析收尾：错误包装、`source`、`check` 行为 | `packages/llm/src/auth/resolve.ts`、`packages/llm/src/models.ts` | T-07-1 | 未配置与故障可区分 | 待执行 |
-| T-07-4 | 07 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-07-1..3 | `build`、`test`、`check` 通过 | 待执行 |
+| T-07-1 | 07 | `FileCredentialStore`：读写删除、原子替换、权限、串行写入、中止 | `packages/llm/src/auth/file-credential-store.ts`、`packages/llm/src/index.ts` | T-05-6 | 并发写入不丢数据；重启后可读；文件为 `0600` | 已验收 |
+| T-07-2 | 07 | `ApiKeyAuth.login` 与 `Models.login` / `logout` | `packages/llm/src/auth/types.ts`、`packages/llm/src/auth/helpers.ts`、`packages/llm/src/models.ts` | T-07-1 | 登录可持久化；登出可删除；失败不覆盖旧值 | 已验收 |
+| T-07-3 | 07 | 解析收尾：错误包装、`source`、`check` 行为 | `packages/llm/src/auth/resolve.ts`、`packages/llm/src/models.ts` | T-07-1 | 未配置与故障可区分 | 待用户验收 |
+| T-07-4 | 07 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-07-1..3 | `build`、`test`、`check` 通过 | 待用户验收 |
 
 ## 5. 任务模板
 
@@ -178,6 +178,9 @@
 | 2026-11-13 | 用户验收 T-05-6；课程 05 完成；课程 06 文档已生成 |
 | 2026-11-13 | 用户决定暂缓课程 06，先生成并学习课程 07 文档 |
 | 2026-11-13 | 课程 07 A、B 完成；用户确认 B；批准 T-07-1 至 T-07-4 |
+| 2026-11-13 | T-07-1 实现完成：`FileCredentialStore` 与 11 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-14 | 用户验收 T-07-1；T-07-2 实现完成：`ApiKeyAuth.login`、`Models.login/logout`，8 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-14 | 用户验收 T-07-2；T-07-3、T-07-4 实现完成：`checkAuth`、错误包装与测试，8 项测试；build、test、check 通过；待用户验收 |
 
 ## 7. 最终验收目标
 
