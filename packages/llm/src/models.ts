@@ -1,12 +1,21 @@
 import { lazyStream } from "./api/lazy.ts";
-import { type AuthResolutionOverrides, defaultAuthContext, ModelsError, resolveProviderAuth } from "./auth/resolve.ts";
+import { InMemoryCredentialStore } from "./auth/in-memory-credential-store.ts";
 import {
-	type AuthContext,
-	type AuthResult,
-	type Credential,
-	type CredentialStore,
-	InMemoryCredentialStore,
-	type ProviderAuth,
+	type AuthResolutionOverrides,
+	checkProviderAuth,
+	defaultAuthContext,
+	ModelsError,
+	resolveProviderAuth,
+} from "./auth/resolve.ts";
+import type {
+	AuthCheck,
+	AuthContext,
+	AuthInteraction,
+	AuthOperationOptions,
+	AuthResult,
+	Credential,
+	CredentialStore,
+	ProviderAuth,
 } from "./auth/types.ts";
 import { InMemoryModelsStore, type ModelsStore, type ModelsStoreEntry } from "./models-store.ts";
 import type {
@@ -98,6 +107,15 @@ export interface Models {
 
 	/** 解析某个模型所属 provider 要用的 credential。 */
 	getAuth(model: Model<Api>, overrides?: AuthResolutionOverrides): Promise<AuthResult | undefined>;
+
+	/** 走 provider 的登录流程，成功后写入 credential 存储。 */
+	login(providerId: string, interaction: AuthInteraction): Promise<Credential>;
+
+	/** 删除 provider 的 credential；不存在也算成功。 */
+	logout(providerId: string, options?: AuthOperationOptions): Promise<void>;
+
+	/** 检查 provider 是否已配置；未知 provider 返回 undefined。 */
+	checkAuth(providerId: string, options?: AuthOperationOptions): Promise<AuthCheck | undefined>;
 
 	/** 用 provider 原生完整参数发起 streaming 请求。 */
 	stream<TApi extends Api>(model: Model<TApi>, context: Context, options?: StreamOptions): AssistantMessageEventStream;
@@ -228,8 +246,8 @@ class ModelsImpl implements MutableModels {
 			selected.map(async (provider) => {
 				try {
 					const credential = await this.credentials.read(provider.id, { signal });
-					const auth = await resolveProviderAuth(provider, this.credentials, this.authContext, { signal });
-					if (!auth) return [];
+					const check = await this.checkAuth(provider.id, { signal });
+					if (!check) return [];
 					const models = provider.getModels();
 					return provider.filterModels?.(models, credential) ?? models;
 				} catch {
@@ -264,6 +282,31 @@ class ModelsImpl implements MutableModels {
 				headers: mergeHeaders(result.auth.headers, providerOrModel.headers),
 			},
 		};
+	}
+
+	async login(providerId: string, interaction: AuthInteraction): Promise<Credential> {
+		const provider = this.providers.get(providerId);
+		if (!provider) throw new ModelsError("provider", `Unknown provider: ${providerId}`);
+
+		const login = provider.auth.apiKey?.login;
+		if (!login) throw new ModelsError("auth", `Provider ${providerId} does not support login`);
+
+		const signal = interaction.signal ?? new AbortController().signal;
+		signal.throwIfAborted();
+		const credential = await login({ ...interaction, signal });
+		await this.credentials.write(providerId, credential, { signal });
+		return credential;
+	}
+
+	async logout(providerId: string, options?: AuthOperationOptions): Promise<void> {
+		options?.signal?.throwIfAborted();
+		await this.credentials.delete(providerId, options);
+	}
+
+	async checkAuth(providerId: string, options?: AuthOperationOptions): Promise<AuthCheck | undefined> {
+		const provider = this.providers.get(providerId);
+		if (!provider) return undefined;
+		return checkProviderAuth(provider, this.credentials, this.authContext, options);
 	}
 
 	stream<TApi extends Api>(

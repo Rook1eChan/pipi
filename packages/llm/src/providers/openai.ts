@@ -11,6 +11,6 @@ export function openaiProvider(): Provider<"openai-completions"> {
 		baseUrl: "https://api.openai.com/v1",
 		auth: { apiKey: envApiKeyAuth("OpenAI API key", ["OPENAI_API_KEY"]) },
 		models: OPENAI_MODELS,
-		api: openAICompletionsApi(),  // 
+		api: openAICompletionsApi(), //
 	});
 }

@@ -32,8 +32,13 @@
 - `stream` 支持 `timeoutMs`，与调用方 `signal` 合并。
 - 新增 OpenAI 与 DeepSeek provider 工厂，并通过 `lazyApi` 绑定 `openai-completions` adapter。
 - 公共入口导出 provider 工厂与 lazy adapter。
+- 新增 `FileCredentialStore`：`auth.json` 持久化、`0600` 权限、原子替换与串行写入。
+- 新增 `ApiKeyAuth.login` 与 `Models.login` / `logout`，支持交互式保存与删除 credential。
+- 新增 `Models.checkAuth` 与 `checkProviderAuth`；认证解析与检查失败统一包装为 `ModelsError("auth")`。
 
 ### Changed
+
+- 将 `InMemoryCredentialStore` 移到独立文件 `auth/in-memory-credential-store.ts`；公共导出不变。
 
 - 请求构造函数 `buildParams` 重命名为 `buildRequest`，请求体局部变量改用 `payload`。
 

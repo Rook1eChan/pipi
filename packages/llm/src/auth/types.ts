@@ -26,37 +26,28 @@ export interface AuthOperationOptions {
 	signal?: AbortSignal;
 }
 
+/** 登录时向用户展示的输入提示。 */
+export interface AuthPrompt {
+	type: "text" | "secret";
+	message: string;
+	placeholder?: string;
+}
+
+/** 登录交互：由产品层实现输入与展示。 */
+export interface AuthInteraction {
+	signal?: AbortSignal;
+	prompt(prompt: AuthPrompt): Promise<string>;
+}
+
+/** 传给 provider 登录实现的交互，signal 一定存在。 */
+export type ProviderAuthInteraction = AuthInteraction & { signal: AbortSignal };
+
 /** 用于管理各 provider 的 credential。 */
 export interface CredentialStore {
 	read(providerId: string, options?: AuthOperationOptions): Promise<Credential | undefined>;
 	write(providerId: string, credential: Credential, options?: AuthOperationOptions): Promise<void>;
 	delete(providerId: string, options?: AuthOperationOptions): Promise<void>;
 	list(options?: AuthOperationOptions): Promise<readonly CredentialInfo[]>;
-}
-
-/** 进程内的凭据存储，不保存到本地，用于默认配置和测试。 */
-export class InMemoryCredentialStore implements CredentialStore {
-	private readonly entries = new Map<string, Credential>();
-
-	async read(providerId: string, options?: AuthOperationOptions): Promise<Credential | undefined> {
-		options?.signal?.throwIfAborted();
-		return this.entries.get(providerId);
-	}
-
-	async write(providerId: string, credential: Credential, options?: AuthOperationOptions): Promise<void> {
-		options?.signal?.throwIfAborted();
-		this.entries.set(providerId, credential);
-	}
-
-	async delete(providerId: string, options?: AuthOperationOptions): Promise<void> {
-		options?.signal?.throwIfAborted();
-		this.entries.delete(providerId);
-	}
-
-	async list(options?: AuthOperationOptions): Promise<readonly CredentialInfo[]> {
-		options?.signal?.throwIfAborted();
-		return Array.from(this.entries.keys()).map((providerId) => ({ providerId, type: "api_key" as const }));
-	}
 }
 
 /** 认证解析所需的环境访问接口。 */
@@ -80,6 +71,8 @@ export interface AuthCheck {
 /** API key 认证方式。 */
 export interface ApiKeyAuth {
 	name: string;
+	/** 交互式登录；省略表示只能从 ambient 来源解析。 */
+	login?(interaction: ProviderAuthInteraction): Promise<ApiKeyCredential>;
 	check?(input: {
 		ctx: AuthContext;
 		credential?: ApiKeyCredential;

@@ -4,6 +4,14 @@ import type { ApiKeyAuth } from "./types.ts";
 export function envApiKeyAuth(name: string, envVars: readonly string[]): ApiKeyAuth {
 	return {
 		name,
+		login: async (interaction) => {
+			interaction.signal.throwIfAborted();
+			const key = await interaction.prompt({ type: "secret", message: `Enter ${name}` });
+			interaction.signal.throwIfAborted();
+			const trimmed = key.trim();
+			if (trimmed.length === 0) throw new Error(`${name} cannot be empty`);
+			return { type: "api_key", key: trimmed };
+		},
 		resolve: async ({ ctx, credential, signal }) => {
 			signal.throwIfAborted();
 			// 先检查存储有没有key
