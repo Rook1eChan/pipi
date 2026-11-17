@@ -94,7 +94,7 @@
 | 05 | 2 | 已生成 | 部分实现 |
 | 06 | 31 | 已生成 | 未开始 |
 | 07 | 23 | 已生成 | 未开始 |
-| 08 | 7 | 未生成 | 未开始 |
+| 08 | 7 | 已生成 | 未开始 |
 | 09 | 3 | 未生成 | 未开始 |
 | 10 | 2 | 未生成 | 未开始 |
 | 11 | 1 | 未生成 | 未开始 |
@@ -141,8 +141,8 @@
 | `api/openai-responses-shared.ts` | 793 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 后置 |
 | `api/openai-responses.lazy.ts` | 4 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 后置 |
 | `api/openai-responses.ts` | 390 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 后置 |
-| `api/openrouter-images.lazy.ts` | 10 | 图像生成 | 08 | 已登记 | 未生成 | 未开始 | 后置 |
-| `api/openrouter-images.ts` | 196 | 图像生成 | 08 | 已登记 | 未生成 | 未开始 | 后置 |
+| `api/openrouter-images.lazy.ts` | 10 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
+| `api/openrouter-images.ts` | 196 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
 | `api/simple-options.ts` | 94 | API 适配器 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `api/transform-messages.ts` | 223 | API 适配器 | 06 | 已分析 | 未生成 | 未开始 | 复现 |
 | `auth/context.ts` | 45 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -165,10 +165,10 @@
 | `compat.ts` | 278 | Provider 注册表 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `compat/extension-oauth-types.ts` | 45 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
 | `env-api-keys.ts` | 156 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 复现 |
-| `image-models.ts` | 42 | 图像生成 | 08 | 已登记 | 未生成 | 未开始 | 后置 |
-| `images-api-registry.ts` | 53 | 图像生成 | 08 | 已登记 | 未生成 | 未开始 | 后置 |
-| `images-models.ts` | 275 | 图像生成 | 08 | 已登记 | 未生成 | 未开始 | 后置 |
-| `images.ts` | 21 | 图像生成 | 08 | 已登记 | 未生成 | 未开始 | 后置 |
+| `image-models.ts` | 42 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
+| `images-api-registry.ts` | 53 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
+| `images-models.ts` | 275 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
+| `images.ts` | 21 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
 | `index.ts` | 45 | 公共导出面 | 02 | 部分分析 | 已生成 | 部分实现 | 复现 |
 | `legacy-api-aliases.ts` | 94 | Provider 注册表 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `model-catalog.ts` | 27 | Provider 注册表 | 04 | 已登记 | 已生成 | 已实现 | 复现 |
@@ -184,7 +184,7 @@
 | `providers/google-vertex.ts` | 100 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `providers/google.ts` | 15 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `providers/groq.ts` | 15 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
-| `providers/images/register-builtins.ts` | 50 | 图像生成 | 08 | 已登记 | 未生成 | 未开始 | 后置 |
+| `providers/images/register-builtins.ts` | 50 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
 | `providers/kimi-coding.ts` | 24 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `providers/minimax-cn.ts` | 15 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `providers/minimax.ts` | 15 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
