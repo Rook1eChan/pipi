@@ -66,22 +66,42 @@ export interface ProviderStreams {
 	streamSimple(model: Model<Api>, context: Context, options?: SimpleStreamOptions): AssistantMessageEventStream;
 }
 
-/** provider 不是类。通过createProvider 生成 */
+/**
+ * 一个 provider 的完整描述：元数据、认证、模型目录与请求入口。
+ *
+ * 由 `createProvider` 生成，不是类。provider 决定“怎么拿 credential”和
+ * “用哪个 API 实现”，但不负责 credential 的存储；存储统一由 `Models` 持有的
+ * `CredentialStore` 处理。
+ */
 export interface Provider<TApi extends Api = Api> {
+	/** provider 唯一标识；模型的 `provider` 字段与此对应。 */
 	readonly id: string;
+
+	/** 展示名称；省略时由 `createProvider` 取 `id`。 */
 	readonly name: string;
+
+	/** provider 的默认端点信息；请求实际使用 `model.baseUrl`，可被 `auth.baseUrl` 覆盖。 */
 	readonly baseUrl?: string;
+
+	/** provider 的默认请求头信息；请求时合并的是 `auth.headers` 与 `options.headers`。 */
 	readonly headers?: ProviderHeaders;
+
+	/** 认证配置：负责解析 credential，可选提供交互式登录。 */
 	readonly auth: ProviderAuth;
 
+	/** 当前模型目录；实现抛错时调用方视为没有模型。 */
 	getModels(): readonly Model<TApi>[];
 
+	/** 动态 provider 的目录刷新；省略表示目录是静态的。 */
 	refreshModels?(context: RefreshModelsContext): Promise<void>;
 
+	/** 按 credential 过滤模型；`getAvailable` 使用，省略时不过滤。 */
 	filterModels?(models: readonly Model<TApi>[], credential: Credential | undefined): readonly Model<TApi>[];
 
+	/** 用 provider 原生完整参数发起 streaming 请求。 */
 	stream<T extends TApi>(model: Model<T>, context: Context, options?: StreamOptions): AssistantMessageEventStream;
 
+	/** 用 provider 无关的统一参数发起 streaming 请求。 */
 	streamSimple(model: Model<TApi>, context: Context, options?: SimpleStreamOptions): AssistantMessageEventStream;
 }
 
@@ -123,10 +143,10 @@ export interface Models {
 	/** 用 provider 无关的统一参数发起 streaming 请求。 */
 	streamSimple(model: Model<Api>, context: Context, options?: SimpleStreamOptions): AssistantMessageEventStream;
 
-	/** `stream` 的便捷封装：等整条回复结束后返回最终消息。 */
+	/** `stream` 的便捷封装：等整条回复结束后，只返回最终消息。 */
 	complete<TApi extends Api>(model: Model<TApi>, context: Context, options?: StreamOptions): Promise<AssistantMessage>;
 
-	/** `streamSimple` 的便捷封装：等整条回复结束后返回最终消息。 */
+	/** `streamSimple` 的便捷封装：等整条回复结束后，只返回最终消息。 */
 	completeSimple(model: Model<Api>, context: Context, options?: SimpleStreamOptions): Promise<AssistantMessage>;
 
 	/** 刷新声明了 `refreshModels` 的 provider；单个失败记入返回值的 errors，不抛出。 */
@@ -157,9 +177,13 @@ export interface CreateProviderOptions<TApi extends Api = Api> {
 	headers?: ProviderHeaders;
 	auth: ProviderAuth;
 	models: readonly Model<TApi>[];
+
+	// 函数，负责联网拿模型列表
 	fetchModels?: (context: RefreshModelsContext) => Promise<readonly Model<TApi>[]>;
+
+	// 函数，负责回答当前能用什么模型
 	filterModels?: (models: readonly Model<TApi>[], credential: Credential | undefined) => readonly Model<TApi>[];
-	/** 单一 API 实现，或按 model.api 分派的映射。 */
+	/** api的类型为单一 API 实现，或者一个映射。 */
 	api: ProviderStreams | Partial<Record<TApi, ProviderStreams>>;
 }
 
@@ -422,12 +446,17 @@ export function createModels(options?: CreateModelsOptions): MutableModels {
 	return new ModelsImpl(options);
 }
 
-/** 构造 provider。*/
-// input: ProviderStreams | Partial<Record<TApi, ProviderStreams>>，一个流或者流的映射表
+/**
+ * 构造一个 provider：把元数据、认证、模型目录与 API 实现组装成普通对象。
+ *
+ * `input.api` 支持两种形态：单一实现（所有模型共用一个 API 家族），或按
+ * `model.api` 索引的映射表（一个 provider 覆盖多个 API 家族）。
+ */
 export function createProvider<TApi extends Api = Api>(input: CreateProviderOptions<TApi>): Provider<TApi> {
-	const baselineModels = input.models;
-	let dynamicModels: readonly Model<TApi>[] = [];
+	const baselineModels = input.models; // 本地catalog写的models
+	let dynamicModels: readonly Model<TApi>[] = []; // 刷新拿到的models
 	const fetchModels = input.fetchModels;
+	// currentModels由dynamicModels覆盖baselineModels得到
 	const currentModels = (): readonly Model<TApi>[] => {
 		const merged = [...baselineModels];
 		for (const model of dynamicModels) {
@@ -437,24 +466,19 @@ export function createProvider<TApi extends Api = Api>(input: CreateProviderOpti
 		}
 		return merged;
 	};
-	// candidate = input.api
-	const candidate = input.api as ProviderStreams;
+	// api 可以是单一实现，也可以按 model.api 分派
+	const apiInput = input.api;
+	const streamsSingle =
+		typeof (apiInput as ProviderStreams).stream === "function" ? (apiInput as ProviderStreams) : undefined;
+	const streamsTable = streamsSingle ? undefined : (apiInput as Partial<Record<string, ProviderStreams>>);
+	const apiFor = (model: Model<Api>) => streamsSingle ?? streamsTable?.[model.api];
 
-	// 如果input.api是流（自带.stream），single就等于流
-	const single = typeof candidate.stream === "function" ? candidate : undefined;
-
-	// 如果single为空，说明input是映射表，byApi等于映射表
-	const byApi = single ? undefined : (input.api as Partial<Record<string, ProviderStreams>>);
-
-	// 返回model对应的流
-	const apiFor = (model: Model<Api>): ProviderStreams | undefined => single ?? byApi?.[model.api];
-
-	// 找到model对应的streams，然后根据run运行
 	const dispatch = (
 		model: Model<Api>,
 		run: (streams: ProviderStreams) => AssistantMessageEventStream,
 	): AssistantMessageEventStream => {
 		const streams = apiFor(model);
+		// 缺少对应实现时进入流的错误路径，避免调用方拿到同步异常。
 		if (!streams) {
 			return lazyStream(model, async () => {
 				throw new ModelsError("stream", `Provider ${input.id} has no API implementation for "${model.api}"`);
@@ -470,8 +494,10 @@ export function createProvider<TApi extends Api = Api>(input: CreateProviderOpti
 		headers: input.headers,
 		auth: input.auth,
 		getModels: currentModels,
+		// 只有声明了 fetchModels 的 provider 才具备刷新能力。
 		refreshModels: fetchModels
 			? async (context) => {
+					// 先恢复上次持久化的目录，离线启动也能看到模型。
 					if (context.stored) {
 						const restored = context.stored.models
 							.filter((model) => model.provider === input.id)
@@ -486,6 +512,7 @@ export function createProvider<TApi extends Api = Api>(input: CreateProviderOpti
 							return;
 						}
 					}
+					// 不联网或已中止时，只保留恢复结果，不发请求。
 					if (!context.allowNetwork || context.signal.aborted) return;
 					const refreshed = await fetchModels(context);
 					if (context.signal.aborted) return;
@@ -498,10 +525,10 @@ export function createProvider<TApi extends Api = Api>(input: CreateProviderOpti
 				}
 			: undefined,
 		filterModels: input.filterModels,
+		// 两个入口都只负责把调用分派给对应的 API 实现。
 		stream: (model, context, options) =>
 			dispatch(model as Model<Api>, (streams) => streams.stream(model as Model<Api>, context, options)),
 
-		// 返回符合model的api格式的流
 		streamSimple: (model, context, options) =>
 			dispatch(model as Model<Api>, (streams) => streams.streamSimple(model as Model<Api>, context, options)),
 	};

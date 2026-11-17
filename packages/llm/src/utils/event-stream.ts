@@ -1,11 +1,6 @@
 import type { AssistantMessage, AssistantMessageEvent } from "../types.ts";
 
-/**
- * 用两个数组实现的 FIFO 队列。
- * JS 的顺序存储类型只有 Array，而 Array 的 FIFO 是 O(n)（使用queue.shift()）
- * 出队时如果 outgoing 已空，就把 incoming 整体倒序搬运过去
- * 每次移动整个数组。摊还到每个元素是 O(1)。
- */
+// 用两个数组实现的 FIFO 队列。
 class FifoQueue<T> {
 	private incoming: T[] = [];
 	private outgoing: T[] = [];

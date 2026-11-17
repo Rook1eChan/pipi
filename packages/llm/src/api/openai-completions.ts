@@ -685,7 +685,7 @@ export function stream(
 
 	// IIFE，遇到第一个 await 退出
 	void (async () => {
-		// 唯一的输出消息，事件里的 partial 一直指向它
+		// 唯一的输出消息，事件里的新消息都更新到这里
 		const output = createAssistantMessage(model);
 
 		try {

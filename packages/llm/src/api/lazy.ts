@@ -46,8 +46,8 @@ async function forwardStream(
 /**
  * 同步返回一个外层流，在后台执行初始化。
  *
- * 初始化包括认证解析、模块加载和建立请求。失败时把错误编码成 error 事件，而不是让
- * 调用点抛出异常，调用方始终只有“拿流、消费、检查 stopReason”一条路径。
+ * 初始化失败时把错误编码成 error 事件，而不是让调用点抛出异常。
+ * 调用方始终只有“拿流、消费、检查 stopReason”一条路径。
  */
 export function lazyStream(
 	model: Model<Api>,

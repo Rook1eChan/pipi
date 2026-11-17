@@ -35,7 +35,7 @@ export interface TextSignatureV1 {
 	phase?: "commentary" | "final_answer";
 }
 
-/** 普通文本块。 */
+// 普通文本块
 export interface TextContent {
 	type: "text";
 	text: string;
@@ -43,7 +43,7 @@ export interface TextContent {
 	textSignature?: string;
 }
 
-/** 推理/思考内容块。 */
+// 思考内容块
 export interface ThinkingContent {
 	type: "thinking";
 	thinking: string;
@@ -53,14 +53,14 @@ export interface ThinkingContent {
 	redacted?: boolean;
 }
 
-/** 图片内容块。data 为 base64，不直接使用 URL。 */
+// 图片内容块
 export interface ImageContent {
 	type: "image";
-	data: string;
+	data: string; // base64
 	mimeType: string;
 }
 
-/** 模型请求调用某个工具。 */
+// 模型请求调用某个工具
 export interface ToolCall {
 	type: "toolCall";
 	id: string;
@@ -114,14 +114,14 @@ export interface AssistantMessageDiagnostic {
 	details?: Record<string, unknown>;
 }
 
-/** 用户输入。content 可以是纯文本，也可以是文本/图片块数组。 */
+// 用户输入
 export interface UserMessage {
 	role: "user";
 	content: string | (TextContent | ImageContent)[];
 	timestamp: number;
 }
 
-/** 模型回复。content 可以同时包含思考、文本和多个工具调用。 */
+// 模型回复
 export interface AssistantMessage {
 	role: "assistant";
 	content: (TextContent | ThinkingContent | ToolCall)[];
@@ -169,7 +169,7 @@ export type AssistantMessageEvent =
 	  }
 	| { type: "error"; reason: Extract<StopReason, "aborted" | "error">; error: AssistantMessage };
 
-/** 工具执行结果。通过 toolCallId 与助手消息中的 ToolCall 配对。 */
+// 工具执行结果
 export interface ToolResultMessage<TDetails = unknown> {
 	role: "toolResult";
 	toolCallId: string;
