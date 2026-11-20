@@ -56,7 +56,7 @@ export function lazyStream(
 	const outer = new AssistantMessageEventStream();
 
 	setup()
-		// 如果 setup 成功（resolved），将内部产生的流（inner）push 到 outer 管道里
+		// 连接内外两个管道
 		.then((inner) => forwardStream(outer, inner))
 		.catch((error) => {
 			outer.push({ type: "error", reason: "error", error: createSetupErrorMessage(model, error) });
