@@ -40,7 +40,7 @@
 | D-010 | eval 包骨架阶段只建占位包 | 当前只保留空包与 smoke 测试；实现后置到课程 25 | 待课程 25 时生效 | 2026-10-29 |
 | D-011 | TUI 整体保留，复现深度后定 | 保留课程 22–24；全屏、鼠标、图片、latex 等深度在课程 22 学习时确定 | 待课程 22 时生效 | 2026-10-29 |
 | D-012 | tui/native 后置或简化 | 原生剪贴板、平台能力、原生图片能力后置或简化 | 待课程 22 时生效 | 2026-10-29 |
-| D-013 | 图像生成后置 | 先做图像输入；图像生成放到课程 08 | 待课程 08 时生效 | 2026-10-29 |
+| D-013 | 图像生成后置，课程 08 跳过 | 用户决定跳过课程 08，图像生成不实现；后续是否复现待定 | 生效 | 2026-11-18 |
 | D-014 | 剪贴板图片与终端图像后置 | 剪贴板图片、终端图片渲染后置到课程 24 | 待课程 24 时生效 | 2026-10-29 |
 | D-015 | evals/SWE-bench 仅了解 | 只做 smoke 与 faux 集成测试，不复现 SWE-bench | 待课程 25 时生效 | 2026-10-29 |
 | D-016 | Bun 运行时适配仅了解 | 不影响 Node 运行与主要功能 | 待课程 25 时生效 | 2026-10-29 |
@@ -74,6 +74,8 @@
 | D-044 | 请求钩子按原项目实现 | `onPayload` 发送前可替换请求体；`onResponse` 在消费 body 前调用 | 生效 | 2026-11-08 |
 | D-045 | 07 的 credential 持久化用文件存储 | `FileCredentialStore` 读写 `auth.json`；权限 `0600`、目录 `0700`、临时文件加 `rename` 原子替换、进程内串行写入；跨进程文件锁后置 | 生效 | 2026-11-13 |
 | D-046 | 登录与登出放在 Models 层 | `ApiKeyAuth` 增加可选 `login`；`Models.login(providerId, interaction)` 负责调用并写入 store，`logout` 删除记录；登录交互只做 secret 文本输入 | 生效 | 2026-11-13 |
+| D-047 | `streamFn` 必传，不设全局默认 | 课程 09 定义 `StreamFn` 类型，由调用方显式传入；不复现原项目 `stream-fn.ts` 的 `setDefaultStreamFn` / `getDefaultStreamFn` 全局槽位 | 生效 | 2026-11-18 |
+| D-048 | 课程 09 完整复现循环与事件 | 实现两层循环、四组事件、串行/并行工具批次与全部钩子；`AgentMessage` 支持声明合并扩展自定义角色；参数校验归课程 11，状态机归课程 10 | 生效 | 2026-11-18 |
 
 维护规则：
 
@@ -84,7 +86,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–05 已完成，T-05-1 至 T-05-6 均已验收；课程 06 暂缓。课程 07 B 已确认，任务按顺序执行。以下任务按顺序执行，前一项验收通过后再开始下一项。
+课程 01–05、07、09 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -117,8 +119,13 @@
 | T-05-6 | 05 | OpenAI / DeepSeek provider 工厂、导出、测试与 changelog | `packages/llm/src/providers/*`、`packages/llm/src/api/openai-completions.lazy.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-05-5 | `build`、`test`、`check` 通过 | 已验收 |
 | T-07-1 | 07 | `FileCredentialStore`：读写删除、原子替换、权限、串行写入、中止 | `packages/llm/src/auth/file-credential-store.ts`、`packages/llm/src/index.ts` | T-05-6 | 并发写入不丢数据；重启后可读；文件为 `0600` | 已验收 |
 | T-07-2 | 07 | `ApiKeyAuth.login` 与 `Models.login` / `logout` | `packages/llm/src/auth/types.ts`、`packages/llm/src/auth/helpers.ts`、`packages/llm/src/models.ts` | T-07-1 | 登录可持久化；登出可删除；失败不覆盖旧值 | 已验收 |
-| T-07-3 | 07 | 解析收尾：错误包装、`source`、`check` 行为 | `packages/llm/src/auth/resolve.ts`、`packages/llm/src/models.ts` | T-07-1 | 未配置与故障可区分 | 待用户验收 |
-| T-07-4 | 07 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-07-1..3 | `build`、`test`、`check` 通过 | 待用户验收 |
+| T-07-3 | 07 | 解析收尾：错误包装、`source`、`check` 行为 | `packages/llm/src/auth/resolve.ts`、`packages/llm/src/models.ts` | T-07-1 | 未配置与故障可区分 | 已验收 |
+| T-07-4 | 07 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-07-1..3 | `build`、`test`、`check` 通过 | 已验收 |
+| T-09-1 | 09 | 定义 `StreamFn`、`AgentEvent`、`AgentLoopConfig`、工具与上下文类型 | `packages/agent/src/types.ts` | T-07-4 | `tsc --noEmit` 通过；类型从包入口导出 | 已验收 |
+| T-09-2 | 09 | `runAgentLoop` 循环主体、事件顺序、steer/followUp、终止条件 | `packages/agent/src/agent-loop.ts` | T-09-1 | 事件顺序测试通过 | 已验收 |
+| T-09-3 | 09 | `streamAssistantResponse`：partial 替换、最终结果、错误信息 | `packages/agent/src/agent-loop.ts` | T-09-2 | 流式消息测试通过 | 已验收 |
+| T-09-4 | 09 | 工具批次：串行/并行、预检、钩子、length 截断、terminate | `packages/agent/src/agent-loop.ts` | T-09-3 | 工具执行测试通过 | 已验收 |
+| T-09-5 | 09 | 导出、测试与 changelog | `packages/agent/src/index.ts`、`packages/agent/test/*`、`packages/agent/CHANGELOG.md` | T-09-1..4 | `build`、`test`、`check` 通过 | 已验收 |
 
 ## 5. 任务模板
 
@@ -181,6 +188,10 @@
 | 2026-11-13 | T-07-1 实现完成：`FileCredentialStore` 与 11 项测试；build、test、check 通过；待用户验收 |
 | 2026-11-14 | 用户验收 T-07-1；T-07-2 实现完成：`ApiKeyAuth.login`、`Models.login/logout`，8 项测试；build、test、check 通过；待用户验收 |
 | 2026-11-14 | 用户验收 T-07-2；T-07-3、T-07-4 实现完成：`checkAuth`、错误包装与测试，8 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-18 | 用户验收 T-07-3、T-07-4，课程 07 完成；用户决定跳过课程 08，D-013 更新为“图像生成不实现”；课程 09 A 生成 |
+| 2026-11-18 | 用户确认课程 09 B；D-047（streamFn 必传，不设全局默认）与 D-048（完整复现循环与事件）生效；批准 T-09-1 至 T-09-5 |
+| 2026-11-18 | T-09-1 至 T-09-5 实现完成：循环、事件、工具批次与 13 项测试；build、test、check 通过；待用户验收 |
+| 2026-11-20 | 用户验收 T-09-1 至 T-09-5，课程 09 完成 |
 
 ## 7. 最终验收目标
 
