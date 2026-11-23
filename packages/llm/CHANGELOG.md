@@ -35,6 +35,8 @@
 - 新增 `FileCredentialStore`：`auth.json` 持久化、`0600` 权限、原子替换与串行写入。
 - 新增 `ApiKeyAuth.login` 与 `Models.login` / `logout`，支持交互式保存与删除 credential。
 - 新增 `Models.checkAuth` 与 `checkProviderAuth`；认证解析与检查失败统一包装为 `ModelsError("auth")`。
+- 新增 `validateToolArguments`：按 TypeBox schema 校验工具参数，克隆后删除可选 `null`、执行类型转换，失败时报告路径与原始参数。
+- 新增 `validateToolCall`：按名字找到工具后复用同一套校验，未知工具名单独报错。
 
 ### Changed
 
