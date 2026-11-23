@@ -246,7 +246,7 @@ return executeToolCallsParallel(...);
 
 原项目还有 `agent/src/agent.ts`（617 行）与 `proxy.ts`（402 行），属于课程 10 的状态机，不在本课范围。
 
-`stream-fn.ts` 是历史兼容垫片：旧版第三方扩展构造 `Agent` 时不传 `streamFn`，宿主在 `sdk.ts` 里调用 `setDefaultStreamFn(streamSimple)` 兜底。本课不复现，见 D-047。
+`stream-fn.ts` 是历史兼容层：旧版第三方扩展构造 `Agent` 时不传 `streamFn`，宿主在 `sdk.ts` 里调用 `setDefaultStreamFn(streamSimple)` 兜底。本课不复现，见 D-047。
 
 ### 4.2 新项目实现
 

@@ -46,7 +46,7 @@
 | D-016 | Bun 运行时适配仅了解 | 不影响 Node 运行与主要功能 | 待课程 25 时生效 | 2026-10-29 |
 | D-017 | 会话导出 vendor 最小实现 | 使用最小实现或轻量依赖，不复现完整 vendor | 待课程 24 时生效 | 2026-10-29 |
 | D-018 | Provider 范围限定三类 | 只构建 OpenAI、Anthropic、DeepSeek 系列，加 faux 测试 provider | 生效 | 2026-10-31 |
-| D-019 | 认证只支持 API key，OAuth 后置 | 当前只保留 `ApiKeyCredential`；OAuth 类型、登录、刷新不实现，课程 07 复审是否恢复 | 待课程 07 时生效 | 2026-11-05 |
+| D-019 | 认证只支持 API key，OAuth 不实现 | 用户决定本项目不实现 OAuth：不保留 OAuth 类型、登录、刷新；课程 07 已按 API key 验收 | 生效 | 2026-11-20 |
 | D-020 | 不实现 deferred response | 删除 `DeferredHandle`、`deferred` 字段与 `stopReason: "deferred"`；仅在课程中保留说明 | 生效 | 2026-11-05 |
 | D-021 | deferred tools 不做改动 | 保留原项目设计，课程 05/06 再决定是否实现 | 生效 | 2026-11-05 |
 | D-022 | 模型目录只保留最小条目 | 不复现全量 provider 数据与生成脚本；每个 provider 先保留 1–2 个模型 | 生效 | 2026-10-29 |
@@ -76,6 +76,11 @@
 | D-046 | 登录与登出放在 Models 层 | `ApiKeyAuth` 增加可选 `login`；`Models.login(providerId, interaction)` 负责调用并写入 store，`logout` 删除记录；登录交互只做 secret 文本输入 | 生效 | 2026-11-13 |
 | D-047 | `streamFn` 必传，不设全局默认 | 课程 09 定义 `StreamFn` 类型，由调用方显式传入；不复现原项目 `stream-fn.ts` 的 `setDefaultStreamFn` / `getDefaultStreamFn` 全局槽位 | 生效 | 2026-11-18 |
 | D-048 | 课程 09 完整复现循环与事件 | 实现两层循环、四组事件、串行/并行工具批次与全部钩子；`AgentMessage` 支持声明合并扩展自定义角色；参数校验归课程 11，状态机归课程 10 | 生效 | 2026-11-18 |
+| D-049 | 不实现 `streamProxy` | 课程 10 不做服务端代理 `StreamFn`；`agent/src/proxy.ts` 标为舍弃 | 生效 | 2026-11-22 |
+| D-050 | 课程 10 按原项目实现 | `AgentState` 暴露全部运行态字段；监听者按注册顺序串行 await，异常冒泡；`steeringMode`、`followUpMode` 默认 `single` | 生效 | 2026-11-22 |
+| D-051 | `continue` 不预取 steering | `continue` 只判断 steering 是否存在，交由循环入口轮询注入；followUp 仍先 drain 作为 prompt。删除 `skipInitialSteeringPoll` | 生效 | 2026-11-22 |
+| D-052 | 队列模式取值改为 `single` | `QueueMode` 使用 `"all"` / `"single"`；语义仍是“一次取一条”，仅改名，与原项目的 `one-at-a-time` 不同 | 生效 | 2026-11-23 |
+| D-053 | 工具参数校验只走 TypeBox | 课程 11 只实现 TypeBox 路径：`structuredClone` → 删除可选 null → `Value.Convert` → `Compile().Check`；不实现普通 JSON Schema 的手写 coercion。上游 2026-11-01（`6536f80`）改为独立包 `@earendil-works/pi-schema`（draft 2020-12/7、无 eval、内建 coercion，约 12.4 万字节），本项目不引入；待接入 MCP 或第三方扩展提供的工具时重新评估 | 生效 | 2026-11-23 |
 
 维护规则：
 
@@ -86,7 +91,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–05、07、09 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
+课程 01–05、07、09、10、11 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -126,6 +131,15 @@
 | T-09-3 | 09 | `streamAssistantResponse`：partial 替换、最终结果、错误信息 | `packages/agent/src/agent-loop.ts` | T-09-2 | 流式消息测试通过 | 已验收 |
 | T-09-4 | 09 | 工具批次：串行/并行、预检、钩子、length 截断、terminate | `packages/agent/src/agent-loop.ts` | T-09-3 | 工具执行测试通过 | 已验收 |
 | T-09-5 | 09 | 导出、测试与 changelog | `packages/agent/src/index.ts`、`packages/agent/test/*`、`packages/agent/CHANGELOG.md` | T-09-1..4 | `build`、`test`、`check` 通过 | 已验收 |
+| T-10-1 | 10 | `AgentState`、`PendingMessageQueue` 与队列行为 | `packages/agent/src/types.ts`、`packages/agent/src/message-queue.ts`、`packages/agent/src/index.ts` | T-09-5 | 两种排空模式、清空、判空、默认值测试通过 | 已验收 |
+| T-10-2 | 10 | `Agent` 生命周期：`prompt`、`continue`、`abort`、`waitForIdle`、`reset`、队列 API | `packages/agent/src/agent.ts` | T-10-1 | 并发拒绝、中止、空闲等待、`continue` 分派测试通过 | 已验收 |
+| T-10-3 | 10 | 事件归约与订阅：`processEvents`、`subscribe` | `packages/agent/src/agent.ts` | T-10-2 | 状态字段随事件变化；监听顺序与异常冒泡符合约定 | 已验收 |
+| T-10-4 | 10 | 失败收尾、快照与 `createLoopConfig` | `packages/agent/src/agent.ts` | T-10-3 | 循环外异常产生完整事件序列 | 已验收 |
+| T-10-5 | 10 | 导出、测试与 changelog | `packages/agent/src/index.ts`、`packages/agent/test/*`、`packages/agent/CHANGELOG.md` | T-10-1..4 | `build`、`test`、`check` 通过 | 已验收 |
+| T-11-1 | 11 | `validateToolArguments`：克隆参数、删除可选 null、`Value.Convert`、`Compile` 校验、错误格式化 | `packages/llm/src/utils/validation.ts` | T-10-5 | 类型转换、可选 null、必填缺失、嵌套路径、原始参数不被修改的测试通过 | 已验收 |
+| T-11-2 | 11 | `validateToolCall` 与 validator 缓存 | `packages/llm/src/utils/validation.ts` | T-11-1 | 按名字找不到工具时报错；同一 schema 复用缓存 | 已验收 |
+| T-11-3 | 11 | 接入 `agent-loop` 的 `prepareToolCall`，失败转工具错误结果 | `packages/agent/src/agent-loop.ts` | T-11-2 | 校验失败产生 `isError: true` 结果，`beforeToolCall` 收到合法参数 | 已验收 |
+| T-11-4 | 11 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-11-1..3 | `build`、`test`、`check` 通过 | 已验收 |
 
 ## 5. 任务模板
 
@@ -192,6 +206,23 @@
 | 2026-11-18 | 用户确认课程 09 B；D-047（streamFn 必传，不设全局默认）与 D-048（完整复现循环与事件）生效；批准 T-09-1 至 T-09-5 |
 | 2026-11-18 | T-09-1 至 T-09-5 实现完成：循环、事件、工具批次与 13 项测试；build、test、check 通过；待用户验收 |
 | 2026-11-20 | 用户验收 T-09-1 至 T-09-5，课程 09 完成 |
+| 2026-11-22 | 用户确认课程 10 B；D-049（不实现 streamProxy）、D-050（按原项目实现）生效；批准 T-10-1 至 T-10-5 |
+| 2026-11-22 | T-10-1 实现完成：`AgentState`、`PendingMessageQueue` 与 7 项测试；check、test 通过；待用户验收 |
+| 2026-11-22 | 用户验收 T-10-1 |
+| 2026-11-22 | T-10-2 实现完成：`Agent` 生命周期、队列 API 与 15 项测试；check、test 通过；待用户验收 |
+| 2026-11-22 | D-051 生效：`continue` 不预取 steering，删除 `skipInitialSteeringPoll`；补 2 项测试，agent 38 项通过 |
+| 2026-11-22 | 用户验收 T-10-2；`AgentState.isStreaming` 重命名为 `isRunning`；`Agent.runPromptMessages` 重命名为 `runAgent` |
+| 2026-11-22 | T-10-3 实现完成：事件归约与 `subscribe`，新增 8 项测试；check、test 通过；待用户验收 |
+| 2026-11-23 | T-10-4 实现完成：钩子接线、请求级选项与失败收尾，新增 6 项测试；check、test 通过；待用户验收 |
+| 2026-11-23 | D-052 生效：`QueueMode` 的 `one-at-a-time` 改名为 `single` |
+| 2026-11-23 | T-10-5 实现完成：公共入口测试与导出核对；build、test、check 通过；待用户验收 |
+| 2026-11-23 | 用户验收 T-10-1 至 T-10-5，课程 10 完成 |
+| 2026-11-23 | 用户确认课程 11 B：三项决策落定（只走 TypeBox、错误信息含原始参数、validator 用 `WeakMap` 按 schema 缓存）；D-053 生效，批准 T-11-1 至 T-11-4 |
+| 2026-11-23 | T-11-1 实现完成：`validateToolArguments` 与可选 null 清理，新增 8 项测试；check、test 通过；待用户验收 |
+| 2026-11-23 | T-11-2 实现完成：`validateToolCall` 与公共导出，缓存行为测试；llm 测试 11 项 |
+| 2026-11-23 | T-11-3 实现完成：`prepareToolCall` 接入校验，新增 4 项循环测试；agent 测试改用 TypeBox schema |
+| 2026-11-23 | T-11-4 实现完成：公共入口导出校验函数，llm 与 agent changelog 更新；build、test、check 通过 |
+| 2026-11-23 | 用户验收 T-11-1 至 T-11-4，课程 11 完成 |
 
 ## 7. 最终验收目标
 

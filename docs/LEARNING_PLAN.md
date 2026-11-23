@@ -29,9 +29,9 @@
 | 07 | API Key 认证与凭据 | 如何解析、存储、注入 API key？ | 认证 | `ai/src/auth/{types,helpers,resolve}.ts`、`coding-agent/src/core/auth-storage.ts` | 04 | `07-auth-and-credentials.md` | 已生成 | 验收通过 |
 | 08 | 图像输入与生成（可选） | 多模态输入与图像模型如何接入统一类型？ | 图像能力 | `ai/src/images*.ts`、`api/openrouter-images.ts` | 04 | `08-images.md` | 已生成 | 待学习 |
 | 09 | Agent 循环与事件协议 | 如何把"调模型 → 执行工具 → 再调模型"组织成循环？ | 循环控制 | `agent/src/agent-loop.ts`、`types.ts` | 05 | `09-agent-loop.md` | 已生成 | 验收通过 |
-| 10 | Agent 状态机与消息队列 | 状态、steering/followUp 队列、中止与继续如何管理？ | 有状态 Agent | `agent/src/agent.ts`、`proxy.ts` | 09 | `10-agent-state.md` | 未生成 | 待学习 |
-| 11 | 工具执行语义 | 串行/并行、参数校验、前后钩子、结果回填如何工作？ | 工具执行 | `agent-loop.ts` 工具段、`ai/src/utils/validation.ts` | 09 | `11-tool-execution.md` | 未生成 | 待学习 |
-| 12 | 内置工具 | 如何安全地读写文件、搜索代码、执行命令？ | 动手能力 | `coding-agent/src/core/tools/*`、`bash-executor.ts` | 11 | `12-builtin-tools.md` | 未生成 | 待学习 |
+| 10 | Agent 状态机与消息队列 | 状态、steering/followUp 队列、中止与继续如何管理？ | 有状态 Agent | `agent/src/agent.ts`、`proxy.ts` | 09 | `10-agent-state.md` | 已生成 | 验收通过 |
+| 11 | 工具执行语义 | 串行/并行、参数校验、前后钩子、结果回填如何工作？ | 工具执行 | `agent-loop.ts` 工具段、`ai/src/utils/validation.ts` | 09 | `11-tool-execution.md` | 已生成 | 验收通过 |
+| 12 | 内置工具 | 如何安全地读写文件、搜索代码、执行命令？ | 动手能力 | `coding-agent/src/core/tools/*`、`bash-executor.ts` | 11 | `12-builtin-tools.md` | 已生成 | A 学习中 |
 | 13 | 工具输出治理与安全 | 如何截断输出、串行化写入、约束路径、生成 diff？ | 输出治理 | `truncate.ts`、`output-accumulator.ts`、`edit-diff.ts`、`file-mutation-queue.ts`、`path-utils.ts` | 12 | `13-tool-output-safety.md` | 未生成 | 待学习 |
 | 14 | 会话持久化与分支 | JSONL 会话、消息树、分支切换、上下文重建如何实现？ | 会话存储 | `session-manager.ts`、`messages.ts`、`session-export.ts` | 10 | `14-session-persistence.md` | 未生成 | 待学习 |
 | 15 | 提示、上下文与技能 | 系统提示、AGENTS.md、技能、提示模板如何装载？ | 上下文构造 | `system-prompt.ts`、`resource-loader.ts`、`skills.ts`、`prompt-templates.ts` | 14 | `15-prompts-context-skills.md` | 未生成 | 待学习 |
@@ -50,14 +50,14 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 当前课程 | 无（课程 09 已完成，待选择下一课） |
-| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表）、05（API adapter）、07（API Key 认证与凭据）、09（Agent 循环与事件协议） |
-| 已完成 A 的课程 | 00、01、02、03、04、05、07、09 |
-| 已确认 B 的课程 | 00、01、02、03、04、05、07、09 |
-| 已生成文档 | 00–09 |
-| 已实现课程 | 01、02、03、04、05、07、09 |
+| 当前课程 | 12 内置工具 |
+| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表）、05（API adapter）、07（API Key 认证与凭据）、09（Agent 循环与事件协议）、10（Agent 状态机）、11（工具执行语义） |
+| 已完成 A 的课程 | 00、01、02、03、04、05、07、09、10、11 |
+| 已确认 B 的课程 | 00、01、02、03、04、05、07、09、10、11 |
+| 已生成文档 | 00–12 |
+| 已实现课程 | 01、02、03、04、05、07、09、10、11 |
 | 已跳过课程 | 08（用户决定跳过，不实现图像生成） |
-| 当前阶段 | 课程 06 暂缓；课程 08 跳过；课程 09 已验收；下一课待选择 |
+| 当前阶段 | 课程 06 暂缓；课程 08 跳过；课程 12 进行 A 阶段 |
 
 ## 4. 待确认前提索引
 
@@ -75,7 +75,7 @@
 
 ## 5. 课程生成规则
 
-- 当前生成到 09；10 起的课程在学到前不提前写详细 B。
+- 当前生成到 12；13 起的课程在学到前不提前写详细 B。
 - 每批生成后检查：编号连续、文件名一致、前置依赖已完成或已生成、覆盖范围无遗漏。
 - 新增课程或调整顺序时，同步更新本表、`SOURCE_COVERAGE.md` 的课程列与 `BUILD_PLAN.md` 的依赖。
 - 项目决策统一记录在 `BUILD_PLAN.md` 决策表；本文件不重复记录决策。

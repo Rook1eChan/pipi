@@ -33,7 +33,7 @@
 | `ai` | API 适配器 | 把各家 API 的请求/响应映射到统一类型 | OpenAI/Anthropic/Google/Mistral/Codex 的兼容层 | 05/06 |
 | `ai` | 流式协议 | 事件流、增量 JSON 解析、延迟初始化 | 文本/思考/工具参数的实时传输与错误编码 | 03 |
 | `ai` | 图像生成 | 图像模型的统一接口 | 多模态输入与图像生成 | 08 |
-| `ai` | 认证与凭据 | API key、环境变量、OAuth、凭据存储与刷新 | 请求前解析认证并注入 header | 07 |
+| `ai` | 认证与凭据 | API key、环境变量、凭据存储（OAuth 不实现，见 D-019） | 请求前解析认证并注入 header | 07 |
 | `ai` | Provider 注册表 | provider 集合、模型查找、流式分发、认证委托 | 模型目录与运行时入口 | 04 |
 | `ai` | 公共导出面 | pi-ai 的公共 API 边界 | 只导出类型与核心类，避免副作用 | 02 |
 | `ai` | Provider 与模型目录 | 各 provider 工厂与生成的模型数据 | 内置 provider 的模型清单 | 04 |
@@ -93,12 +93,12 @@
 | 04 | 37 | 已生成 | 已实现 |
 | 05 | 2 | 已生成 | 部分实现 |
 | 06 | 31 | 已生成 | 未开始 |
-| 07 | 23 | 已生成 | 未开始 |
+| 07 | 23 | 已生成 | 部分实现 |
 | 08 | 7 | 已生成 | 未开始 |
 | 09 | 3 | 已生成 | 部分实现 |
-| 10 | 2 | 未生成 | 未开始 |
-| 11 | 1 | 未生成 | 未开始 |
-| 12 | 12 | 未生成 | 未开始 |
+| 10 | 2 | 已生成 | 部分实现 |
+| 11 | 1 | 已生成 | 已实现 |
+| 12 | 12 | 已生成 | 未开始 |
 | 13 | 8 | 未生成 | 未开始 |
 | 14 | 6 | 未生成 | 未开始 |
 | 15 | 4 | 未生成 | 未开始 |
@@ -148,22 +148,22 @@
 | `auth/context.ts` | 45 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 复现 |
 | `auth/credential-store.ts` | 67 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 复现 |
 | `auth/helpers.ts` | 59 | 认证与凭据 | 07 | 已登记 | 未生成 | 部分实现 | 简化 |
-| `auth/oauth/anthropic.ts` | 364 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/device-code.ts` | 98 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/github-copilot.ts` | 507 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/kimi-coding.ts` | 296 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/load.ts` | 58 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/oauth-page.ts` | 109 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/openai-codex.ts` | 544 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/openrouter.ts` | 311 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/pkce.ts` | 34 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
-| `auth/oauth/xai.ts` | 239 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
+| `auth/oauth/anthropic.ts` | 364 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/device-code.ts` | 98 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/github-copilot.ts` | 507 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/kimi-coding.ts` | 296 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/load.ts` | 58 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/oauth-page.ts` | 109 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/openai-codex.ts` | 544 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/openrouter.ts` | 311 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/pkce.ts` | 34 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `auth/oauth/xai.ts` | 239 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
 | `auth/resolve.ts` | 205 | 认证与凭据 | 07 | 已登记 | 未生成 | 部分实现 | 简化 |
 | `auth/types.ts` | 240 | 认证与凭据 | 07 | 已登记 | 未生成 | 部分实现 | 简化 |
-| `bun-oauth.ts` | 19 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
+| `bun-oauth.ts` | 19 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
 | `cli.ts` | 119 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 仅了解 |
 | `compat.ts` | 278 | Provider 注册表 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
-| `compat/extension-oauth-types.ts` | 45 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
+| `compat/extension-oauth-types.ts` | 45 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
 | `env-api-keys.ts` | 156 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 复现 |
 | `image-models.ts` | 42 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
 | `images-api-registry.ts` | 53 | 图像生成 | 08 | 已分析 | 已生成 | 未开始 | 后置 |
@@ -174,7 +174,7 @@
 | `model-catalog.ts` | 27 | Provider 注册表 | 04 | 已登记 | 已生成 | 已实现 | 复现 |
 | `models-store.ts` | 45 | Provider 注册表 | 04 | 已登记 | 已生成 | 已实现 | 复现 |
 | `models.ts` | 957 | Provider 注册表 | 04 | 部分分析 | 已生成 | 部分实现 | 复现 |
-| `oauth.ts` | 10 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 后置 |
+| `oauth.ts` | 10 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
 | `providers/all.ts` | 127 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 简化 |
 | `providers/anthropic.ts` | 59 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 复现 |
 | `providers/data-json.d.ts` | 4 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 简化 |
@@ -232,16 +232,16 @@
 | `utils/text.ts` | 12 | 通用工具 | 02 | 已登记 | 已生成 | 未开始 | 复现 |
 | `utils/typebox-helpers.ts` | 24 | 通用工具 | 02 | 已登记 | 已生成 | 未开始 | 复现 |
 | `utils/uuid.ts` | 45 | 通用工具 | 02 | 已登记 | 已生成 | 未开始 | 复现 |
-| `utils/validation.ts` | 350 | 工具参数校验 | 11 | 已分析 | 未生成 | 未开始 | 复现 |
+| `utils/validation.ts` | 350 | 工具参数校验 | 11 | 已分析 | 已生成 | 已实现 | 复现（只实现 TypeBox 路径，见 D-053） |
 
 ### 4.2 `packages/agent/src`（6 文件 / 2206 行）
 
 | 文件或文件组 | 行数 | 模块 | 课程 | 分析状态 | 课程覆盖 | 复现状态 | 处理策略 |
 | --- | ---: | --- | --- | --- | --- | --- | --- |
 | `agent-loop.ts` | 725 | Agent 循环 | 09 | 部分分析 | 已生成 | 部分实现 | 复现 |
-| `agent.ts` | 617 | Agent 状态机 | 10 | 部分分析 | 未生成 | 未开始 | 复现 |
+| `agent.ts` | 617 | Agent 状态机 | 10 | 已分析 | 已生成 | 已实现 | 复现 |
 | `index.ts` | 5 | 公共导出面 | 00 | 已登记 | 已生成 | 未开始 | 复现 |
-| `proxy.ts` | 402 | Agent 状态机 | 10 | 已登记 | 未生成 | 未开始 | 复现 |
+| `proxy.ts` | 402 | Agent 状态机 | 10 | 已分析 | 已生成 | 未开始 | 舍弃（D-049） |
 | `stream-fn.ts` | 20 | Agent 循环 | 09 | 已分析 | 已生成 | 未开始 | 舍弃（D-047） |
 | `types.ts` | 437 | Agent 类型与事件 | 09 | 部分分析 | 已生成 | 部分实现 | 复现 |
 
@@ -318,7 +318,7 @@
 | `core/agent-session.ts` | 3529 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/auth-guidance.ts` | 25 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
 | `core/auth-storage.ts` | 506 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
-| `core/bash-executor.ts` | 156 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/bash-executor.ts` | 156 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/cache-stats.ts` | 164 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/compaction/branch-summarization.ts` | 367 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/compaction/compaction.ts` | 987 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -327,7 +327,7 @@
 | `core/defaults.ts` | 12 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/diagnostics.ts` | 15 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/event-bus.ts` | 33 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/exec.ts` | 107 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/exec.ts` | 107 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/experimental.ts` | 3 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/export-html/ansi-to-html.ts` | 258 | 会话导出 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/export-html/index.ts` | 316 | 会话导出 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -370,18 +370,18 @@
 | `core/system-prompt.ts` | 149 | 提示与上下文装载 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/telemetry.ts` | 13 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/timings.ts` | 50 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/bash.ts` | 400 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/bash.ts` | 400 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/tools/edit-diff.ts` | 556 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/edit.ts` | 220 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/edit.ts` | 220 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/tools/file-mutation-queue.ts` | 61 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/find.ts` | 318 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/grep.ts` | 323 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/find.ts` | 318 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/tools/grep.ts` | 323 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/tools/index.ts` | 224 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/ls.ts` | 175 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/ls.ts` | 175 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/tools/output-accumulator.ts` | 222 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/path-utils.ts` | 118 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/powershell.ts` | 67 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/read.ts` | 205 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/powershell.ts` | 67 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/tools/read.ts` | 205 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/tools/render-utils.ts` | 85 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/renderers/bash.ts` | 163 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/renderers/edit.ts` | 238 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -393,7 +393,7 @@
 | `core/tools/renderers/write.ts` | 181 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/tool-definition-wrapper.ts` | 47 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/truncate.ts` | 276 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/write.ts` | 97 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/write.ts` | 97 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/trust-manager.ts` | 244 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/usage-totals.ts` | 70 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `extensions/index.ts` | 4 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -432,7 +432,7 @@
 | `modes/interactive/components/markdown-transform.ts` | 29 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `modes/interactive/components/mermaid.ts` | 89 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `modes/interactive/components/model-selector.ts` | 421 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/oauth-selector.ts` | 214 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `modes/interactive/components/oauth-selector.ts` | 214 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
 | `modes/interactive/components/scoped-models-selector.ts` | 401 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `modes/interactive/components/session-selector-search.ts` | 194 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `modes/interactive/components/session-selector.ts` | 1031 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -467,7 +467,7 @@
 | `utils/abort.ts` | 48 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/ansi.ts` | 60 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/changelog.ts` | 196 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/child-process.ts` | 137 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/child-process.ts` | 137 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `utils/clipboard-command.ts` | 44 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
 | `utils/clipboard-image.ts` | 259 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
 | `utils/clipboard.ts` | 77 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
@@ -490,7 +490,7 @@
 | `utils/paths.ts` | 139 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/photon.ts` | 139 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
 | `utils/pi-user-agent.ts` | 4 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/shell.ts` | 247 | 内置工具 | 12 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/shell.ts` | 247 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
 | `utils/sleep.ts` | 18 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/source-resolver.ts` | 86 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/syntax-highlight.ts` | 212 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -514,6 +514,15 @@
 | `vitest-evals/reporter.ts` | 111 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
 | `vitest-evals/setup.ts` | 8 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
 | `vitest-evals/summary.ts` | 438 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
+
+### 4.6 上游新增内容（快照之后）
+
+本地快照停在 `2026-10-27`（`@earendil-works/pi-*` 0.85.1）。上游 `earendil-works/pi` 此后的相关改动单独登记在这里，不计入第 1 节的总览。
+
+| 文件或文件组 | 规模 | 模块 | 课程 | 分析状态 | 课程覆盖 | 复现状态 | 处理策略 |
+| --- | ---: | --- | --- | --- | --- | --- | --- |
+| `packages/schema`（`@earendil-works/pi-schema`） | 12 文件 / 约 12.4 万字节 | JSON Schema 校验与 coercion 引擎：draft 2020-12/7、无 eval、`check`/`errors`/`validate`/`coerce`/`parse` | 11 | 已分析 | 已生成 | 未实现 | 后置，见 D-053 |
+| `ai/src/utils/validation.ts`（新版本） | 69 | 改用 `compile(schema, { coerce: true })`；增加 `toolCall.argumentsError` 提前报错 | 11 | 已分析 | 已生成 | 不适用 | 仅了解 |
 
 ## 5. 测试与工程设施
 
@@ -798,6 +807,7 @@
 - 未分析：无。全部源文件已登记，`已分析`/`部分分析` 见第 4 节。
 - 未分配课程：无。
 - 待确认：无。课程 04 的 provider 工厂、动态刷新、`createProvider`、模型数量已记录在 `BUILD_PLAN.md` 决策表。
+- 快照之后的上游改动：`toolCall.argumentsError` 未实现。该字段让工具参数 JSON 解析失败时提前报错，属于 `ToolCall` 结构的一部分，涉及课程 03/05，后置。
 
 ## 附录 A：测试文件全量清单
 
