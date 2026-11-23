@@ -6,6 +6,7 @@ import type {
 	ToolResultMessage,
 	Usage,
 } from "@pipi/llm";
+import { validateToolArguments } from "@pipi/llm";
 import type {
 	AfterToolCallResult,
 	AgentContext,
@@ -80,7 +81,7 @@ export async function runAgentLoop(
 	prompts: AgentMessage[],
 	context: AgentContext,
 	config: AgentLoopConfig,
-	emit: AgentEventSink,
+	emit: AgentEventSink, // (event) => this.processEvents(event)
 	signal: AbortSignal | undefined,
 	streamFn: StreamFn, // 就是models.streamSimple
 ): Promise<AgentMessage[]> {
@@ -223,9 +224,9 @@ async function streamAssistantResponse(
 	}
 
 	let partial: AssistantMessage | undefined;
-	let addedPartial = false;  // 表示最后一条信息是partial，是不完整的
+	let addedPartial = false; // 表示最后一条信息是partial，是不完整的
 
-    // 消费流式事件
+	// 消费流式事件
 	for await (const event of response) {
 		switch (event.type) {
 			case "start":
@@ -238,11 +239,11 @@ async function streamAssistantResponse(
 			case "error": {
 				const finalMessage = await response.result(); // 取完整的消息
 				if (addedPartial) {
-                    // 用完整消息覆盖最后一条消息
+					// 用完整消息覆盖最后一条消息
 					context.messages[context.messages.length - 1] = finalMessage;
 				} else {
-                    // 没有addedPartial，说明start之前就出现了error / 忘发了start了
-                    // 直接把finalMessage加入，补发start
+					// 没有addedPartial，说明start之前就出现了error / 忘发了start了
+					// 直接把finalMessage加入，补发start
 					context.messages.push(finalMessage);
 					await emit({ type: "message_start", message: { ...finalMessage } });
 				}
@@ -262,7 +263,7 @@ async function streamAssistantResponse(
 		}
 	}
 
-    // 处理没发done/error的情况
+	// 处理没发done/error的情况
 	const finalMessage = await response.result();
 	if (addedPartial) {
 		context.messages[context.messages.length - 1] = finalMessage;
@@ -414,7 +415,9 @@ async function prepareToolCall(
 	config: AgentLoopConfig,
 	signal: AbortSignal | undefined,
 ): Promise<Preparation> {
+	// 找到context里tool的原定义
 	const tool = context.tools?.find((candidate) => candidate.name === toolCall.name);
+
 	// 没找到tool
 	if (!tool) {
 		return {
@@ -424,7 +427,13 @@ async function prepareToolCall(
 	}
 
 	try {
-		const args = tool.prepareArguments ? tool.prepareArguments(toolCall.arguments) : toolCall.arguments;
+		const preparedArguments = tool.prepareArguments ? tool.prepareArguments(toolCall.arguments) : toolCall.arguments; // 先用工具自带的prepareArguments
+		const preparedToolCall =
+			preparedArguments === toolCall.arguments
+				? toolCall
+				: { ...toolCall, arguments: preparedArguments as Record<string, unknown> };
+		// 做一点小容错转换，然后校验工具调用参数
+		const args = validateToolArguments(tool, preparedToolCall);
 		// hook
 		if (config.beforeToolCall) {
 			const before: BeforeToolCallResult | undefined = await config.beforeToolCall(
@@ -445,7 +454,7 @@ async function prepareToolCall(
 				value: { toolCall, result: createErrorToolResult("Operation aborted"), isError: true },
 			};
 		}
-		return { kind: "prepared", value: { toolCall, tool, args: args as Record<string, unknown> } };
+		return { kind: "prepared", value: { toolCall, tool, args } };
 	} catch (error) {
 		return {
 			kind: "immediate",
@@ -482,23 +491,22 @@ async function runPreparedCall(
 	let executed: ExecutedToolCall;
 
 	try {
-		const result = await tool.execute(
-            toolCall.id, args as never, signal, 
-            (partialResult) => { // 回调函数，让工具汇报进度
-    			if (!acceptingUpdates) return;  // acceptingUpdates=false后，更新内容直接丢弃
-    			updateEvents.push(
-    				Promise.resolve(
-    					emit({ // 工具执行过程中的进度事件
-    						type: "tool_execution_update",
-    						toolCallId: toolCall.id,
-    						toolName: toolCall.name,
-    						args,
-    						partialResult,
-    					}),
-    				),
-    			);
-    		}
-        );
+		const result = await tool.execute(toolCall.id, args as never, signal, (partialResult) => {
+			// 回调函数，让工具汇报进度
+			if (!acceptingUpdates) return; // acceptingUpdates=false后，更新内容直接丢弃
+			updateEvents.push(
+				Promise.resolve(
+					emit({
+						// 工具执行过程中的进度事件
+						type: "tool_execution_update",
+						toolCallId: toolCall.id,
+						toolName: toolCall.name,
+						args,
+						partialResult,
+					}),
+				),
+			);
+		});
 		acceptingUpdates = false; // execute结束，关闭闸门
 		await Promise.all(updateEvents);
 		executed = { result, isError: false };

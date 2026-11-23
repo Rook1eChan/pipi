@@ -26,7 +26,7 @@ export type StreamFn = (
 export type ToolExecutionMode = "sequential" | "parallel";
 
 /** 排队消息在排空点一次注入多少条。 */
-export type QueueMode = "all" | "one-at-a-time";
+export type QueueMode = "all" | "single";
 
 /** 助手消息中的工具调用块。 */
 export type AgentToolCall = ToolCall;
@@ -89,39 +89,39 @@ export interface PrepareNextTurnContext extends ShouldStopAfterTurnContext {}
 export interface AgentLoopConfig extends SimpleStreamOptions {
 	/** 本轮使用的模型；`prepareNextTurn` 可以为下一轮替换它。 */
 	model: Model;
-    
+
 	/** 把内部消息转成 LLM 能理解的格式；自定义角色在此转换或过滤，不能抛错。 */
 	convertToLlm: (messages: AgentMessage[]) => Message[] | Promise<Message[]>;
-    
+
 	/** 调模型前裁剪或注入上下文，返回替换后的消息列表。 */
 	transformContext?: (messages: AgentMessage[], signal?: AbortSignal) => AgentMessage[] | Promise<AgentMessage[]>;
-    
+
 	/** 每次请求动态解析 API key；没有可用 key 时返回 undefined。 */
 	getApiKey?: (provider: string) => string | undefined | Promise<string | undefined>;
-    
+
 	/** `turn_end` 之后调用；返回 true 则发出 `agent_end` 并停止循环。 */
 	shouldStopAfterTurn?: (context: ShouldStopAfterTurnContext) => boolean | Promise<boolean>;
-    
+
 	/** 下一轮开始前替换上下文、模型或思考档位；返回 undefined 表示不变。 */
 	prepareNextTurn?: (
 		context: PrepareNextTurnContext,
 	) => AgentLoopTurnUpdate | undefined | Promise<AgentLoopTurnUpdate | undefined>;
-    
+
 	/** 取中途插队消息，在下一次模型调用前注入当前上下文。 */
 	getSteeringMessages?: () => AgentMessage[] | Promise<AgentMessage[]>;
-    
+
 	/** 取排队追加消息；内层循环结束时消费，会开启新一轮。 */
 	getFollowUpMessages?: () => AgentMessage[] | Promise<AgentMessage[]>;
-    
+
 	/** 整批工具的执行模式；默认并行，任一工具要求串行时整批串行。 */
 	toolExecution?: ToolExecutionMode;
-    
+
 	/** 参数处理后、工具执行前调用；返回 `block` 可阻止执行。 */
 	beforeToolCall?: (
 		context: BeforeToolCallContext,
 		signal?: AbortSignal,
 	) => BeforeToolCallResult | undefined | Promise<BeforeToolCallResult | undefined>;
-    
+
 	/** 工具执行后、事件发出前调用；返回字段会逐项覆盖已执行结果。 */
 	afterToolCall?: (
 		context: AfterToolCallContext,
@@ -148,7 +148,7 @@ export type AgentToolUpdateCallback<T = unknown> = (partial: AgentToolResult<T>)
 export interface AgentTool<TParameters = Record<string, unknown>, TDetails = unknown> extends Tool {
 	/** UI 显示用的可读名称。 */
 	label: string;
-	/** schema 校验前的原始参数垫片；必须返回与目标 schema 匹配的对象。 */
+	/** 参数预处理函数：在 schema 校验前修正原始参数，必须返回与目标 schema 匹配的对象。 */
 	prepareArguments?: (args: unknown) => TParameters;
 	/** 执行工具；失败必须抛异常，循环会把它转成错误结果回填给模型。 */
 	execute: (
@@ -168,6 +168,40 @@ export interface AgentContext {
 	systemPrompt: string;
 	messages: AgentMessage[];
 	tools?: AgentTool[];
+}
+
+/**
+ * Agent 对外暴露的状态。
+ */
+export interface AgentState {
+	/** 每次请求附带的系统提示。 */
+	systemPrompt: string;
+
+	/** 后续轮次使用的模型。 */
+	model: Model;
+
+	/** 后续轮次请求的思考档位；`off` 表示不启用。 */
+	thinkingLevel: ModelThinkingLevel;
+
+	/** 可用工具；赋值时拷贝顶层数组。 */
+	set tools(tools: AgentTool[]);
+	get tools(): AgentTool[];
+
+	/** 对话历史；赋值时拷贝顶层数组。 */
+	set messages(messages: AgentMessage[]);
+	get messages(): AgentMessage[];
+
+	/** 当前是否正在处理一次运行。 */
+	readonly isRunning: boolean;
+
+	/** 正在流式生成的助手消息快照。 */
+	readonly streamingMessage?: AgentMessage;
+
+	/** 当前正在执行的工具调用 id 集合。 */
+	readonly pendingToolCalls: ReadonlySet<string>;
+
+	/** 最近一次失败或中止的错误信息。 */
+	readonly errorMessage?: string;
 }
 
 /** 应用可通过声明合并扩展自定义消息类型。 */

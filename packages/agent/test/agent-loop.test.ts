@@ -7,6 +7,7 @@ import {
 	type ToolResultMessage,
 	type Usage,
 } from "@pipi/llm";
+import { Type } from "typebox";
 import { describe, expect, it, vi } from "vitest";
 import {
 	type AgentEvent,
@@ -360,5 +361,90 @@ describe("runAgentLoop", () => {
 		const { events, messages } = await run(streamFn);
 		expect(events.some((event) => event.type === "message_update")).toBe(true);
 		expect((messages[1] as AssistantMessage).content).toEqual([{ type: "text", text: "complete" }]);
+	});
+});
+
+describe("tool argument validation", () => {
+	it("coerces arguments before execute", async () => {
+		const seen: unknown[] = [];
+		const first = assistant({
+			content: [toolCall("c1", "echo", { count: "5", label: "a" })],
+			stopReason: "toolUse",
+		});
+
+		await run(scriptedStreamFn(first, assistant()), {
+			tools: [
+				tool(
+					"echo",
+					async (_id, args) => {
+						seen.push(args);
+						return { content: [], details: {} };
+					},
+					{ parameters: Type.Object({ count: Type.Number(), label: Type.String() }) },
+				),
+			],
+		});
+
+		expect(seen).toEqual([{ count: 5, label: "a" }]);
+	});
+
+	it("turns invalid arguments into an error result without running the tool", async () => {
+		const execute = vi.fn(async () => ({ content: [], details: {} }));
+		const first = assistant({ content: [toolCall("c1", "echo", { count: "ten" })], stopReason: "toolUse" });
+
+		const { messages } = await run(scriptedStreamFn(first, assistant()), {
+			tools: [tool("echo", execute, { parameters: Type.Object({ count: Type.Number() }) })],
+		});
+
+		expect(execute).not.toHaveBeenCalled();
+		const result = messages.find((message) => message.role === "toolResult") as ToolResultMessage;
+		expect(result.isError).toBe(true);
+		const text = (result.content[0] as { text: string }).text;
+		expect(text).toContain('Validation failed for tool "echo"');
+		expect(text).toContain("Received arguments");
+	});
+
+	it("gives beforeToolCall the validated arguments", async () => {
+		const seen: unknown[] = [];
+		const first = assistant({ content: [toolCall("c1", "echo", { count: "7" })], stopReason: "toolUse" });
+
+		await run(scriptedStreamFn(first, assistant()), {
+			tools: [
+				tool("echo", async () => ({ content: [], details: {} }), {
+					parameters: Type.Object({ count: Type.Number() }),
+				}),
+			],
+			loopConfig: {
+				beforeToolCall: async (context) => {
+					seen.push(context.args);
+					return undefined;
+				},
+			},
+		});
+
+		expect(seen).toEqual([{ count: 7 }]);
+	});
+
+	it("validates the arguments returned by prepareArguments", async () => {
+		const seen: unknown[] = [];
+		const first = assistant({ content: [toolCall("c1", "echo", { value: "3" })], stopReason: "toolUse" });
+
+		await run(scriptedStreamFn(first, assistant()), {
+			tools: [
+				tool(
+					"echo",
+					async (_id, args) => {
+						seen.push(args);
+						return { content: [], details: {} };
+					},
+					{
+						parameters: Type.Object({ count: Type.Number() }),
+						prepareArguments: (args) => ({ count: (args as { value: string }).value }),
+					},
+				),
+			],
+		});
+
+		expect(seen).toEqual([{ count: 3 }]);
 	});
 });
