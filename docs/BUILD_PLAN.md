@@ -80,6 +80,20 @@
 | D-050 | 课程 10 按原项目实现 | `AgentState` 暴露全部运行态字段；监听者按注册顺序串行 await，异常冒泡；`steeringMode`、`followUpMode` 默认 `single` | 生效 | 2026-11-22 |
 | D-051 | `continue` 不预取 steering | `continue` 只判断 steering 是否存在，交由循环入口轮询注入；followUp 仍先 drain 作为 prompt。删除 `skipInitialSteeringPoll` | 生效 | 2026-11-22 |
 | D-052 | 队列模式取值改为 `single` | `QueueMode` 使用 `"all"` / `"single"`；语义仍是“一次取一条”，仅改名，与原项目的 `one-at-a-time` 不同 | 生效 | 2026-11-23 |
+| D-054 | 课程 12 实现全部八个工具 | 含 `powershell`（复用 bash 实现，仅换 shell 配置与提示）；渲染器后置到 TUI 课程 | 生效 | 2026-11-24 |
+| D-055 | `read` 图片分支按原项目 | MIME 识别、EXIF 方向、等比缩放，超出限制时压缩；引入 `@silvia-odwyer/photon-node` 0.3.4 | 生效 | 2026-11-24 |
+| D-056 | 搜索与编辑跟随原项目 | rg / fd 系统 PATH 优先，缺失时从 GitHub Releases 下载；`edit` 含模糊匹配、diff 与 unified patch | 生效 | 2026-11-24 |
+| D-057 | 截断、输出累积与写入队列纳入课程 12 | 工具执行直接依赖这些能力；课程 13 收窄为路径边界、审批与治理深化，剩余范围待确认 | 生效 | 2026-11-24 |
+| D-058 | bash 注入 `PI_*` 环境变量 | `PI_SESSION_ID`、`PI_SESSION_FILE`、`PI_PROVIDER`、`PI_MODEL`、`PI_REASONING_LEVEL` 来自工具上下文，默认开启 | 生效 | 2026-11-24 |
+| D-059 | 截断函数改名为 `truncateKeepHead` / `truncateKeepTail` | 原名 `truncateHead` / `truncateTail` 容易被读成“截掉头部 / 截掉尾部”，与“保留头部 / 保留尾部”的语义相反；仅改名，行为不变 | 生效 | 2026-11-24 |
+| D-060 | 修正尾部截断的 `truncatedBy` 误标 | 删除循环后的 `truncatedBy = "lines"` 兜底行；原项目在 `maxLines = 1` 且单行超字节时会错误报 `"lines"` | 生效 | 2026-11-24 |
+| D-061 | 课程 12 按“一个工具一次完整交付” | 每个任务交付一个工具的全部内容：路径/基础设施、实现、测试、导出、changelog；基础能力随首个使用它的工具一起实现 | 生效 | 2026-11-24 |
+| D-064 | `edit` 的模糊匹配只处理行尾空白 | 精确匹配失败时按“逐行去行尾空白”比较；原项目还处理缩进差异、智能引号与短横线归一化，暂不复现 | 生效 | 2026-11-24 |
+| D-065 | 命令执行直接用 `node:child_process` | 不引入 `cross-spawn`；Windows 的 `.cmd` 解析差异后续按需处理 | 生效 | 2026-11-24 |
+| D-066 | 工具文件按“工具 + 支撑”分层 | 八个工具与注册表放 `tools/`，`path-utils`、`truncate`、`queue`、`edit-diff`、`shell` 等放 `tools/support/`，图片在 `images/`；与原项目的扁平结构不同 | 生效 | 2026-11-24 |
+| D-067 | 二进制下载器简化 | `rg` / `fd` 先查安装目录与系统 PATH，缺失时从 GitHub Releases 下载；不校验 checksum，不内置解压实现（调用 `tar` / `unzip`） | 生效 | 2026-11-24 |
+| D-063 | 工具提示文案内联，不单独导出常量 | `promptSnippet` / `promptGuidelines` 直接写在工具定义里，后续工具一致；与上游的 `xxxToolSystemPromptContribution` 常量不同，代价是一致性测试要重复字面量 | 生效 | 2026-11-24 |
+| D-062 | 图片缩放同步执行 | 不实现 `image-resize-worker.ts` 的 worker 线程；缩放直接在进程内调用 photon，行为一致但会短暂占用事件循环 | 生效 | 2026-11-24 |
 | D-053 | 工具参数校验只走 TypeBox | 课程 11 只实现 TypeBox 路径：`structuredClone` → 删除可选 null → `Value.Convert` → `Compile().Check`；不实现普通 JSON Schema 的手写 coercion。上游 2026-11-01（`6536f80`）改为独立包 `@earendil-works/pi-schema`（draft 2020-12/7、无 eval、内建 coercion，约 12.4 万字节），本项目不引入；待接入 MCP 或第三方扩展提供的工具时重新评估 | 生效 | 2026-11-23 |
 
 维护规则：
@@ -91,7 +105,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–05、07、09、10、11 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
+课程 01–05、07、09–12 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -140,6 +154,16 @@
 | T-11-2 | 11 | `validateToolCall` 与 validator 缓存 | `packages/llm/src/utils/validation.ts` | T-11-1 | 按名字找不到工具时报错；同一 schema 复用缓存 | 已验收 |
 | T-11-3 | 11 | 接入 `agent-loop` 的 `prepareToolCall`，失败转工具错误结果 | `packages/agent/src/agent-loop.ts` | T-11-2 | 校验失败产生 `isError: true` 结果，`beforeToolCall` 收到合法参数 | 已验收 |
 | T-11-4 | 11 | 导出、测试与 changelog | `packages/llm/src/index.ts`、`packages/llm/test/*`、`packages/llm/CHANGELOG.md` | T-11-1..3 | `build`、`test`、`check` 通过 | 已验收 |
+| T-12-1 | 12 | 基础：截断与输出累积 | `packages/harness/src/tools/truncate.ts`、`output-accumulator.ts` | T-11-4 | 行/字节边界、UTF-8 边界、临时文件落盘测试通过 | 已验收 |
+| T-12-2 | 12 | `read`：路径解析、图像管线、分段读取、截断续读 | `packages/harness/src/tools/read.ts`、`packages/harness/src/tools/support/*`、`packages/harness/src/images/*` | T-12-1 | 文本 offset/limit、截断提示、图片返回 image 块、MIME 识别测试通过 | 已验收 |
+| T-12-3 | 12 | `write` 与写入队列 | `packages/harness/src/tools/write.ts`、`packages/harness/src/tools/support/file-mutation-queue.ts` | T-12-2 | 父目录自动创建；同文件并发写串行、不同文件并行 | 已验收 |
+| T-12-4 | 12 | `edit` 与 `edit-diff` | `packages/harness/src/tools/edit.ts`、`packages/harness/src/tools/support/edit-diff.ts` | T-12-3 | BOM/CRLF 保留；精确与模糊匹配；唯一性校验；返回 diff 与 patch | 已验收 |
+| T-12-5 | 12 | `ls` | `packages/harness/src/tools/ls.ts` | T-12-2 | 排序、条目上限、非目录报错 | 已验收 |
+| T-12-6 | 12 | `bash` 与 `PI_*` 环境变量 | `packages/harness/src/tools/bash.ts` | T-12-1、T-12-2 | 流式输出与进度事件；超时与中止杀进程树；非 0 退出码转错误 | 已验收 |
+| T-12-7 | 12 | `powershell` | `packages/harness/src/tools/powershell.ts` | T-12-6 | 复用 bash 实现，仅换 shell 配置 | 已验收 |
+| T-12-8 | 12 | `grep` 与 rg 获取 | `packages/harness/src/tools/grep.ts`、`packages/harness/src/tools/support/binary-manager.ts` | T-12-1、T-12-2 | 结果上限、长行截断、上下文行、`.gitignore` 生效 | 已验收 |
+| T-12-9 | 12 | `find` 与 fd 获取 | `packages/harness/src/tools/find.ts`、`packages/harness/src/tools/support/binary-manager.ts` | T-12-2、T-12-8 | glob 匹配、结果路径相对化、上限提示 | 已验收 |
+| T-12-10 | 12 | 工具注册、装配、测试与 changelog | `packages/harness/src/tools/index.ts`、`packages/harness/src/index.ts`、`packages/harness/test/*` | T-12-2..9 | `build`、`test`、`check` 通过 | 已验收 |
 
 ## 5. 任务模板
 
@@ -223,6 +247,16 @@
 | 2026-11-23 | T-11-3 实现完成：`prepareToolCall` 接入校验，新增 4 项循环测试；agent 测试改用 TypeBox schema |
 | 2026-11-23 | T-11-4 实现完成：公共入口导出校验函数，llm 与 agent changelog 更新；build、test、check 通过 |
 | 2026-11-23 | 用户验收 T-11-1 至 T-11-4，课程 11 完成 |
+| 2026-11-24 | 用户确认课程 12 B：八个工具全做、图片按原项目、搜索与编辑跟随原项目、截断与队列纳入本课、注入 `PI_*`；D-054 至 D-058 生效，批准 T-12-1 至 T-12-13 |
+| 2026-11-24 | T-12-1 实现完成：`truncate` 与 `output-accumulator`，新增 18 项测试；待用户验收 |
+| 2026-11-24 | D-059 生效：截断函数改名为 `truncateKeepHead` / `truncateKeepTail` |
+| 2026-11-24 | D-060 生效：删除截断循环后的兜底赋值，修正 `truncatedBy` 误标；补回归测试 |
+| 2026-11-24 | D-061、D-062 生效：课程 12 改为按工具完整交付，图片缩放同步执行 |
+| 2026-11-24 | T-12-2 实现完成：`read`、路径解析、图像管线；harness 测试 31 项通过；待用户验收 |
+| 2026-11-24 | D-063 生效：工具提示文案改为内联，删除 `readToolSystemPromptContribution` |
+| 2026-11-24 | D-064 至 D-067 生效：编辑模糊匹配范围、命令执行依赖、工具目录分层、下载器简化 |
+| 2026-11-24 | T-12-3 至 T-12-10 实现完成：write、edit、ls、bash、powershell、grep、find 与注册表；harness 10 个文件 60 项测试通过；待用户验收 |
+| 2026-11-24 | 用户验收 T-12-1 至 T-12-10，课程 12 完成 |
 
 ## 7. 最终验收目标
 

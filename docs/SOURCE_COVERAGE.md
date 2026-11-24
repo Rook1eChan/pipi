@@ -98,8 +98,8 @@
 | 09 | 3 | 已生成 | 部分实现 |
 | 10 | 2 | 已生成 | 部分实现 |
 | 11 | 1 | 已生成 | 已实现 |
-| 12 | 12 | 已生成 | 未开始 |
-| 13 | 8 | 未生成 | 未开始 |
+| 12 | 28 | 已生成 | 已实现 |
+| 13 | 1 | 未生成 | 未开始 |
 | 14 | 6 | 未生成 | 未开始 |
 | 15 | 4 | 未生成 | 未开始 |
 | 16 | 6 | 未生成 | 未开始 |
@@ -110,8 +110,8 @@
 | 21 | 8 | 未生成 | 未开始 |
 | 22 | 13 | 未生成 | 未开始 |
 | 23 | 39 | 未生成 | 未开始 |
-| 24 | 66 | 未生成 | 未开始 |
-| 25 | 37 | 未生成 | 未开始 |
+| 24 | 58 | 未生成 | 未开始 |
+| 25 | 36 | 未生成 | 未开始 |
 
 说明：课程 00 是全局导航，只涉及 `agent/src/index.ts`；课程 01 覆盖根配置、构建与测试设施（见 5.5），不计入 `src` 统计；课程 22–24 覆盖 `tui`；课程 25 覆盖脚本、native、CI 与 evals。
 
@@ -318,7 +318,7 @@
 | `core/agent-session.ts` | 3529 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/auth-guidance.ts` | 25 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
 | `core/auth-storage.ts` | 506 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
-| `core/bash-executor.ts` | 156 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/bash-executor.ts` | 156 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 后置（交互模式直接执行命令） |
 | `core/cache-stats.ts` | 164 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/compaction/branch-summarization.ts` | 367 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/compaction/compaction.ts` | 987 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -327,7 +327,7 @@
 | `core/defaults.ts` | 12 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/diagnostics.ts` | 15 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/event-bus.ts` | 33 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/exec.ts` | 107 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/exec.ts` | 107 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 后置（同上） |
 | `core/experimental.ts` | 3 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/export-html/ansi-to-html.ts` | 258 | 会话导出 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/export-html/index.ts` | 316 | 会话导出 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -370,18 +370,18 @@
 | `core/system-prompt.ts` | 149 | 提示与上下文装载 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/telemetry.ts` | 13 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/timings.ts` | 50 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/bash.ts` | 400 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
-| `core/tools/edit-diff.ts` | 556 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/edit.ts` | 220 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
-| `core/tools/file-mutation-queue.ts` | 61 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/find.ts` | 318 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
-| `core/tools/grep.ts` | 323 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
-| `core/tools/index.ts` | 224 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/ls.ts` | 175 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
-| `core/tools/output-accumulator.ts` | 222 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/path-utils.ts` | 118 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/powershell.ts` | 67 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
-| `core/tools/read.ts` | 205 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/tools/bash.ts` | 400 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/edit-diff.ts` | 556 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/edit.ts` | 220 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/file-mutation-queue.ts` | 61 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/find.ts` | 318 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/grep.ts` | 323 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/index.ts` | 224 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/ls.ts` | 175 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/output-accumulator.ts` | 222 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/path-utils.ts` | 118 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/powershell.ts` | 67 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/read.ts` | 205 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/render-utils.ts` | 85 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/renderers/bash.ts` | 163 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/renderers/edit.ts` | 238 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -391,9 +391,9 @@
 | `core/tools/renderers/ls.ts` | 70 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/renderers/read.ts` | 175 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/renderers/write.ts` | 181 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/tool-definition-wrapper.ts` | 47 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/truncate.ts` | 276 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/write.ts` | 97 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/tools/tool-definition-wrapper.ts` | 47 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/truncate.ts` | 276 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/tools/write.ts` | 97 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/trust-manager.ts` | 244 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/usage-totals.ts` | 70 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `extensions/index.ts` | 4 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -467,36 +467,36 @@
 | `utils/abort.ts` | 48 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/ansi.ts` | 60 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/changelog.ts` | 196 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/child-process.ts` | 137 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `utils/child-process.ts` | 137 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/clipboard-command.ts` | 44 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
 | `utils/clipboard-image.ts` | 259 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
 | `utils/clipboard.ts` | 77 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
 | `utils/deprecation.ts` | 14 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/exif-orientation.ts` | 182 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/exif-orientation.ts` | 182 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/frontmatter.ts` | 40 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/fs-watch.ts` | 30 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/git.ts` | 226 | 会话与分支 | 14 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/highlight-js.d.ts` | 36 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/html.ts` | 51 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/image-convert.ts` | 49 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/image-process.ts` | 119 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/image-resize-core.ts` | 164 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/image-resize-worker.ts` | 42 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/image-resize.ts` | 123 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/image-convert.ts` | 49 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `utils/image-process.ts` | 119 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `utils/image-resize-core.ts` | 164 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
+| `utils/image-resize-worker.ts` | 42 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 未实现 | 舍弃（改为同步缩放，见 D-062） |
+| `utils/image-resize.ts` | 123 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/json.ts` | 6 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/management-http.ts` | 78 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/mime.ts` | 116 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/mime.ts` | 116 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/open-browser.ts` | 24 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/paths.ts` | 139 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/photon.ts` | 139 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/photon.ts` | 139 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/pi-user-agent.ts` | 4 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/shell.ts` | 247 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 复现 |
+| `utils/shell.ts` | 247 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/sleep.ts` | 18 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/source-resolver.ts` | 86 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/syntax-highlight.ts` | 212 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/text.ts` | 9 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/tool-result-images.ts` | 62 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/tools-manager.ts` | 400 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/tools-manager.ts` | 400 | 通用工具 | 12 | 已登记 | 已生成 | 已实现 | 复现（简化，无校验和） |
 | `utils/version-check.ts` | 109 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/windows-self-update.ts` | 84 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
 
@@ -808,6 +808,7 @@
 - 未分配课程：无。
 - 待确认：无。课程 04 的 provider 工厂、动态刷新、`createProvider`、模型数量已记录在 `BUILD_PLAN.md` 决策表。
 - 快照之后的上游改动：`toolCall.argumentsError` 未实现。该字段让工具参数 JSON 解析失败时提前报错，属于 `ToolCall` 结构的一部分，涉及课程 03/05，后置。
+- 课程 13 剩余范围待确认：截断、输出累积、写入队列、diff、路径解析已前移到课程 12（D-057），目前只余 `core/tools/render-utils.ts` 的归属未定。
 
 ## 附录 A：测试文件全量清单
 

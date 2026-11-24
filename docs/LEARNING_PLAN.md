@@ -31,8 +31,8 @@
 | 09 | Agent 循环与事件协议 | 如何把"调模型 → 执行工具 → 再调模型"组织成循环？ | 循环控制 | `agent/src/agent-loop.ts`、`types.ts` | 05 | `09-agent-loop.md` | 已生成 | 验收通过 |
 | 10 | Agent 状态机与消息队列 | 状态、steering/followUp 队列、中止与继续如何管理？ | 有状态 Agent | `agent/src/agent.ts`、`proxy.ts` | 09 | `10-agent-state.md` | 已生成 | 验收通过 |
 | 11 | 工具执行语义 | 串行/并行、参数校验、前后钩子、结果回填如何工作？ | 工具执行 | `agent-loop.ts` 工具段、`ai/src/utils/validation.ts` | 09 | `11-tool-execution.md` | 已生成 | 验收通过 |
-| 12 | 内置工具 | 如何安全地读写文件、搜索代码、执行命令？ | 动手能力 | `coding-agent/src/core/tools/*`、`bash-executor.ts` | 11 | `12-builtin-tools.md` | 已生成 | A 学习中 |
-| 13 | 工具输出治理与安全 | 如何截断输出、串行化写入、约束路径、生成 diff？ | 输出治理 | `truncate.ts`、`output-accumulator.ts`、`edit-diff.ts`、`file-mutation-queue.ts`、`path-utils.ts` | 12 | `13-tool-output-safety.md` | 未生成 | 待学习 |
+| 12 | 内置工具 | 如何安全地读写文件、搜索代码、执行命令？ | 动手能力 | `coding-agent/src/core/tools/*`、`bash-executor.ts` | 11 | `12-builtin-tools.md` | 已生成 | 验收通过 |
+| 13 | 工具治理与安全 | 路径越界、写入确认与命令审计如何约束？ | 输出治理 | 待重定（截断、队列、diff 已前移至课程 12） | 12 | `13-tool-output-safety.md` | 未生成 | 待学习 |
 | 14 | 会话持久化与分支 | JSONL 会话、消息树、分支切换、上下文重建如何实现？ | 会话存储 | `session-manager.ts`、`messages.ts`、`session-export.ts` | 10 | `14-session-persistence.md` | 未生成 | 待学习 |
 | 15 | 提示、上下文与技能 | 系统提示、AGENTS.md、技能、提示模板如何装载？ | 上下文构造 | `system-prompt.ts`、`resource-loader.ts`、`skills.ts`、`prompt-templates.ts` | 14 | `15-prompts-context-skills.md` | 未生成 | 待学习 |
 | 16 | 上下文压缩与分支摘要 | 超出上下文窗口时如何压缩并保持可继续？ | 长会话 | `core/compaction/*`、`ai/src/utils/estimate.ts` | 15 | `16-compaction.md` | 未生成 | 待学习 |
@@ -50,14 +50,14 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 当前课程 | 12 内置工具 |
-| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表）、05（API adapter）、07（API Key 认证与凭据）、09（Agent 循环与事件协议）、10（Agent 状态机）、11（工具执行语义） |
+| 当前课程 | 无（课程 12 已完成，待选择下一课） |
+| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表）、05（API adapter）、07（API Key 认证与凭据）、09（Agent 循环与事件协议）、10（Agent 状态机）、11（工具执行语义）、12（内置工具） |
 | 已完成 A 的课程 | 00、01、02、03、04、05、07、09、10、11 |
-| 已确认 B 的课程 | 00、01、02、03、04、05、07、09、10、11 |
+| 已确认 B 的课程 | 00、01、02、03、04、05、07、09、10、11、12 |
 | 已生成文档 | 00–12 |
-| 已实现课程 | 01、02、03、04、05、07、09、10、11 |
+| 已实现课程 | 01、02、03、04、05、07、09、10、11、12 |
 | 已跳过课程 | 08（用户决定跳过，不实现图像生成） |
-| 当前阶段 | 课程 06 暂缓；课程 08 跳过；课程 12 进行 A 阶段 |
+| 当前阶段 | 课程 06 暂缓；课程 08 跳过；课程 12 已验收；下一课待选择 |
 
 ## 4. 待确认前提索引
 
