@@ -315,7 +315,7 @@ export async function runAgentLoop(
 - `stream-fn.ts` 与全局默认槽位（D-047）
 - 工具参数校验（课程 11）
 - `Agent` 状态机、消息队列与 `proxy`（课程 10）
-- 会话持久化与压缩（课程 14、16）
+- 会话持久化与压缩（课程 13、16）
 
 ### 4.3 任务拆分
 

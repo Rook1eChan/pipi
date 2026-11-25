@@ -37,10 +37,10 @@
 | `ai` | Provider 注册表 | provider 集合、模型查找、流式分发、认证委托 | 模型目录与运行时入口 | 04 |
 | `ai` | 公共导出面 | pi-ai 的公共 API 边界 | 只导出类型与核心类，避免副作用 | 02 |
 | `ai` | Provider 与模型目录 | 各 provider 工厂与生成的模型数据 | 内置 provider 的模型清单 | 04 |
-| `ai` | 会话资源 | 会话级共享资源与缓存辅助 | 跨请求复用连接/资源 | 14 |
+| `ai` | 会话资源 | 会话级共享资源与缓存辅助 | 跨请求复用连接/资源 | 13 |
 | `ai` | 类型系统 | 跨 provider 的统一消息/内容块/用量/工具/模型类型 | 所有上层模块的共同语言 | 02 |
 | `ai` | 请求基础设施 | HTTP 代理、错误体解析、header、诊断 | provider 请求的公共底座 | 06 |
-| `ai` | 上下文压缩 | token 估算与溢出判定辅助 | 压缩触发 | 16 |
+| `ai` | 上下文压缩 | token 估算与溢出判定辅助 | 压缩触发 | 15 |
 | `ai` | 通用工具 | 文本、哈希、UUID、TypeBox 辅助 | 各模块共用的小工具 | 02 |
 | `ai` | 请求重试 | 可重试错误判定与退避 | 网络抖动与 429 的恢复 | 06 |
 | `ai` | 工具参数校验 | TypeBox 校验、类型强制转换、错误格式化 | 工具调用参数的可信化 | 11 |
@@ -48,37 +48,37 @@
 | `agent` | Agent 状态机 | 状态、消息历史、steering/followUp 队列、中止与继续 | 把循环包装成有状态对象 | 10 |
 | `agent` | 公共导出面 | pi-agent-core 的公共导出 | 把 Agent、循环、类型暴露给产品层 | 00 |
 | `agent` | Agent 类型与事件 | AgentMessage、AgentTool、AgentEvent、循环配置 | 核心与产品层的接口契约 | 09 |
-| `tui` | 终端与渲染内核 | 终端能力、布局、帧差分、输入解析 | 所有终端 UI 的底座 | 22 |
-| `tui` | 编辑器与组件 | 多行编辑器、自动补全、撤销、模糊匹配 | 交互输入体验 | 23 |
-| `tui` | TUI 组件 | 文本、输入、列表、滚动、markdown 等组件 | 可组合的界面单元 | 23 |
-| `tui` | 公共导出面 | pi-tui 的公共导出 | 组件与渲染 API 的统一出口 | 22 |
-| `tui` | 原生模块 | 剪贴板、平台能力、原生路径 | 跨平台增强能力 | 25 |
-| `tui` | 终端图像 | 终端图片协议与渲染 | 图片预览 | 23 |
-| `coding-agent` | Bun 运行时适配 | Bun 下的环境恢复与沙箱 | 二进制发行版 | 25 |
-| `coding-agent` | CLI 启动 | 参数解析、模式选择、首次启动、运行时创建 | 用户入口 | 17 |
-| `coding-agent` | 配置与信任 | 设置分层、项目信任、配置值解析 | 安全与可配置性 | 17 |
-| `coding-agent` | 会话编排 | 把 Agent、会话、工具、扩展、压缩串起来 | 产品级会话对象 | 18 |
+| `tui` | 终端与渲染内核 | 终端能力、布局、帧差分、输入解析 | 所有终端 UI 的底座 | 21 |
+| `tui` | 编辑器与组件 | 多行编辑器、自动补全、撤销、模糊匹配 | 交互输入体验 | 22 |
+| `tui` | TUI 组件 | 文本、输入、列表、滚动、markdown 等组件 | 可组合的界面单元 | 22 |
+| `tui` | 公共导出面 | pi-tui 的公共导出 | 组件与渲染 API 的统一出口 | 21 |
+| `tui` | 原生模块 | 剪贴板、平台能力、原生路径 | 跨平台增强能力 | 24 |
+| `tui` | 终端图像 | 终端图片协议与渲染 | 图片预览 | 22 |
+| `coding-agent` | Bun 运行时适配 | Bun 下的环境恢复与沙箱 | 二进制发行版 | 24 |
+| `coding-agent` | CLI 启动 | 参数解析、模式选择、首次启动、运行时创建 | 用户入口 | 16 |
+| `coding-agent` | 配置与信任 | 设置分层、项目信任、配置值解析 | 安全与可配置性 | 16 |
+| `coding-agent` | 会话编排 | 把 Agent、会话、工具、扩展、压缩串起来 | 产品级会话对象 | 17 |
 | `coding-agent` | 认证与凭据 | 凭据存储、运行时凭据、认证指引 | 登录与鉴权 | 07 |
 | `coding-agent` | 内置工具 | read/write/edit/bash/ls/grep/find/powershell | Agent 的实际动手能力 | 12 |
-| `coding-agent` | 上下文压缩 | 切点选择、摘要生成、分支摘要 | 长会话继续运行 | 16 |
-| `coding-agent` | 工程与诊断 | 遥测、计时、诊断、HTTP 分发、实验开关 | 可观测性与运维 | 25 |
-| `coding-agent` | 会话导出 | 导出 HTML/JSON、模板与语法高亮 | 分享与归档 | 24 |
-| `coding-agent` | 扩展系统 | 扩展加载、类型、执行器、UI 钩子 | 可编程扩展点 | 21 |
-| `coding-agent` | 交互模式 | 聊天视口、组件、主题、选择器、快捷键 | 终端交互体验 | 24 |
-| `coding-agent` | 会话持久化 | JSONL 会话、树结构、分支、上下文重建 | 历史可恢复 | 14 |
-| `coding-agent` | 模型运行时 | 模型选择、解析、动态 provider、动态目录 | 运行时模型管理 | 19 |
-| `coding-agent` | 扩展与包管理 | 安装/更新/锁定 pi 包，解析资源清单 | 扩展生态 | 21 |
-| `coding-agent` | 提示与上下文装载 | 系统提示、AGENTS.md、技能、提示模板 | 模型行为与项目上下文 | 15 |
-| `coding-agent` | 工具治理 | 截断、输出累积、diff、文件变更队列、路径约束 | 工具输出的安全与可控 | 13 |
-| `coding-agent` | 工具渲染 | 把工具调用与结果渲染成终端视图 | 工具执行的可视化 | 23 |
-| `coding-agent` | 本地模型接入 | llama.cpp 本地 provider 与 UI | 离线模型 | 19 |
-| `coding-agent` | SDK 导出面 | 对外暴露的编程接口 | 嵌入其他程序 | 18 |
-| `coding-agent` | 运行模式 | print / JSON / RPC 三种非交互模式 | 脚本集成 | 20 |
-| `coding-agent` | 通用工具 | 路径、JSON、文件监听、版本检查等 | 产品层公共辅助 | 25 |
-| `coding-agent` | 渲染工具 | ANSI、文本宽度、语法高亮、HTML | 终端渲染辅助 | 23 |
-| `coding-agent` | 剪贴板与图像 | 剪贴板读写、图片转换/缩放/EXIF | 图片输入 | 24 |
-| `coding-agent` | 会话与分支 | git 状态与分支相关辅助 | 会话分支与工作区 | 14 |
-| `evals` | 评测 | 文档、扩展示例、冒烟评测 | 质量回归 | 25 |
+| `coding-agent` | 上下文压缩 | 切点选择、摘要生成、分支摘要 | 长会话继续运行 | 15 |
+| `coding-agent` | 工程与诊断 | 遥测、计时、诊断、HTTP 分发、实验开关 | 可观测性与运维 | 24 |
+| `coding-agent` | 会话导出 | 导出 HTML/JSON、模板与语法高亮 | 分享与归档 | 23 |
+| `coding-agent` | 扩展系统 | 扩展加载、类型、执行器、UI 钩子 | 可编程扩展点 | 20 |
+| `coding-agent` | 交互模式 | 聊天视口、组件、主题、选择器、快捷键 | 终端交互体验 | 23 |
+| `coding-agent` | 会话持久化 | JSONL 会话、树结构、分支、上下文重建 | 历史可恢复 | 13 |
+| `coding-agent` | 模型运行时 | 模型选择、解析、动态 provider、动态目录 | 运行时模型管理 | 18 |
+| `coding-agent` | 扩展与包管理 | 安装/更新/锁定 pi 包，解析资源清单 | 扩展生态 | 20 |
+| `coding-agent` | 提示与上下文装载 | 系统提示、AGENTS.md、技能、提示模板 | 模型行为与项目上下文 | 14 |
+| `coding-agent` | 工具输出限制 | 截断、输出累积、diff、文件变更队列、路径约束 | 工具输出的安全与可控 | 12 |
+| `coding-agent` | 工具渲染 | 把工具调用与结果渲染成终端视图 | 工具执行的可视化 | 22 |
+| `coding-agent` | 本地模型接入 | llama.cpp 本地 provider 与 UI | 离线模型 | 18 |
+| `coding-agent` | SDK 导出面 | 对外暴露的编程接口 | 嵌入其他程序 | 17 |
+| `coding-agent` | 运行模式 | print / JSON / RPC 三种非交互模式 | 脚本集成 | 19 |
+| `coding-agent` | 通用工具 | 路径、JSON、文件监听、版本检查等 | 产品层公共辅助 | 24 |
+| `coding-agent` | 渲染工具 | ANSI、文本宽度、语法高亮、HTML | 终端渲染辅助 | 22 |
+| `coding-agent` | 剪贴板与图像 | 剪贴板读写、图片转换/缩放/EXIF | 图片输入 | 23 |
+| `coding-agent` | 会话与分支 | git 状态与分支相关辅助 | 会话分支与工作区 | 13 |
+| `evals` | 评测 | 文档、扩展示例、冒烟评测 | 质量回归 | 24 |
 
 ## 3. 课程覆盖汇总
 
@@ -98,22 +98,19 @@
 | 09 | 3 | 已生成 | 部分实现 |
 | 10 | 2 | 已生成 | 部分实现 |
 | 11 | 1 | 已生成 | 已实现 |
-| 12 | 28 | 已生成 | 已实现 |
-| 13 | 1 | 未生成 | 未开始 |
-| 14 | 6 | 未生成 | 未开始 |
-| 15 | 4 | 未生成 | 未开始 |
-| 16 | 6 | 未生成 | 未开始 |
-| 17 | 21 | 未生成 | 未开始 |
-| 18 | 12 | 未生成 | 未开始 |
-| 19 | 15 | 未生成 | 未开始 |
-| 20 | 8 | 未生成 | 未开始 |
-| 21 | 8 | 未生成 | 未开始 |
-| 22 | 13 | 未生成 | 未开始 |
-| 23 | 39 | 未生成 | 未开始 |
-| 24 | 58 | 未生成 | 未开始 |
-| 25 | 36 | 未生成 | 未开始 |
-
-说明：课程 00 是全局导航，只涉及 `agent/src/index.ts`；课程 01 覆盖根配置、构建与测试设施（见 5.5），不计入 `src` 统计；课程 22–24 覆盖 `tui`；课程 25 覆盖脚本、native、CI 与 evals。
+| 12 | 26 | 已生成 | 已实现 |
+| 13 | 6 | 已生成 | 部分实现 |
+| 14 | 4 | 已生成 | 未开始 |
+| 15 | 6 | 未生成 | 未开始 |
+| 16 | 21 | 未生成 | 未开始 |
+| 17 | 12 | 未生成 | 未开始 |
+| 18 | 15 | 未生成 | 未开始 |
+| 19 | 9 | 未生成 | 未开始 |
+| 20 | 9 | 未生成 | 未开始 |
+| 21 | 13 | 未生成 | 未开始 |
+| 22 | 39 | 未生成 | 未开始 |
+| 23 | 59 | 未生成 | 未开始 |
+| 24 | 36 | 未生成 | 未开始 |
 
 ## 4. 逐文件登记
 
@@ -208,7 +205,7 @@
 | `providers/xiaomi.ts` | 15 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `providers/zai-coding-cn.ts` | 15 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
 | `providers/zai.ts` | 15 | Provider 与模型目录 | 04 | 已登记 | 已生成 | 未开始 | 仅了解 |
-| `session-resources.ts` | 24 | 会话资源 | 14 | 已登记 | 未生成 | 未开始 | 复现 |
+| `session-resources.ts` | 24 | 会话资源 | 13 | 已登记 | 已生成 | 未开始 | 复现 |
 | `types.ts` | 843 | 类型系统 | 02 | 已分析 | 已生成 | 部分实现 | 复现 |
 | `utils/abort-signals.ts` | 41 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/abort.ts` | 50 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -216,13 +213,13 @@
 | `utils/deferred-tools.ts` | 39 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/diagnostics.ts` | 45 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/error-body.ts` | 149 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/estimate.ts` | 143 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/estimate.ts` | 143 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/event-stream.ts` | 110 | 流式协议 | 03 | 已分析 | 已生成 | 已实现 | 复现 |
 | `utils/hash.ts` | 13 | 通用工具 | 02 | 已登记 | 已生成 | 未开始 | 复现 |
 | `utils/headers.ts` | 18 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/json-parse.ts` | 124 | 流式协议 | 03 | 已分析 | 已生成 | 已实现 | 复现 |
 | `utils/node-http-proxy.ts` | 161 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/overflow.ts` | 183 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/overflow.ts` | 183 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/pi-user-agent.ts` | 19 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/provider-env.ts` | 52 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/provider-retry.ts` | 125 | 请求基础设施 | 06 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -249,127 +246,127 @@
 
 | 文件或文件组 | 行数 | 模块 | 课程 | 分析状态 | 课程覆盖 | 复现状态 | 处理策略 |
 | --- | ---: | --- | --- | --- | --- | --- | --- |
-| `alt-screen-search.ts` | 327 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `autocomplete.ts` | 826 | 编辑器与组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/alt-screen-flash.ts` | 51 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/box.ts` | 167 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/cancellable-loader.ts` | 40 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/editor.ts` | 2461 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/h-stack.ts` | 44 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/image.ts` | 127 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/input.ts` | 494 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/loader.ts` | 101 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/markdown.ts` | 1015 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/mouse-region.ts` | 33 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/scroll-view.ts` | 224 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/select-list.ts` | 273 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/settings-list.ts` | 328 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/spacer.ts` | 28 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/stack.ts` | 154 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/text.ts` | 107 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/truncated-text.ts` | 65 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `components/v-stack.ts` | 33 | TUI 组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `editor-component.ts` | 74 | 编辑器与组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `fuzzy.ts` | 137 | 编辑器与组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `index.ts` | 156 | 公共导出面 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `keybindings.ts` | 320 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `keys.ts` | 1401 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `kill-ring.ts` | 46 | 编辑器与组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `latex.ts` | 1394 | 编辑器与组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `layout-node.ts` | 51 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `layout.ts` | 449 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `native-modifiers.ts` | 13 | 原生模块 | 25 | 已登记 | 未生成 | 未开始 | 后置 |
-| `native-module-path.ts` | 31 | 原生模块 | 25 | 已登记 | 未生成 | 未开始 | 后置 |
-| `native-platform.ts` | 63 | 原生模块 | 25 | 已登记 | 未生成 | 未开始 | 后置 |
-| `stdin-buffer.ts` | 444 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `terminal-colors.ts` | 73 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `terminal-image.ts` | 696 | 终端图像 | 23 | 已登记 | 未生成 | 未开始 | 后置 |
-| `terminal.ts` | 547 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `tui-alt-screen.ts` | 1721 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `tui-main-screen.ts` | 655 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `tui.ts` | 1456 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `undo-stack.ts` | 28 | 编辑器与组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils.ts` | 1337 | 终端与渲染内核 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
-| `word-navigation.ts` | 117 | 编辑器与组件 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `alt-screen-search.ts` | 327 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `autocomplete.ts` | 826 | 编辑器与组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/alt-screen-flash.ts` | 51 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/box.ts` | 167 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/cancellable-loader.ts` | 40 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/editor.ts` | 2461 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/h-stack.ts` | 44 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/image.ts` | 127 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/input.ts` | 494 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/loader.ts` | 101 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/markdown.ts` | 1015 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/mouse-region.ts` | 33 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/scroll-view.ts` | 224 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/select-list.ts` | 273 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/settings-list.ts` | 328 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/spacer.ts` | 28 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/stack.ts` | 154 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/text.ts` | 107 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/truncated-text.ts` | 65 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `components/v-stack.ts` | 33 | TUI 组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `editor-component.ts` | 74 | 编辑器与组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `fuzzy.ts` | 137 | 编辑器与组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `index.ts` | 156 | 公共导出面 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `keybindings.ts` | 320 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `keys.ts` | 1401 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `kill-ring.ts` | 46 | 编辑器与组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `latex.ts` | 1394 | 编辑器与组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `layout-node.ts` | 51 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `layout.ts` | 449 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `native-modifiers.ts` | 13 | 原生模块 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `native-module-path.ts` | 31 | 原生模块 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `native-platform.ts` | 63 | 原生模块 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `stdin-buffer.ts` | 444 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `terminal-colors.ts` | 73 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `terminal-image.ts` | 696 | 终端图像 | 22 | 已登记 | 未生成 | 未开始 | 后置 |
+| `terminal.ts` | 547 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `tui-alt-screen.ts` | 1721 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `tui-main-screen.ts` | 655 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `tui.ts` | 1456 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `undo-stack.ts` | 28 | 编辑器与组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils.ts` | 1337 | 终端与渲染内核 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
+| `word-navigation.ts` | 117 | 编辑器与组件 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
 
 ### 4.4 `packages/coding-agent/src`（203 文件 / 59050 行）
 
 | 文件或文件组 | 行数 | 模块 | 课程 | 分析状态 | 课程覆盖 | 复现状态 | 处理策略 |
 | --- | ---: | --- | --- | --- | --- | --- | --- |
-| `bun/cli.ts` | 4 | Bun 运行时适配 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `bun/restore-sandbox-env.ts` | 36 | Bun 运行时适配 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `bun/runtime-setup.ts` | 6 | Bun 运行时适配 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `bun/sandbox-env-setup.ts` | 4 | Bun 运行时适配 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `cli.ts` | 24 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/args.ts` | 426 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/auth-check.ts` | 73 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/auth-command.ts` | 126 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/config-selector.ts` | 59 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/credential-print.ts` | 87 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/file-processor.ts` | 113 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/initial-message.ts` | 43 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/list-models.ts` | 115 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/project-trust.ts` | 62 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/session-picker.ts` | 55 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/startup-ui.ts` | 188 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `config.ts` | 576 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/agent-session-runtime.ts` | 449 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/agent-session-services.ts` | 317 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/agent-session.ts` | 3529 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `bun/cli.ts` | 4 | Bun 运行时适配 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `bun/restore-sandbox-env.ts` | 36 | Bun 运行时适配 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `bun/runtime-setup.ts` | 6 | Bun 运行时适配 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `bun/sandbox-env-setup.ts` | 4 | Bun 运行时适配 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `cli.ts` | 24 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/args.ts` | 426 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/auth-check.ts` | 73 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/auth-command.ts` | 126 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/config-selector.ts` | 59 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/credential-print.ts` | 87 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/file-processor.ts` | 113 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/initial-message.ts` | 43 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/list-models.ts` | 115 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/project-trust.ts` | 62 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/session-picker.ts` | 55 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli/startup-ui.ts` | 188 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `config.ts` | 576 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/agent-session-runtime.ts` | 449 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/agent-session-services.ts` | 317 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/agent-session.ts` | 3529 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/auth-guidance.ts` | 25 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
 | `core/auth-storage.ts` | 506 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
-| `core/bash-executor.ts` | 156 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 后置（交互模式直接执行命令） |
-| `core/cache-stats.ts` | 164 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/branch-summarization.ts` | 367 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/compaction.ts` | 987 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/index.ts` | 7 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/utils.ts` | 175 | 上下文压缩 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/defaults.ts` | 12 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/diagnostics.ts` | 15 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/event-bus.ts` | 33 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/exec.ts` | 107 | 内置工具 | 12 | 已登记 | 已生成 | 未开始 | 后置（同上） |
-| `core/experimental.ts` | 3 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/export-html/ansi-to-html.ts` | 258 | 会话导出 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/export-html/index.ts` | 316 | 会话导出 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/export-html/tool-renderer.ts` | 172 | 会话导出 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/extensions/index.ts` | 192 | 扩展系统 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/extensions/loader.ts` | 798 | 扩展系统 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/extensions/runner.ts` | 1277 | 扩展系统 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/extensions/types.ts` | 1777 | 扩展系统 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/extensions/wrapper.ts` | 45 | 扩展系统 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/footer-data-provider.ts` | 388 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/http-dispatcher.ts` | 191 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/index.ts` | 80 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/keybindings.ts` | 384 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/messages.ts` | 195 | 会话持久化 | 14 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/model-config.ts` | 299 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/model-registry.ts` | 173 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/model-resolver.ts` | 770 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/model-runtime.ts` | 772 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/models-store.ts` | 147 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/output-guard.ts` | 108 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/package-manager.ts` | 2636 | 扩展与包管理 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/pi-manifest.ts` | 34 | 扩展与包管理 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/project-trust.ts` | 96 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/prompt-templates.ts` | 285 | 提示与上下文装载 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/provider-attribution.ts` | 69 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/provider-composer.ts` | 577 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/remote-catalog-provider.ts` | 137 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/resolve-config-value.ts` | 287 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/resource-loader.ts` | 921 | 提示与上下文装载 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/bash-executor.ts` | 156 | 内置工具 | 19 | 已登记 | 已生成 | 未开始 | 后置（交互模式直接执行命令） |
+| `core/cache-stats.ts` | 164 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/compaction/branch-summarization.ts` | 367 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/compaction/compaction.ts` | 987 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/compaction/index.ts` | 7 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/compaction/utils.ts` | 175 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/defaults.ts` | 12 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/diagnostics.ts` | 15 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/event-bus.ts` | 33 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/exec.ts` | 107 | 内置工具 | 20 | 已登记 | 已生成 | 未开始 | 后置（同上） |
+| `core/experimental.ts` | 3 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/export-html/ansi-to-html.ts` | 258 | 会话导出 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/export-html/index.ts` | 316 | 会话导出 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/export-html/tool-renderer.ts` | 172 | 会话导出 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/extensions/index.ts` | 192 | 扩展系统 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/extensions/loader.ts` | 798 | 扩展系统 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/extensions/runner.ts` | 1277 | 扩展系统 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/extensions/types.ts` | 1777 | 扩展系统 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/extensions/wrapper.ts` | 45 | 扩展系统 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/footer-data-provider.ts` | 388 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/http-dispatcher.ts` | 191 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/index.ts` | 80 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/keybindings.ts` | 384 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/messages.ts` | 195 | 会话持久化 | 13 | 已登记 | 已生成 | 部分实现 | 复现 |
+| `core/model-config.ts` | 299 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/model-registry.ts` | 173 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/model-resolver.ts` | 770 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/model-runtime.ts` | 772 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/models-store.ts` | 147 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/output-guard.ts` | 108 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/package-manager.ts` | 2636 | 扩展与包管理 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/pi-manifest.ts` | 34 | 扩展与包管理 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/project-trust.ts` | 96 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/prompt-templates.ts` | 285 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/provider-attribution.ts` | 69 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/provider-composer.ts` | 577 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/remote-catalog-provider.ts` | 137 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/resolve-config-value.ts` | 287 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/resource-loader.ts` | 921 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
 | `core/runtime-credentials.ts` | 52 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
-| `core/sdk.ts` | 410 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/session-cwd.ts` | 60 | 会话持久化 | 14 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/session-export.ts` | 42 | 会话持久化 | 14 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/session-manager.ts` | 1642 | 会话持久化 | 14 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/settings-diagnostics.ts` | 25 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/settings-manager.ts` | 1389 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/skills.ts` | 509 | 提示与上下文装载 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/slash-commands.ts` | 43 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/source-info.ts` | 40 | 模型运行时 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/system-prompt.ts` | 149 | 提示与上下文装载 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/telemetry.ts` | 13 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/timings.ts` | 50 | 工程与诊断 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/sdk.ts` | 410 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/session-cwd.ts` | 60 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现（合并进发现模块） |
+| `core/session-export.ts` | 42 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/session-manager.ts` | 1642 | 会话持久化 | 13 | 已登记 | 已生成 | 部分实现 | 复现 |
+| `core/settings-diagnostics.ts` | 25 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/settings-manager.ts` | 1389 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/skills.ts` | 509 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/slash-commands.ts` | 43 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/source-info.ts` | 40 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/system-prompt.ts` | 149 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/telemetry.ts` | 13 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/timings.ts` | 50 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/bash.ts` | 400 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/edit-diff.ts` | 556 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/edit.ts` | 220 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
@@ -382,138 +379,138 @@
 | `core/tools/path-utils.ts` | 118 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/powershell.ts` | 67 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/read.ts` | 205 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `core/tools/render-utils.ts` | 85 | 工具治理 | 13 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/bash.ts` | 163 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/edit.ts` | 238 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/find.ts` | 77 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/grep.ts` | 82 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/index.ts` | 63 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/ls.ts` | 70 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/read.ts` | 175 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/tools/renderers/write.ts` | 181 | 工具渲染 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/render-utils.ts` | 85 | 工具治理 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/bash.ts` | 163 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/edit.ts` | 238 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/find.ts` | 77 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/grep.ts` | 82 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/index.ts` | 63 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/ls.ts` | 70 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/read.ts` | 175 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/tools/renderers/write.ts` | 181 | 工具渲染 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/tool-definition-wrapper.ts` | 47 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/truncate.ts` | 276 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/write.ts` | 97 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `core/trust-manager.ts` | 244 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/usage-totals.ts` | 70 | 会话编排 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `extensions/index.ts` | 4 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
-| `extensions/llama/client.ts` | 343 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 后置 |
-| `extensions/llama/huggingface.ts` | 158 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 后置 |
-| `extensions/llama/index.ts` | 230 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 后置 |
-| `extensions/llama/provider.ts` | 180 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 后置 |
-| `extensions/llama/ui.ts` | 542 | 本地模型接入 | 19 | 已登记 | 未生成 | 未开始 | 后置 |
-| `index.ts` | 421 | SDK 导出面 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `main.ts` | 1120 | CLI 启动 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `migrations.ts` | 315 | 配置与信任 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/index.ts` | 16 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/chat-viewport.ts` | 46 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/armin.ts` | 382 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/assistant-message.ts` | 202 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/bash-execution.ts` | 220 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/bordered-loader.ts` | 68 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/branch-summary-message.ts` | 58 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/compaction-summary-message.ts` | 59 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/config-selector.ts` | 935 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/countdown-timer.ts` | 39 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/custom-editor.ts` | 148 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/custom-entry.ts` | 62 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/custom-message.ts` | 113 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/daxnuts.ts` | 164 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/diff.ts` | 147 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/dynamic-border.ts` | 25 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/extension-editor.ts` | 132 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/extension-input.ts` | 87 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/extension-selector.ts` | 112 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/first-time-setup.ts` | 145 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/footer.ts` | 245 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/index.ts` | 37 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/keybinding-hints.ts` | 48 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/login-dialog.ts` | 233 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/markdown-transform.ts` | 29 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/mermaid.ts` | 89 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/model-selector.ts` | 421 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/oauth-selector.ts` | 214 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
-| `modes/interactive/components/scoped-models-selector.ts` | 401 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/session-selector-search.ts` | 194 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/session-selector.ts` | 1031 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/settings-selector.ts` | 943 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/settings-submenu.ts` | 258 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/show-images-selector.ts` | 50 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/skill-invocation-message.ts` | 55 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/status-indicator.ts` | 123 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/thinking-selector.ts` | 154 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/tool-execution.ts` | 421 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/tree-selector.ts` | 1247 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/trust-selector.ts` | 134 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/user-message-selector.ts` | 155 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/user-message.ts` | 70 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/components/visual-truncate.ts` | 50 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/external-editor.ts` | 46 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/interactive-mode.ts` | 6533 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/model-catalog-refresh.ts` | 51 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/model-search.ts` | 21 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/session-share.ts` | 111 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/theme/theme-controller.ts` | 88 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/theme/theme.ts` | 887 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/interactive/tui-renderer.ts` | 79 | 交互模式 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/json-event.ts` | 61 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/print-mode.ts` | 168 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/rpc/jsonl.ts` | 58 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/rpc/rpc-client.ts` | 609 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/rpc/rpc-mode.ts` | 807 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `modes/rpc/rpc-types.ts` | 297 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `package-manager-cli.ts` | 1102 | 扩展与包管理 | 21 | 已登记 | 未生成 | 未开始 | 复现 |
-| `rpc-entry.ts` | 13 | 运行模式 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/abort.ts` | 48 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/ansi.ts` | 60 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/changelog.ts` | 196 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/trust-manager.ts` | 244 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/usage-totals.ts` | 70 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `extensions/index.ts` | 4 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
+| `extensions/llama/client.ts` | 343 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
+| `extensions/llama/huggingface.ts` | 158 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
+| `extensions/llama/index.ts` | 230 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
+| `extensions/llama/provider.ts` | 180 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
+| `extensions/llama/ui.ts` | 542 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
+| `index.ts` | 421 | SDK 导出面 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
+| `main.ts` | 1120 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `migrations.ts` | 315 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/index.ts` | 16 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/chat-viewport.ts` | 46 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/armin.ts` | 382 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/assistant-message.ts` | 202 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/bash-execution.ts` | 220 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/bordered-loader.ts` | 68 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/branch-summary-message.ts` | 58 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/compaction-summary-message.ts` | 59 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/config-selector.ts` | 935 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/countdown-timer.ts` | 39 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/custom-editor.ts` | 148 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/custom-entry.ts` | 62 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/custom-message.ts` | 113 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/daxnuts.ts` | 164 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/diff.ts` | 147 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/dynamic-border.ts` | 25 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/extension-editor.ts` | 132 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/extension-input.ts` | 87 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/extension-selector.ts` | 112 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/first-time-setup.ts` | 145 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/footer.ts` | 245 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/index.ts` | 37 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/keybinding-hints.ts` | 48 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/login-dialog.ts` | 233 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/markdown-transform.ts` | 29 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/mermaid.ts` | 89 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/model-selector.ts` | 421 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/oauth-selector.ts` | 214 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 舍弃（D-019） |
+| `modes/interactive/components/scoped-models-selector.ts` | 401 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/session-selector-search.ts` | 194 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/session-selector.ts` | 1031 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/settings-selector.ts` | 943 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/settings-submenu.ts` | 258 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/show-images-selector.ts` | 50 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/skill-invocation-message.ts` | 55 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/status-indicator.ts` | 123 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/thinking-selector.ts` | 154 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/tool-execution.ts` | 421 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/tree-selector.ts` | 1247 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/trust-selector.ts` | 134 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/user-message-selector.ts` | 155 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/user-message.ts` | 70 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/components/visual-truncate.ts` | 50 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/external-editor.ts` | 46 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/interactive-mode.ts` | 6533 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/model-catalog-refresh.ts` | 51 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/model-search.ts` | 21 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/session-share.ts` | 111 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/theme/theme-controller.ts` | 88 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/theme/theme.ts` | 887 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/interactive/tui-renderer.ts` | 79 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/json-event.ts` | 61 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/print-mode.ts` | 168 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/rpc/jsonl.ts` | 58 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/rpc/rpc-client.ts` | 609 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/rpc/rpc-mode.ts` | 807 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `modes/rpc/rpc-types.ts` | 297 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `package-manager-cli.ts` | 1102 | 扩展与包管理 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `rpc-entry.ts` | 13 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/abort.ts` | 48 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/ansi.ts` | 60 | 渲染工具 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/changelog.ts` | 196 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/child-process.ts` | 137 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `utils/clipboard-command.ts` | 44 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/clipboard-image.ts` | 259 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/clipboard.ts` | 77 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
-| `utils/deprecation.ts` | 14 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/clipboard-command.ts` | 44 | 剪贴板与图像 | 23 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/clipboard-image.ts` | 259 | 剪贴板与图像 | 23 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/clipboard.ts` | 77 | 剪贴板与图像 | 23 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/deprecation.ts` | 14 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/exif-orientation.ts` | 182 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `utils/frontmatter.ts` | 40 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/fs-watch.ts` | 30 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/git.ts` | 226 | 会话与分支 | 14 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/highlight-js.d.ts` | 36 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/html.ts` | 51 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/frontmatter.ts` | 40 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/fs-watch.ts` | 30 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/git.ts` | 226 | 会话与分支 | 13 | 已登记 | 已生成 | 未开始 | 复现 |
+| `utils/highlight-js.d.ts` | 36 | 渲染工具 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/html.ts` | 51 | 渲染工具 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/image-convert.ts` | 49 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/image-process.ts` | 119 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/image-resize-core.ts` | 164 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/image-resize-worker.ts` | 42 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 未实现 | 舍弃（改为同步缩放，见 D-062） |
 | `utils/image-resize.ts` | 123 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `utils/json.ts` | 6 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/management-http.ts` | 78 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/json.ts` | 6 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/management-http.ts` | 78 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/mime.ts` | 116 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `utils/open-browser.ts` | 24 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/paths.ts` | 139 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/open-browser.ts` | 24 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/paths.ts` | 139 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/photon.ts` | 139 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `utils/pi-user-agent.ts` | 4 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/pi-user-agent.ts` | 4 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/shell.ts` | 247 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `utils/sleep.ts` | 18 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/source-resolver.ts` | 86 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/syntax-highlight.ts` | 212 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/text.ts` | 9 | 渲染工具 | 23 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/tool-result-images.ts` | 62 | 剪贴板与图像 | 24 | 已登记 | 未生成 | 未开始 | 后置 |
+| `utils/sleep.ts` | 18 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/source-resolver.ts` | 86 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/syntax-highlight.ts` | 212 | 渲染工具 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/text.ts` | 9 | 渲染工具 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/tool-result-images.ts` | 62 | 剪贴板与图像 | 23 | 已登记 | 未生成 | 未开始 | 后置 |
 | `utils/tools-manager.ts` | 400 | 通用工具 | 12 | 已登记 | 已生成 | 已实现 | 复现（简化，无校验和） |
-| `utils/version-check.ts` | 109 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/windows-self-update.ts` | 84 | 通用工具 | 25 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/version-check.ts` | 109 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/windows-self-update.ts` | 84 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 
 ### 4.5 `packages/evals/src`（10 文件 / 1413 行）
 
 | 文件或文件组 | 行数 | 模块 | 课程 | 分析状态 | 课程覆盖 | 复现状态 | 处理策略 |
 | --- | ---: | --- | --- | --- | --- | --- | --- |
-| `docs-catalog.ts` | 61 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `docs.eval.ts` | 71 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `extensions.eval.ts` | 140 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `pi-harness.ts` | 261 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `smoke.eval.ts` | 17 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `vitest-evals/artifacts.ts` | 113 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `vitest-evals/harness-table.ts` | 193 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `vitest-evals/reporter.ts` | 111 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `vitest-evals/setup.ts` | 8 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `vitest-evals/summary.ts` | 438 | 评测 | 25 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `docs-catalog.ts` | 61 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `docs.eval.ts` | 71 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `extensions.eval.ts` | 140 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `pi-harness.ts` | 261 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `smoke.eval.ts` | 17 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `vitest-evals/artifacts.ts` | 113 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `vitest-evals/harness-table.ts` | 193 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `vitest-evals/reporter.ts` | 111 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `vitest-evals/setup.ts` | 8 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
+| `vitest-evals/summary.ts` | 438 | 评测 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
 
 ### 4.6 上游新增内容（快照之后）
 
@@ -548,36 +545,36 @@
 
 | 内容 | 粒度 | 课程 | 处理方式 |
 | --- | --- | --- | --- |
-| `compaction.md` | 逐文件 | 16 | 概念校准 |
-| `containerization.md` | 逐文件 | 25 | 概念校准 |
-| `custom-provider.md` | 逐文件 | 19 | 概念校准 |
+| `compaction.md` | 逐文件 | 15 | 概念校准 |
+| `containerization.md` | 逐文件 | 24 | 概念校准 |
+| `custom-provider.md` | 逐文件 | 18 | 概念校准 |
 | `development.md` | 逐文件 | 01 | 概念校准 |
 | `docs.json` | 逐文件 | 00 | 概念校准 |
-| `environment-variables.md` | 逐文件 | 17 | 概念校准 |
-| `extensions.md` | 逐文件 | 21 | 概念校准 |
+| `environment-variables.md` | 逐文件 | 16 | 概念校准 |
+| `extensions.md` | 逐文件 | 20 | 概念校准 |
 | `index.md` | 逐文件 | 00 | 概念校准 |
-| `json.md` | 逐文件 | 20 | 概念校准 |
-| `keybindings.md` | 逐文件 | 24 | 概念校准 |
-| `llama-cpp.md` | 逐文件 | 19 | 概念校准 |
-| `models.md` | 逐文件 | 19 | 概念校准 |
-| `packages.md` | 逐文件 | 21 | 概念校准 |
-| `prompt-templates.md` | 逐文件 | 15 | 概念校准 |
+| `json.md` | 逐文件 | 19 | 概念校准 |
+| `keybindings.md` | 逐文件 | 23 | 概念校准 |
+| `llama-cpp.md` | 逐文件 | 18 | 概念校准 |
+| `models.md` | 逐文件 | 18 | 概念校准 |
+| `packages.md` | 逐文件 | 20 | 概念校准 |
+| `prompt-templates.md` | 逐文件 | 14 | 概念校准 |
 | `providers.md` | 逐文件 | 07 | 概念校准 |
-| `quickstart.md` | 逐文件 | 17 | 概念校准 |
-| `rpc.md` | 逐文件 | 20 | 概念校准 |
-| `sdk.md` | 逐文件 | 18 | 概念校准 |
-| `security.md` | 逐文件 | 17 | 概念校准 |
-| `session-format.md` | 逐文件 | 14 | 概念校准 |
-| `sessions.md` | 逐文件 | 14 | 概念校准 |
-| `settings.md` | 逐文件 | 17 | 概念校准 |
-| `shell-aliases.md` | 逐文件 | 17 | 概念校准 |
-| `skills.md` | 逐文件 | 15 | 概念校准 |
-| `terminal-setup.md` | 逐文件 | 24 | 概念校准 |
-| `termux.md` | 逐文件 | 25 | 概念校准 |
-| `tmux.md` | 逐文件 | 24 | 概念校准 |
-| `tui.md` | 逐文件 | 23 | 概念校准 |
-| `usage.md` | 逐文件 | 17 | 概念校准 |
-| `windows.md` | 逐文件 | 25 | 概念校准 |
+| `quickstart.md` | 逐文件 | 16 | 概念校准 |
+| `rpc.md` | 逐文件 | 19 | 概念校准 |
+| `sdk.md` | 逐文件 | 17 | 概念校准 |
+| `security.md` | 逐文件 | 16 | 概念校准 |
+| `session-format.md` | 逐文件 | 13 | 概念校准 |
+| `sessions.md` | 逐文件 | 13 | 概念校准 |
+| `settings.md` | 逐文件 | 16 | 概念校准 |
+| `shell-aliases.md` | 逐文件 | 16 | 概念校准 |
+| `skills.md` | 逐文件 | 14 | 概念校准 |
+| `terminal-setup.md` | 逐文件 | 23 | 概念校准 |
+| `termux.md` | 逐文件 | 24 | 概念校准 |
+| `tmux.md` | 逐文件 | 23 | 概念校准 |
+| `tui.md` | 逐文件 | 22 | 概念校准 |
+| `usage.md` | 逐文件 | 16 | 概念校准 |
+| `windows.md` | 逐文件 | 24 | 概念校准 |
 | `images/` | 逐文件 | 文档配图，不作为课程素材 | 概念校准 |
 
 ### 5.3 示例
@@ -585,150 +582,150 @@
 | 内容 | 粒度 | 课程 | 处理方式 |
 | --- | --- | --- | --- |
 | `README.md` | 目录（1 文件） | 00 | 按需参考 |
-| `extensions/README.md` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/auto-commit-on-exit.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/bash-spawn-hook.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/border-status-editor.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/built-in-tool-renderer.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/claude-rules.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/commands.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/confirm-destructive.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/custom-compaction.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/custom-footer.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/custom-header.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/custom-provider-anthropic` | 目录（4 文件） | 21 | 按需参考 |
-| `extensions/custom-provider-gitlab-duo` | 目录（4 文件） | 21 | 按需参考 |
-| `extensions/dirty-repo-guard.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/doom-overlay` | 目录（11 文件） | 21 | 按需参考 |
-| `extensions/dynamic-resources` | 目录（3 文件） | 21 | 按需参考 |
-| `extensions/dynamic-tools.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/entry-renderer.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/event-bus.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/file-trigger.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/git-checkpoint.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/git-merge-and-resolve.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/github-issue-autocomplete.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/gondolin` | 目录（4 文件） | 21 | 按需参考 |
-| `extensions/handoff.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/hello.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/hidden-thinking-label.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/inline-bash.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/input-transform-streaming.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/input-transform.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/interactive-shell.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/kimi-deferred-tools.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/memory` | 目录（2 文件） | 21 | 按需参考 |
-| `extensions/message-renderer.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/minimal-mode.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/modal-editor.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/model-status.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/notify.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/overlay-qa-tests.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/overlay-test.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/permission-gate.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/pirate.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/plan-mode` | 目录（3 文件） | 21 | 按需参考 |
-| `extensions/preset.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/project-trust.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/prompt-customizer.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/protected-paths.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/provider-payload.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/qna.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/question.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/questionnaire.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/rainbow-editor.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/reload-runtime.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/rpc-demo.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/sandbox` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/send-user-message.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/session-name.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/shutdown-command.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/snake.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/space-invaders.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/ssh.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/status-line.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/structured-output.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/subagent` | 目录（10 文件） | 21 | 按需参考 |
-| `extensions/summarize.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/system-prompt-header.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/tic-tac-toe.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/timed-confirm.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/titlebar-spinner.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/todo.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/tool-override.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/tools.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/trigger-compact.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/truncated-tool.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/widget-placement.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/with-deps` | 目录（4 文件） | 21 | 按需参考 |
-| `extensions/working-indicator.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `extensions/working-message-test.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `rpc-extension-ui.ts` | 目录（1 文件） | 21 | 按需参考 |
-| `sdk/01-minimal.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/02-custom-model.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/03-custom-prompt.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/04-skills.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/05-tools.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/06-extensions.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/07-context-files.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/08-prompt-templates.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/09-api-keys-and-oauth.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/10-settings.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/11-sessions.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/12-full-control.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/13-session-runtime.ts` | 目录（1 文件） | 18 | 按需参考 |
-| `sdk/README.md` | 目录（1 文件） | 18 | 按需参考 |
+| `extensions/README.md` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/auto-commit-on-exit.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/bash-spawn-hook.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/border-status-editor.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/built-in-tool-renderer.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/claude-rules.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/commands.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/confirm-destructive.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/custom-compaction.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/custom-footer.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/custom-header.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/custom-provider-anthropic` | 目录（4 文件） | 20 | 按需参考 |
+| `extensions/custom-provider-gitlab-duo` | 目录（4 文件） | 20 | 按需参考 |
+| `extensions/dirty-repo-guard.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/doom-overlay` | 目录（11 文件） | 20 | 按需参考 |
+| `extensions/dynamic-resources` | 目录（3 文件） | 20 | 按需参考 |
+| `extensions/dynamic-tools.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/entry-renderer.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/event-bus.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/file-trigger.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/git-checkpoint.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/git-merge-and-resolve.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/github-issue-autocomplete.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/gondolin` | 目录（4 文件） | 20 | 按需参考 |
+| `extensions/handoff.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/hello.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/hidden-thinking-label.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/inline-bash.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/input-transform-streaming.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/input-transform.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/interactive-shell.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/kimi-deferred-tools.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/memory` | 目录（2 文件） | 20 | 按需参考 |
+| `extensions/message-renderer.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/minimal-mode.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/modal-editor.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/model-status.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/notify.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/overlay-qa-tests.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/overlay-test.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/permission-gate.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/pirate.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/plan-mode` | 目录（3 文件） | 20 | 按需参考 |
+| `extensions/preset.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/project-trust.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/prompt-customizer.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/protected-paths.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/provider-payload.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/qna.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/question.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/questionnaire.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/rainbow-editor.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/reload-runtime.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/rpc-demo.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/sandbox` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/send-user-message.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/session-name.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/shutdown-command.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/snake.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/space-invaders.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/ssh.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/status-line.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/structured-output.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/subagent` | 目录（10 文件） | 20 | 按需参考 |
+| `extensions/summarize.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/system-prompt-header.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/tic-tac-toe.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/timed-confirm.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/titlebar-spinner.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/todo.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/tool-override.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/tools.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/trigger-compact.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/truncated-tool.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/widget-placement.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/with-deps` | 目录（4 文件） | 20 | 按需参考 |
+| `extensions/working-indicator.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `extensions/working-message-test.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `rpc-extension-ui.ts` | 目录（1 文件） | 20 | 按需参考 |
+| `sdk/01-minimal.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/02-custom-model.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/03-custom-prompt.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/04-skills.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/05-tools.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/06-extensions.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/07-context-files.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/08-prompt-templates.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/09-api-keys-and-oauth.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/10-settings.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/11-sessions.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/12-full-control.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/13-session-runtime.ts` | 目录（1 文件） | 17 | 按需参考 |
+| `sdk/README.md` | 目录（1 文件） | 17 | 按需参考 |
 
 ### 5.4 脚本
 
 | 内容 | 粒度 | 课程 | 处理方式 |
 | --- | --- | --- | --- |
-| `scripts/agent-treeshake-smoke-entry.ts` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/auto-pi.sh` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/browser-smoke-entry.ts` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/build-binaries.sh` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/build-coding-agent-bundle.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/check-browser-smoke.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/check-entry-graphs.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/check-pinned-deps.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/check-runtime-deps.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/check-runtime-deps.test.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/check-ts-relative-imports.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/coding-agent-consumer.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/coding-agent-consumer.test.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/cost.ts` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/create-source-archive.sh` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/diff-model-catalog.mjs` | 逐文件 | 19 | 构建/发布设施 |
-| `scripts/edit-tool-stats.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/generate-coding-agent-install-lock.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/generate-coding-agent-shrinkwrap.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/generate-thinking-capabilities.mjs` | 逐文件 | 19 | 构建/发布设施 |
-| `scripts/local-release.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/package-workspaces.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/profile-coding-agent-node.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/publish-model-catalog.mjs` | 逐文件 | 19 | 构建/发布设施 |
-| `scripts/publish-release-announcement.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/publish-release-announcement.test.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/publish.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/read-tool-stats.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/release-notes.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/release-packages.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/release.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/repro-5893-wsl-bash.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/session-context-stats.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/session-transcripts.ts` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/stats.ts` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/sync-versions.js` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/sync-versions.test.mjs` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/tool-stats.ts` | 逐文件 | 25 | 构建/发布设施 |
-| `scripts/update-source-imports-to-ts.sh` | 逐文件 | 25 | 构建/发布设施 |
+| `scripts/agent-treeshake-smoke-entry.ts` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/auto-pi.sh` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/browser-smoke-entry.ts` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/build-binaries.sh` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/build-coding-agent-bundle.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/check-browser-smoke.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/check-entry-graphs.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/check-pinned-deps.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/check-runtime-deps.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/check-runtime-deps.test.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/check-ts-relative-imports.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/coding-agent-consumer.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/coding-agent-consumer.test.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/cost.ts` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/create-source-archive.sh` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/diff-model-catalog.mjs` | 逐文件 | 18 | 构建/发布设施 |
+| `scripts/edit-tool-stats.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/generate-coding-agent-install-lock.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/generate-coding-agent-shrinkwrap.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/generate-thinking-capabilities.mjs` | 逐文件 | 18 | 构建/发布设施 |
+| `scripts/local-release.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/package-workspaces.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/profile-coding-agent-node.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/publish-model-catalog.mjs` | 逐文件 | 18 | 构建/发布设施 |
+| `scripts/publish-release-announcement.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/publish-release-announcement.test.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/publish.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/read-tool-stats.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/release-notes.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/release-packages.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/release.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/repro-5893-wsl-bash.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/session-context-stats.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/session-transcripts.ts` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/stats.ts` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/sync-versions.js` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/sync-versions.test.mjs` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/tool-stats.ts` | 逐文件 | 24 | 构建/发布设施 |
+| `scripts/update-source-imports-to-ts.sh` | 逐文件 | 24 | 构建/发布设施 |
 
 ### 5.5 原生模块、CI 与根配置
 
 | 内容 | 粒度 | 课程 | 处理方式 |
 | --- | --- | --- | --- |
-| `packages/tui/native/` | 18 个文件（darwin/linux/win32 的剪贴板与终端辅助） | 25 | 按说明处理 |
-| `.github/workflows/` | 7 个 workflow：approve-contributor.yml, ci.yml, issue-gate.yml, issue-triage-labels.yml, npm-audit.yml, pr-gate.yml, remove-inprogress-on-close.yml | 25 | 按说明处理 |
+| `packages/tui/native/` | 18 个文件（darwin/linux/win32 的剪贴板与终端辅助） | 24 | 按说明处理 |
+| `.github/workflows/` | 7 个 workflow：approve-contributor.yml, ci.yml, issue-gate.yml, issue-triage-labels.yml, npm-audit.yml, pr-gate.yml, remove-inprogress-on-close.yml | 24 | 按说明处理 |
 | `.gitattributes` | 根级配置/脚本 | 01 | 按说明处理 |
 | `.gitignore` | 根级配置/脚本 | 01 | 按说明处理 |
 | `.npmrc` | 根级配置/脚本 | 01 | 按说明处理 |
@@ -782,14 +779,14 @@
 | `packages/ai/src/providers/xiaomi.models.ts` | 生成文件 | 04 | 由脚本生成，不手改 |
 | `packages/ai/src/providers/zai-coding-cn.models.ts` | 生成文件 | 04 | 由脚本生成，不手改 |
 | `packages/ai/src/providers/zai.models.ts` | 生成文件 | 04 | 由脚本生成，不手改 |
-| `packages/coding-agent/src/core/export-html/template.html` | 模板 | 24 | 会话导出模板 |
-| `packages/coding-agent/src/core/export-html/template.css` | 模板 | 24 | 会话导出样式 |
-| `packages/coding-agent/src/core/export-html/template.js` | 模板 | 24 | 会话导出脚本 |
-| `packages/coding-agent/src/core/export-html/vendor/highlight.min.js` | 第三方 | 24 | 语法高亮，vendored |
-| `packages/coding-agent/src/core/export-html/vendor/marked.min.js` | 第三方 | 24 | Markdown 渲染，vendored |
-| `packages/coding-agent/src/modes/interactive/theme/dark.json` | 主题 | 24 | 深色主题 |
-| `packages/coding-agent/src/modes/interactive/theme/light.json` | 主题 | 24 | 浅色主题 |
-| `packages/coding-agent/src/modes/interactive/assets/clankolas.png` | 图片 | 24 | 启动动画素材 |
+| `packages/coding-agent/src/core/export-html/template.html` | 模板 | 23 | 会话导出模板 |
+| `packages/coding-agent/src/core/export-html/template.css` | 模板 | 23 | 会话导出样式 |
+| `packages/coding-agent/src/core/export-html/template.js` | 模板 | 23 | 会话导出脚本 |
+| `packages/coding-agent/src/core/export-html/vendor/highlight.min.js` | 第三方 | 23 | 语法高亮，vendored |
+| `packages/coding-agent/src/core/export-html/vendor/marked.min.js` | 第三方 | 23 | Markdown 渲染，vendored |
+| `packages/coding-agent/src/modes/interactive/theme/dark.json` | 主题 | 23 | 深色主题 |
+| `packages/coding-agent/src/modes/interactive/theme/light.json` | 主题 | 23 | 浅色主题 |
+| `packages/coding-agent/src/modes/interactive/assets/clankolas.png` | 图片 | 23 | 启动动画素材 |
 
 ## 6. 明确排除
 
@@ -808,7 +805,7 @@
 - 未分配课程：无。
 - 待确认：无。课程 04 的 provider 工厂、动态刷新、`createProvider`、模型数量已记录在 `BUILD_PLAN.md` 决策表。
 - 快照之后的上游改动：`toolCall.argumentsError` 未实现。该字段让工具参数 JSON 解析失败时提前报错，属于 `ToolCall` 结构的一部分，涉及课程 03/05，后置。
-- 课程 13 剩余范围待确认：截断、输出累积、写入队列、diff、路径解析已前移到课程 12（D-057），目前只余 `core/tools/render-utils.ts` 的归属未定。
+- 工具治理课（原课程 13）已取消（D-068）：截断、输出累积、写入队列、diff、路径解析并入课程 12；`render-utils.ts` 归入课程 23，`bash-executor.ts` 与 `exec.ts` 分别归入课程 19、20（后置）。
 
 ## 附录 A：测试文件全量清单
 

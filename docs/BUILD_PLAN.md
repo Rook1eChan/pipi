@@ -31,20 +31,20 @@
 | D-001 | 采用五包 monorepo | npm workspaces；目录 `packages/{llm,agent,tui,harness,eval}`；依赖方向 `llm ← agent ← harness`，`tui` 独立，`eval ← harness` | 生效 | 2026-10-29 |
 | D-002 | 包名与目录一致 | 包名 `@pipi/{llm,agent,tui,harness,eval}`；目录与包名同名 | 生效 | 2026-10-29 |
 | D-003 | coding-agent 重命名为 harness | 原项目 `pi-coding-agent` 在新项目对应 `@pipi/harness` / `packages/harness`；原项目路径不改 | 生效 | 2026-10-29 |
-| D-004 | 课程拆分为 00–25 | 26 门课程，按构建顺序组织；课程编号与文件名前缀一致 | 生效 | 2026-10-29 |
+| D-004 | 课程拆分为 00–24 | 25 门课程，按构建顺序组织；课程编号与文件名前缀一致（原为 00–25，课程 13 取消后前移，见 D-068） | 生效 | 2026-10-29 |
 | D-005 | 课程 00 不产出代码 | 只确定仓库级约定；配置与代码在课程 01 落地 | 生效 | 2026-10-29 |
 | D-006 | pipi 使用独立 Public 仓库 | `pipi/` 独立 Git 历史与 GitHub Public 仓库；`my-pi/` 只读 | 生效 | 2026-10-29 |
 | D-007 | 引入 Biome | 格式化与 lint 使用 Biome；不引入第二套格式化工具 | 生效 | 2026-10-29 |
 | D-008 | TypeScript 使用 NodeNext 单配置 | 不使用原项目 `Node16` + `NodeNext` 双配置 | 生效 | 2026-10-29 |
-| D-009 | 测试隔离先用临时目录 | 测试使用 `os.tmpdir()`，不写用户目录；完整隔离脚本后置到课程 25 | 生效 | 2026-10-29 |
-| D-010 | eval 包骨架阶段只建占位包 | 当前只保留空包与 smoke 测试；实现后置到课程 25 | 待课程 25 时生效 | 2026-10-29 |
-| D-011 | TUI 整体保留，复现深度后定 | 保留课程 22–24；全屏、鼠标、图片、latex 等深度在课程 22 学习时确定 | 待课程 22 时生效 | 2026-10-29 |
-| D-012 | tui/native 后置或简化 | 原生剪贴板、平台能力、原生图片能力后置或简化 | 待课程 22 时生效 | 2026-10-29 |
+| D-009 | 测试隔离先用临时目录 | 测试使用 `os.tmpdir()`，不写用户目录；完整隔离脚本后置到课程 24 | 生效 | 2026-10-29 |
+| D-010 | eval 包骨架阶段只建占位包 | 当前只保留空包与 smoke 测试；实现后置到课程 24 | 待课程 24 时生效 | 2026-10-29 |
+| D-011 | TUI 整体保留，复现深度后定 | 保留课程 21–23；全屏、鼠标、图片、latex 等深度在课程 21 学习时确定 | 待课程 21 时生效 | 2026-10-29 |
+| D-012 | tui/native 后置或简化 | 原生剪贴板、平台能力、原生图片能力后置或简化 | 待课程 21 时生效 | 2026-10-29 |
 | D-013 | 图像生成后置，课程 08 跳过 | 用户决定跳过课程 08，图像生成不实现；后续是否复现待定 | 生效 | 2026-11-18 |
-| D-014 | 剪贴板图片与终端图像后置 | 剪贴板图片、终端图片渲染后置到课程 24 | 待课程 24 时生效 | 2026-10-29 |
-| D-015 | evals/SWE-bench 仅了解 | 只做 smoke 与 faux 集成测试，不复现 SWE-bench | 待课程 25 时生效 | 2026-10-29 |
-| D-016 | Bun 运行时适配仅了解 | 不影响 Node 运行与主要功能 | 待课程 25 时生效 | 2026-10-29 |
-| D-017 | 会话导出 vendor 最小实现 | 使用最小实现或轻量依赖，不复现完整 vendor | 待课程 24 时生效 | 2026-10-29 |
+| D-014 | 剪贴板图片与终端图像后置 | 剪贴板图片、终端图片渲染后置到课程 23 | 待课程 23 时生效 | 2026-10-29 |
+| D-015 | evals/SWE-bench 仅了解 | 只做 smoke 与 faux 集成测试，不复现 SWE-bench | 待课程 24 时生效 | 2026-10-29 |
+| D-016 | Bun 运行时适配仅了解 | 不影响 Node 运行与主要功能 | 待课程 24 时生效 | 2026-10-29 |
+| D-017 | 会话导出 vendor 最小实现 | 使用最小实现或轻量依赖，不复现完整 vendor | 待课程 23 时生效 | 2026-10-29 |
 | D-018 | Provider 范围限定三类 | 只构建 OpenAI、Anthropic、DeepSeek 系列，加 faux 测试 provider | 生效 | 2026-10-31 |
 | D-019 | 认证只支持 API key，OAuth 不实现 | 用户决定本项目不实现 OAuth：不保留 OAuth 类型、登录、刷新；课程 07 已按 API key 验收 | 生效 | 2026-11-20 |
 | D-020 | 不实现 deferred response | 删除 `DeferredHandle`、`deferred` 字段与 `stopReason: "deferred"`；仅在课程中保留说明 | 生效 | 2026-11-05 |
@@ -63,7 +63,7 @@
 | D-033 | 采用包级 CHANGELOG | 每包一份 `packages/<pkg>/CHANGELOG.md`；只在 `[Unreleased]` 下追加；不加脚本、hook 或 CI 门禁 | 生效 | 2026-10-29 |
 | D-034 | 04 只做注册表与目录 | 04 实现 Provider/Models、`createProvider`、`ModelsStore`、模型目录与 faux；不绑定真实适配器 | 生效 | 2026-11-06 |
 | D-035 | 真实 provider 工厂后置到 05/06 | 04 不创建真实 provider 工厂；05/06 实现适配器后再绑定 `api` | 生效 | 2026-11-06 |
-| D-036 | 动态刷新远端实现后置到 19 | 04 实现接口与内存 store；远端拉取在 19 接入 | 待课程 19 时生效 | 2026-11-06 |
+| D-036 | 动态刷新远端实现后置到 19 | 04 实现接口与内存 store；远端拉取在 19 接入 | 待课程 18 时生效 | 2026-11-06 |
 | D-037 | `createProvider` 原样实现 | 支持单一 API、API 映射、静态模型 + 动态覆盖 | 生效 | 2026-11-06 |
 | D-038 | 05 使用原生 `fetch` + SSE | 不引入 `openai` SDK；自己实现 HTTP 请求、SSE 分帧与错误体解析 | 生效 | 2026-11-08 |
 | D-039 | 05 的 provider 范围 | 实现 OpenAI 与 DeepSeek 两个工厂，共用 `openai-completions` adapter；`lazyApi` 包装 | 生效 | 2026-11-08 |
@@ -83,7 +83,7 @@
 | D-054 | 课程 12 实现全部八个工具 | 含 `powershell`（复用 bash 实现，仅换 shell 配置与提示）；渲染器后置到 TUI 课程 | 生效 | 2026-11-24 |
 | D-055 | `read` 图片分支按原项目 | MIME 识别、EXIF 方向、等比缩放，超出限制时压缩；引入 `@silvia-odwyer/photon-node` 0.3.4 | 生效 | 2026-11-24 |
 | D-056 | 搜索与编辑跟随原项目 | rg / fd 系统 PATH 优先，缺失时从 GitHub Releases 下载；`edit` 含模糊匹配、diff 与 unified patch | 生效 | 2026-11-24 |
-| D-057 | 截断、输出累积与写入队列纳入课程 12 | 工具执行直接依赖这些能力；课程 13 收窄为路径边界、审批与治理深化，剩余范围待确认 | 生效 | 2026-11-24 |
+| D-057 | 截断、输出累积与写入队列纳入课程 12 | 工具执行直接依赖这些能力；原计划单独成课的工具治理内容随之并入课程 12 | 生效 | 2026-11-24 |
 | D-058 | bash 注入 `PI_*` 环境变量 | `PI_SESSION_ID`、`PI_SESSION_FILE`、`PI_PROVIDER`、`PI_MODEL`、`PI_REASONING_LEVEL` 来自工具上下文，默认开启 | 生效 | 2026-11-24 |
 | D-059 | 截断函数改名为 `truncateKeepHead` / `truncateKeepTail` | 原名 `truncateHead` / `truncateTail` 容易被读成“截掉头部 / 截掉尾部”，与“保留头部 / 保留尾部”的语义相反；仅改名，行为不变 | 生效 | 2026-11-24 |
 | D-060 | 修正尾部截断的 `truncatedBy` 误标 | 删除循环后的 `truncatedBy = "lines"` 兜底行；原项目在 `maxLines = 1` 且单行超字节时会错误报 `"lines"` | 生效 | 2026-11-24 |
@@ -92,6 +92,10 @@
 | D-065 | 命令执行直接用 `node:child_process` | 不引入 `cross-spawn`；Windows 的 `.cmd` 解析差异后续按需处理 | 生效 | 2026-11-24 |
 | D-066 | 工具文件按“工具 + 支撑”分层 | 八个工具与注册表放 `tools/`，`path-utils`、`truncate`、`queue`、`edit-diff`、`shell` 等放 `tools/support/`，图片在 `images/`；与原项目的扁平结构不同 | 生效 | 2026-11-24 |
 | D-067 | 二进制下载器简化 | `rg` / `fd` 先查安装目录与系统 PATH，缺失时从 GitHub Releases 下载；不校验 checksum，不内置解压实现（调用 `tar` / `unzip`） | 生效 | 2026-11-24 |
+| D-071 | 不保留会话版本与迁移 | 删除 `CURRENT_SESSION_VERSION`、`SessionHeader.version` 与迁移函数，只读写当前格式；格式变更后旧会话文件不再兼容。原项目保留 v1→v3 迁移以兼容早期版本 | 生效 | 2026-11-25 |
+| D-069 | 课程 13 实现扩展条目 | `custom`、`custom_message`、`session_info` 与核心条目一起实现；读取时未知类型忽略 | 生效 | 2026-11-25 |
+| D-070 | 分支摘要后置到课程 15 | 课程 13 不实现 `branch_summary` 条目与 `branchWithSummary`，摘要生成随压缩一起做 | 生效 | 2026-11-25 |
+| D-068 | 取消课程 13（工具治理与安全） | 原计划覆盖的截断、输出累积、diff、写入队列、路径解析已并入课程 12（D-057）；剩余文件按归属前移：`render-utils.ts` → 课程 23，`bash-executor.ts` → 课程 19，`exec.ts` → 课程 20；后续课程编号整体前移一位，课程总数为 00–24 | 生效 | 2026-11-25 |
 | D-063 | 工具提示文案内联，不单独导出常量 | `promptSnippet` / `promptGuidelines` 直接写在工具定义里，后续工具一致；与上游的 `xxxToolSystemPromptContribution` 常量不同，代价是一致性测试要重复字面量 | 生效 | 2026-11-24 |
 | D-062 | 图片缩放同步执行 | 不实现 `image-resize-worker.ts` 的 worker 线程；缩放直接在进程内调用 photon，行为一致但会短暂占用事件循环 | 生效 | 2026-11-24 |
 | D-053 | 工具参数校验只走 TypeBox | 课程 11 只实现 TypeBox 路径：`structuredClone` → 删除可选 null → `Value.Convert` → `Compile().Check`；不实现普通 JSON Schema 的手写 coercion。上游 2026-11-01（`6536f80`）改为独立包 `@earendil-works/pi-schema`（draft 2020-12/7、无 eval、内建 coercion，约 12.4 万字节），本项目不引入；待接入 MCP 或第三方扩展提供的工具时重新评估 | 生效 | 2026-11-23 |
@@ -105,7 +109,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–05、07、09–12 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
+课程 01–05、07、09–13 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -164,6 +168,11 @@
 | T-12-8 | 12 | `grep` 与 rg 获取 | `packages/harness/src/tools/grep.ts`、`packages/harness/src/tools/support/binary-manager.ts` | T-12-1、T-12-2 | 结果上限、长行截断、上下文行、`.gitignore` 生效 | 已验收 |
 | T-12-9 | 12 | `find` 与 fd 获取 | `packages/harness/src/tools/find.ts`、`packages/harness/src/tools/support/binary-manager.ts` | T-12-2、T-12-8 | glob 匹配、结果路径相对化、上限提示 | 已验收 |
 | T-12-10 | 12 | 工具注册、装配、测试与 changelog | `packages/harness/src/tools/index.ts`、`packages/harness/src/index.ts`、`packages/harness/test/*` | T-12-2..9 | `build`、`test`、`check` 通过 | 已验收 |
+| T-13-1 | 13 | 条目类型与 JSONL 读写：头部、逐行解析、延迟落盘 | `packages/harness/src/session/types.ts`、`manager.ts` | T-12-10 | 写入/读回、延迟建文件、坏行跳过、空文件补头部测试通过 | 已验收 |
+| T-13-2 | 13 | 树与上下文重建：`getEntryPath`、压缩裁剪、条目转消息 | `packages/harness/src/session/manager.ts`、`context.ts`、`messages.ts` | T-13-1 | 路径上溯、压缩裁剪、模型与思考级别重放测试通过 | 已验收 |
+| T-13-3 | 13 | 分支：`branch`、`createBranchedSession` | `packages/harness/src/session/manager.ts` | T-13-2 | 回退后追加形成新分支；单路径导出正确 | 已验收 |
+| T-13-4 | 13 | 会话发现与恢复：目录规则、最近会话、cwd 匹配 | `packages/harness/src/session/discovery.ts` | T-13-1 | 按 cwd 分组、按修改时间选中最近会话 | 已验收 |
+| T-13-5 | 13 | 会话导出（JSONL）与公共导出、changelog | `packages/harness/src/session/export.ts`、`packages/harness/src/index.ts` | T-13-3 | 导出当前分支；`build`、`test`、`check` 通过 | 已验收 |
 
 ## 5. 任务模板
 
@@ -257,6 +266,15 @@
 | 2026-11-24 | D-064 至 D-067 生效：编辑模糊匹配范围、命令执行依赖、工具目录分层、下载器简化 |
 | 2026-11-24 | T-12-3 至 T-12-10 实现完成：write、edit、ls、bash、powershell、grep、find 与注册表；harness 10 个文件 60 项测试通过；待用户验收 |
 | 2026-11-24 | 用户验收 T-12-1 至 T-12-10，课程 12 完成 |
+| 2026-11-25 | D-068 生效：取消课程 13，后续课程编号前移一位（14–25 → 13–24） |
+| 2026-11-25 | 用户确认课程 13 B：扩展条目本课实现（D-069），分支摘要后置（D-070）；批准 T-13-1 至 T-13-5 |
+| 2026-11-25 | D-071 生效：删除会话版本字段与迁移函数，只保留当前格式 |
+| 2026-11-25 | T-13-1 实现完成：会话条目类型、JSONL 读写、延迟落盘；新增 8 项测试；待用户验收 |
+| 2026-11-25 | T-13-2 实现完成：路径上溯、压缩裁剪、上下文重建、`convertToLlm`；新增 6 项测试；待用户验收 |
+| 2026-11-25 | T-13-3 实现完成：`branch`、`resetLeaf`、`createBranchedSession`；新增 3 项测试 |
+| 2026-11-25 | T-13-4、T-13-5 实现完成：会话发现、最近会话恢复、JSONL 导出；harness 14 文件 81 项通过；待用户验收 |
+| 2026-11-25 | 课程 13 补漏：会话名称清洗与解析（`resolveSessionName`、`getSessionName`、列表统一读取）；harness 84 项通过 |
+| 2026-11-25 | 用户验收 T-13-1 至 T-13-5，课程 13 完成 |
 
 ## 7. 最终验收目标
 

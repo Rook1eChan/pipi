@@ -284,8 +284,8 @@ streamProxy(model, context, options) → ProxyMessageEventStream
    ↓
 课程 10  Agent（状态 + 队列 + 订阅）      ← 本课
    ↓
-课程 14  会话持久化（订阅 message_end 落盘）
-课程 18  AgentSession（把 Agent 接进产品）
+课程 13  会话持久化（订阅 message_end 落盘）
+课程 17  AgentSession（把 Agent 接进产品）
 ```
 
 `Agent` 是循环和产品之间的适配层：循环不保存状态，产品不直接操作循环。
@@ -364,7 +364,7 @@ streamProxy(model, context, options) → ProxyMessageEventStream
 | --- | --- |
 | 完整实现状态机、队列与订阅；`streamProxy` 不实现 | 已确认（D-049、D-050） |
 | 只支持单个监听者 | 未采用 |
-| 队列 API 后置到课程 18 | 未采用 |
+| 队列 API 后置到课程 17 | 未采用 |
 
 ### 4.5 待确认决策
 

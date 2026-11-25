@@ -277,7 +277,7 @@ const model: Model<"openai-completions"> = {
 |---|---|
 | `api` | 选择哪个 adapter（`openai-completions`、`anthropic-messages`…） |
 | `provider` | 认证、路由、显示 |
-| `contextWindow` | compaction 阈值（课程 16） |
+| `contextWindow` | compaction 阈值（课程 15） |
 | `maxTokens` | 输出上限 |
 | `cost` | 把 `Usage` 换算成金额 |
 | `input` | 是否支持图片；不支持时降级 |
@@ -554,9 +554,9 @@ AgentMessage[] ──transformContext()──► AgentMessage[] ──convertToL
 - 发 HTTP 请求（课程 05、06）
 - 解析 SSE 流（课程 03、05）
 - 执行工具（课程 11、12）
-- 持久化 session（课程 14）
-- context compaction（课程 16）
-- 渲染 UI（课程 22–24）
+- 持久化 session（课程 13）
+- context compaction（课程 15）
+- 渲染 UI（课程 21–23）
 
 它只负责“数据长什么样”和“跨层共识”。
 
