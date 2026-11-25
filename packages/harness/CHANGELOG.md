@@ -17,6 +17,12 @@
 - 新增 `bash` / `powershell`：进程树中止、超时、流式输出与进度事件、`PI_*` 环境变量。
 - 新增 `grep` / `find`：ripgrep / fd 调用、结果与长行限制、缺失时下载二进制。
 - 新增工具注册表：`createCodingTools`、`createReadOnlyTools`、`createAllTools`、`createTool`。
+- 新增会话存储 `SessionManager`：JSONL 追加写入、延迟落盘、条目树与会话恢复。
+- 新增会话上下文重建：路径上溯、压缩裁剪、模型与思考级别重放，以及 `convertToLlm` 消息转换。
+- 新增会话分支：`branch`、`resetLeaf`、`createBranchedSession`。
+- 新增会话发现与恢复：`findMostRecentSession`、`listSessions`、`openMostRecentSession`。
+- 新增 `exportSessionToJsonl`：把当前分支导出成独立会话文件。
+- 新增会话名称解析：写入时清洗换行与首尾空白，读取取最后一条 `session_info`，空名称视为清除。
 
 ### Changed
 
