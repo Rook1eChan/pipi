@@ -1,12 +1,12 @@
 import type { AgentTool } from "@pipi/agent";
 import { createBashTool, createBashToolDefinition } from "./bash.ts";
+import type { ToolDefinition } from "./definition.ts";
 import { createEditTool, createEditToolDefinition } from "./edit.ts";
 import { createFindTool, createFindToolDefinition } from "./find.ts";
 import { createGrepTool, createGrepToolDefinition } from "./grep.ts";
 import { createLsTool, createLsToolDefinition } from "./ls.ts";
 import { createPowerShellTool, createPowerShellToolDefinition } from "./powershell.ts";
 import { createReadTool, createReadToolDefinition } from "./read.ts";
-import type { ToolDefinition } from "./support/definition.ts";
 import { createWriteTool, createWriteToolDefinition } from "./write.ts";
 
 export type ToolName = "read" | "bash" | "powershell" | "edit" | "write" | "grep" | "find" | "ls";

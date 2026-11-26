@@ -1,7 +1,7 @@
 # 14 提示、上下文与技能
 
-> 课程状态：A 学习中
-> 覆盖模块：`coding-agent/src/core/system-prompt.ts`、`resource-loader.ts`、`skills.ts`、`prompt-templates.ts`
+> 课程状态：待用户验收
+> 覆盖模块：`coding-agent/src/core/system-prompt.ts`、`resource-loader.ts`、`skills.ts`、`prompt-templates.ts`、`package-manager.ts`（资源解析部分）、`source-info.ts`、`diagnostics.ts`
 > 课程文件：14-prompts-context-skills.md
 > 本课产出：模型每次请求看到的系统提示，由默认说明、项目规则、技能索引与命令模板拼装而成。
 
@@ -38,7 +38,7 @@ Agent 的能力不只来自工具。每次请求还需要告诉模型：
 ### 2.1 主线：四类输入拼成一个字符串
 
 ```text
-默认说明（身份、工具、指南、文档路径）
+默认说明（身份、工具、指南）
   + appendSystemPrompt（用户追加）
   + 项目上下文（AGENTS.md 等）
   + 技能索引（只有名称、描述、路径）
@@ -97,7 +97,7 @@ if ((hasBash || hasPowerShell) && !hasGrep && !hasFind && !hasLs) {
 
 ```text
 1. 全局：agentDir 下的 AGENTS.md
-2. 项目：从 cwd 逐级向上，直到根目录
+2. 项目：从项目目录逐级向上，直到根目录
 ```
 
 每一层只取**第一个存在的**候选文件：
@@ -146,10 +146,14 @@ export interface SkillFrontmatter {
 加载位置：
 
 ```text
-~/.pi/agent/skills/           全局
-<cwd>/.pi/skills/             项目
+~/.pipi/agent/skills/              全局
+<projectDir>/.pipi/skills/         项目
+~/.agents/skills/                  共享
+项目目录到 git 根之间各层的 .agents/skills
 外加显式传入的路径
 ```
+
+目录发现规则：目录里有 `SKILL.md` 时它就是技能入口，不再向子目录递归；根目录的 `.md` 文件也可以作为技能；`.agents/skills` 里则取子目录中的 `.md`。
 
 校验规则来自 Agent Skills 规范：
 
@@ -157,6 +161,8 @@ export interface SkillFrontmatter {
 |---|---|
 | `name` | 最长 64，仅小写字母、数字、连字符；不以连字符开头或结尾；不允许连续连字符 |
 | `description` | 最长 1024，不能为空 |
+
+名称缺失时回退到技能目录名。名称或描述不合法只产生 warning，技能仍然加载；只有描述缺失或为空才跳过。
 
 同名技能先到先得，后者记为冲突诊断（`collision`），不会覆盖。
 
@@ -167,7 +173,7 @@ export interface SkillFrontmatter {
   <skill>
     <name>pdf-processing</name>
     <description>处理 PDF：抽取文本、合并、拆分</description>
-    <location>/home/u/.pi/agent/skills/pdf-processing/SKILL.md</location>
+    <location>/home/u/.pipi/agent/skills/pdf-processing/SKILL.md</location>
   </skill>
 </available_skills>
 ```
@@ -205,11 +211,21 @@ argument-hint: <文件或目录>
 | `${1:-默认值}` | 参数缺省时用默认值 |
 | `${@:2:3}` | 从第 2 个开始取 3 个 |
 
-模板来源与技能类似：全局 `agentDir/prompts/`、项目 `<cwd>/.pi/prompts/`、显式路径。
+模板来源与技能类似：全局 `agentDir/prompts/`、项目 `<projectDir>/.pipi/prompts/`、显式路径。目录只取当前层的 `.md`，不递归。
 
-### 2.7 资源加载器：把上面几件事收在一起
+### 2.7 资源解析器与加载器
 
-`DefaultResourceLoader` 统一装载：
+资源分成两层。
+
+`ResourceResolver` 负责“资源在哪里”：
+
+| 输入 | 输出 |
+|---|---|
+| settings 条目、默认目录、包的资源清单 | `ResolvedResource { path, enabled, metadata }` |
+
+它做目录展开、ignore 规则、启用/禁用模式、优先级排序与真实路径去重，不读取文件内容。
+
+`ResourceLoader` 负责“拿到路径后怎么装载”：
 
 | 方法 | 内容 |
 |---|---|
@@ -219,7 +235,7 @@ argument-hint: <文件或目录>
 | `getSkills()` | 技能与诊断 |
 | `getPrompts()` | 命令模板与诊断 |
 | `getExtensions()` | 扩展（课程 20） |
-| `reload()` / `extendResources()` | 运行中重载与追加 |
+| `reload()` / `extendResources()` | 全量重载与增量追加 |
 
 它还提供 `*Override` 钩子，让产品层在装载结果上做修改；以及 `--no-skills`、`--no-prompts`、`--no-context-files` 这类开关。
 
@@ -236,11 +252,13 @@ argument-hint: <文件或目录>
 ### 2.9 与整体系统的关系
 
 ```text
+SettingsManager → ResourceResolver
+                         ↓ 路径 + 来源 + enabled
 文件系统：AGENTS.md、SKILL.md、prompts/*.md
       ↓ 读取
-resource-loader（装载 + 诊断）
+ResourceLoader（装载 + 诊断）
       ↓ 结构化数据
-system-prompt（拼装）
+buildSystemPrompt（拼装）
       ↓ 字符串
 Agent.state.systemPrompt
       ↓
@@ -258,7 +276,8 @@ Agent.state.systemPrompt
 | 项目规则向上继承 | 近的覆盖远的，带路径注入 |
 | 技能只放索引 | 正文由模型按需读取 |
 | 命令模板是文本展开 | 不进入系统提示，属于用户消息 |
-| 资源加载器统一入口 | 技能、模板、上下文、系统提示覆盖 |
+| 解析与装载分离 | resolver 产出路径，loader 只负责读取与构造 |
+| 加载入口有两条 | `reload()` 全量，`extendResources()` 增量 |
 
 ---
 
@@ -267,60 +286,93 @@ Agent.state.systemPrompt
 | 日期 | 类型 | 内容 | 对 B 的影响 |
 | --- | --- | --- | --- |
 | 2026-11-25 | 范围 | 课程 13 验收后开始课程 14 | A 先讲拼装与按需加载 |
+| 2026-11-26 | 实现 | 先做 T-14-1：系统提示拼装；默认提示暂时省略原项目的 pi 文档路径段 | 其余任务等待 B 确认 |
+| 2026-11-26 | 实现 | T-14-2：项目规则加载；worktree 重复检测未做 | 候选优先级与向上继承已落地 |
+| 2026-11-26 | 实现 | T-14-3 至 T-14-5：技能、命令模板、资源加载器；技能按名称排序以保证输出稳定 | 课程 14 进入待验收 |
+| 2026-11-26 | 命名 | 选项字段 `cwd` 改为 `projectDir`，与 `agentDir` 对齐（D-075） | 资源加载相关接口统一 |
+| 2026-11-26 | 修正 | 补回此前的删减：override、来源、`extendResources`、异步 reload、ignore 文件、符号链接、冲突详情、worktree 遮盖 | 目录改为 `resources/` + `prompt/` |
+| 2026-11-26 | 设计 | 用户指出实现与源码差别过大；梳理原项目的 settings → resolver → loader 三层结构 | B 重写为 resolver + loader 两层，配置层后置 |
+| 2026-11-26 | 确认 | resolver 只管解析，loader 只管装载；`extendResources` 不改名；项目规则独立文件；本课不写文档路径段 | 见 D-076 至 D-080 |
+| 2026-11-26 | 修正 | 除已决策项外，第一部分逻辑与原项目对齐：精确 `+/-` 匹配、缺失 settings 条目静默跳过、读取失败输出 warning、Windows 路径规范化 | 测试同步调整 |
+| 2026-11-26 | 命名 | 项目自身品牌统一为 `pipi`：清单 `pipi.extensions`、环境变量 `PIPI_*`、技能发现模式 `pipi` | 见 D-081 |
 
 ---
 
 ## 4. B：具体实现规划
 
-> B 尚未展开。以下只为讨论准备结构。
+> B 已实现（2026-11-26）。实现位置：`packages/harness/src/resources/`（解析与装载）、`packages/harness/src/prompt/`（拼装）、`packages/harness/src/utils/`（路径与通用工具）。决策见 `BUILD_PLAN.md` D-073、D-075 至 D-080；任务 T-14-1 至 T-14-5。
 
 ### 4.1 原项目实现
 
+资源不只由一个 loader 扫描目录。原项目分成三层：
+
+```text
+SettingsManager                   配置与信任
+      ↓ settings 条目
+DefaultPackageManager.resolve()   把条目、包与默认目录展开成路径
+      ↓ ResolvedResource[]（带 metadata、enabled）
+DefaultResourceLoader             按路径装载五类资源
+      ↓ getter
+AgentSession / buildSystemPrompt
+```
+
 | 文件 | 行数 | 职责 |
 | --- | ---: | --- |
-| `core/system-prompt.ts` | 149 | 拼装系统提示 |
-| `core/resource-loader.ts` | 921 | 统一装载上下文、技能、模板、扩展与覆盖 |
+| `core/settings-manager.ts` | 1389 | 读取全局与项目 settings，维护 project trust |
+| `core/package-manager.ts` | 2636 | 解析包与本地目录，产出 `ResolvedResource[]`；本课只取解析部分 |
+| `core/resource-loader.ts` | 921 | 编排装载顺序、系统提示来源、override、来源标记 |
 | `core/skills.ts` | 509 | 技能发现、frontmatter 校验、冲突诊断、提示索引 |
 | `core/prompt-templates.ts` | 285 | 命令模板加载、参数解析与占位符替换 |
-| `utils/frontmatter.ts` | 约 40 | `---` YAML 解析 |
-| `core/diagnostics.ts`、`core/source-info.ts` | 较小 | 诊断类型与来源标记 |
+| `core/source-info.ts` | 40 | `SourceInfo` 与 `PathMetadata` |
+| `core/diagnostics.ts` | 15 | 警告、错误与冲突类型 |
+| `core/system-prompt.ts` | 149 | 纯函数拼装 |
+
+关键实现点：
+
+1. `ResourceLoader` 构造函数只保存配置，`reload()` 才装载；`sdk.ts` 创建 session 时 `await reload()`。
+2. `resolve()` 先处理 project settings，再处理 user settings，随后扫描默认目录；同一路径先到先得。
+3. 结果按 `project-local(0) > project-auto(1) > user-local(2) > user-auto(3) > package(4)` 排序，再按真实路径去重，所以项目级资源在重名时胜出。
+4. 目录展开规则：技能用 `collectSkillEntries`（`SKILL.md`、根 `.md`、`.agents` 子目录 `.md`），模板只取当前层 `.md`，扩展读取 `pipi.extensions` 或 `index.ts`。
+5. `reload()` 用 `includeDefaults: false` 装载技能与模板，默认目录只在 resolver 阶段出现。
+6. `extendResources()` 接收带 `metadata` 的路径，只重载技能或模板，不重新解析 settings。
+7. 项目规则在 loader 内部查找；`SYSTEM.md` 与 `APPEND_SYSTEM.md` 也由 loader 解析来源，项目级需要 trust。
+8. 来源标记在 loader 统一补：显式来源表 → metadata 精确匹配 → 路径前缀匹配 → 默认 agent/project/temporary。
+9. 扩展默认由 loader 装载；本课先留 `loadExtensions` 接缝，课程 20 提供真实实现。
 
 ### 4.2 新项目实现建议
 
-| 模块 | 建议 | 原因 |
+| 模块 | 建议 | 原因与后果 |
 | --- | --- | --- |
-| `buildSystemPrompt` | 复现 | 纯函数，参考点清晰 |
-| 上下文文件向上查找 | 复现 | 规则继承是核心行为 |
-| 技能加载与索引 | 复现 | 懒加载模式是重点 |
-| 命令模板 | 复现 | 参数替换规则固定 |
-| 资源加载器 | 简化 | 先只做上下文、技能、模板三项，扩展留到课程 20 |
-| worktree shadow 检测 | 后置 | 针对 `git worktree` 的重复上下文，边缘场景 |
-| diagnostics 与 sourceInfo | 简化 | 先保留最小诊断，来源标记随扩展系统补 |
+| `ResourceSettings` | 定义配置快照：`agentDir`、`projectDir`、`projectTrusted` 与三类资源的 agent/project 条目 | 课程 16 的 `SettingsManager` 直接填充；本课调用方传默认值 |
+| `ResourceResolver` | 只做目录展开、enabled 计算、优先级排序与去重，输出 `ResolvedResource[]` | 与 loader 解耦；课程 20 只需把包内路径交给它 |
+| `ResourceLoader` | 构造为空，`reload()` 装载；技能与模板用 `includeDefaults: false` | 与原项目的生命周期和职责一致 |
+| 技能 | 补齐根目录 `.md`、名称回退父目录名、校验只警告继续加载、保持插入顺序 | 行为与原项目一致 |
+| 命令模板 | 返回数组，缺失路径静默跳过，按名去重放在 loader | 去重与冲突诊断集中在 loader |
+| 项目规则 | 独立 `context-files.ts`，路径统一走 `utils/paths.ts` | 用户确认独立文件；`~` 与 Unicode 空格可正确解析 |
+| 系统提示 | 去掉 pi 文档路径段（D-079） | 文档体系未建好，先不指向不存在的路径 |
+| 扩展 | `loadExtensions` 接缝返回空结果；清单字段用 `pipi.extensions` | 课程 20 接入装载器，不改 loader 接口（D-081） |
 
-配置目录：原项目用 `~/.pi/agent` 与项目内的 `.pi/`；本项目已有 `~/.pipi/sessions`，建议统一到 `~/.pipi` 与项目内 `.pipi/`。
+本课不实现：`SettingsManager`、project trust 的真实判断、npm/git 包安装、扩展执行、`AgentSession` 接入。课程 16 接入前 `projectTrusted` 默认 `true`，避免项目资源被静默禁用。
 
-### 4.3 建议任务拆分
+### 4.3 文件与任务拆分
 
-| 任务 | 范围 |
+| 任务 | 范围 | 文件 |
+| --- | --- | --- |
+| T-14-1 | 系统提示拼装；技能索引格式化归位到 `skills.ts` | `prompt/system-prompt.ts`、`resources/skills.ts` |
+| T-14-2 | 路径工具、来源与诊断类型、`ResourceSettings` 契约 | `utils/paths.ts`、`resources/{source-info,diagnostics,settings}.ts` |
+| T-14-3 | `ResourceResolver`：默认目录、settings 条目、展开、模式、优先级、诊断 | `resources/resolver.ts` |
+| T-14-4 | 技能、命令模板、项目规则按原项目规则加载 | `resources/{skills,prompt-templates,context-files}.ts` |
+| T-14-5 | `ResourceLoader` 编排、公共导出、测试与 changelog | `resources/loader.ts`、`index.ts` |
+
+### 4.4 已确认结论
+
+| 事项 | 结论 |
 | --- | --- |
-| T-14-1 | `buildSystemPrompt`：工具列表、指南、上下文与技能拼接 |
-| T-14-2 | 上下文文件加载：候选顺序、向上查找、去重 |
-| T-14-3 | 技能：发现、frontmatter 校验、冲突处理、提示索引 |
-| T-14-4 | 命令模板：加载、参数解析、占位符替换 |
-| T-14-5 | 资源加载器汇总、公共导出、测试与 changelog |
-
-### 4.4 复现选项
-
-| 选项 | 范围 |
-| --- | --- |
-| A | 完整复现四个文件与诊断体系 |
-| B（建议） | 复现四项核心能力，简化诊断与 worktree 检测，扩展留到课程 20 |
-| C | 只做系统提示拼装与上下文文件 |
-
-### 4.5 待确认决策
-
-| 事项 | 来源 | 选项 | 原仓库做法 |
-| --- | --- | --- | --- |
-| 资源加载器是否包含扩展装载 | 依赖课程 20 的扩展系统 | 本课只做三项 / 一起做 | `DefaultResourceLoader` 同时装载扩展，并提供 `--no-extensions` |
-| worktree 重复上下文检测 | 边缘场景，需要 Git 布局判断 | 后置 / 本课 | `findShadowedContextFile` 识别 linked worktree 并去重 |
-| 配置目录 | 本项目已有 `~/.pipi` 约定 | `~/.pipi` 与 `.pipi/` / 沿用 `.pi` | 原项目用 `~/.pi/agent` 与项目 `.pi/` |
+| 分层 | resolver 负责路径，loader 负责装载（D-076） |
+| 资源归属 | resolver 管 extensions/skills/prompts；项目规则与系统提示在 loader 内（D-077） |
+| 加载入口 | `reload()` 全量，`extendResources()` 增量（D-078） |
+| 文档路径段 | 本课不实现，文档体系建好后补（D-079） |
+| 项目规则文件 | 独立 `resources/context-files.ts`（D-080） |
+| 配置目录 | `~/.pipi/agent` 与 `<projectDir>/.pipi`（D-073） |
+| 选项命名 | 资源选项用 `projectDir`，提示输出用 `cwd`（D-075） |
+| 扩展装载 | 不在本课，留到课程 20 |

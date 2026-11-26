@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectSupportedImageMimeType } from "../src/images/mime.ts";
+import { detectSupportedImageMimeType } from "../src/utils/images/mime.ts";
 
 const png = Buffer.from([
 	0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 1,

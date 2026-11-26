@@ -100,7 +100,7 @@
 | 11 | 1 | 已生成 | 已实现 |
 | 12 | 26 | 已生成 | 已实现 |
 | 13 | 6 | 已生成 | 部分实现 |
-| 14 | 4 | 已生成 | 未开始 |
+| 14 | 4 | 已生成 | 部分实现 |
 | 15 | 6 | 未生成 | 未开始 |
 | 16 | 21 | 未生成 | 未开始 |
 | 17 | 12 | 未生成 | 未开始 |
@@ -322,7 +322,7 @@
 | `core/compaction/index.ts` | 7 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/compaction/utils.ts` | 175 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/defaults.ts` | 12 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/diagnostics.ts` | 15 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/diagnostics.ts` | 15 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/event-bus.ts` | 33 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/exec.ts` | 107 | 内置工具 | 20 | 已登记 | 已生成 | 未开始 | 后置（同上） |
 | `core/experimental.ts` | 3 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -345,26 +345,26 @@
 | `core/model-runtime.ts` | 772 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/models-store.ts` | 147 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/output-guard.ts` | 108 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/package-manager.ts` | 2636 | 扩展与包管理 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/package-manager.ts` | 2636 | 扩展与包管理 | 20 | 已登记 | 未生成 | 部分实现 | 复现（资源解析部分已在 14 以 `ResourceResolver` 实现；包安装、更新与包内资源清单仍在 20） |
 | `core/pi-manifest.ts` | 34 | 扩展与包管理 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/project-trust.ts` | 96 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/prompt-templates.ts` | 285 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/prompt-templates.ts` | 285 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/provider-attribution.ts` | 69 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/provider-composer.ts` | 577 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/remote-catalog-provider.ts` | 137 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/resolve-config-value.ts` | 287 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/resource-loader.ts` | 921 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/resource-loader.ts` | 921 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 部分实现 | 复现（解析层拆到 `ResourceResolver`；扩展装载后置课程 20） |
 | `core/runtime-credentials.ts` | 52 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
 | `core/sdk.ts` | 410 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/session-cwd.ts` | 60 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现（合并进发现模块） |
 | `core/session-export.ts` | 42 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/session-manager.ts` | 1642 | 会话持久化 | 13 | 已登记 | 已生成 | 部分实现 | 复现 |
 | `core/settings-diagnostics.ts` | 25 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/settings-manager.ts` | 1389 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/skills.ts` | 509 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/settings-manager.ts` | 1389 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现（16 负责填充 14 定义的 `ResourceSettings`） |
+| `core/skills.ts` | 509 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/slash-commands.ts` | 43 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/source-info.ts` | 40 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/system-prompt.ts` | 149 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 未开始 | 复现 |
+| `core/source-info.ts` | 40 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/system-prompt.ts` | 149 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 部分实现 | 复现（文档路径段按 D-079 暂不实现） |
 | `core/telemetry.ts` | 13 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/timings.ts` | 50 | 工程与诊断 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/tools/bash.ts` | 400 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
@@ -472,7 +472,7 @@
 | `utils/exif-orientation.ts` | 182 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/frontmatter.ts` | 40 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/fs-watch.ts` | 30 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/git.ts` | 226 | 会话与分支 | 13 | 已登记 | 已生成 | 未开始 | 复现 |
+| `utils/git.ts` | 226 | 会话与分支 | 13、14 | 已登记 | 已生成 | 部分实现 | 复现（`findGitPaths` 供 worktree 遮盖检测；其余 Git 查询未做） |
 | `utils/highlight-js.d.ts` | 36 | 渲染工具 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/html.ts` | 51 | 渲染工具 | 22 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/image-convert.ts` | 49 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
@@ -484,7 +484,7 @@
 | `utils/management-http.ts` | 78 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/mime.ts` | 116 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/open-browser.ts` | 24 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
-| `utils/paths.ts` | 139 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
+| `utils/paths.ts` | 139 | 通用工具 | 14 | 已登记 | 已生成 | 已实现 | 复现（`resolvePath`、`canonicalizePath`、`isUnderPath`） |
 | `utils/photon.ts` | 139 | 剪贴板与图像 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `utils/pi-user-agent.ts` | 4 | 通用工具 | 24 | 已登记 | 未生成 | 未开始 | 复现 |
 | `utils/shell.ts` | 247 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |

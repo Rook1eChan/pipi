@@ -42,11 +42,11 @@ export function getPowerShellConfig(shellPath?: string): ShellConfig {
 /** 命令执行时的环境变量；去掉可能泄漏的会话变量，由调用方按需注入。 */
 export function getShellEnv(): NodeJS.ProcessEnv {
 	const env = { ...process.env };
-	delete env.PI_SESSION_ID;
-	delete env.PI_SESSION_FILE;
-	delete env.PI_PROVIDER;
-	delete env.PI_MODEL;
-	delete env.PI_REASONING_LEVEL;
+	delete env.PIPI_SESSION_ID;
+	delete env.PIPI_SESSION_FILE;
+	delete env.PIPI_PROVIDER;
+	delete env.PIPI_MODEL;
+	delete env.PIPI_REASONING_LEVEL;
 	return env;
 }
 

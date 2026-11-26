@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readSync, statSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { StringDecoder } from "node:string_decoder";
 import type { AgentMessage } from "@pipi/agent";
 import type { ImageContent, TextContent } from "@pipi/llm";
+import { getSessionsRoot } from "../config.ts";
 import { buildSessionContext, type SessionContext, selectContextEntries } from "./context.ts";
 import { resolveSessionName, sanitizeSessionName } from "./name.ts";
 import type {
@@ -37,10 +37,7 @@ export interface SessionManagerOptions {
 	persist?: boolean;
 }
 
-/** 默认会话根目录。 */
-export function getSessionsRoot(): string {
-	return join(homedir(), ".pipi", "sessions");
-}
+export { getSessionsRoot } from "../config.ts";
 
 /** 把 cwd 转成安全的目录名。 */
 export function getDefaultSessionDir(cwd: string): string {

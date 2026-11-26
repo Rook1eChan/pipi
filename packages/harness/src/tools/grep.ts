@@ -4,8 +4,8 @@ import { basename, relative } from "node:path";
 import { createInterface } from "node:readline";
 import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
+import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { ensureTool } from "./support/binary-manager.ts";
-import { type ToolDefinition, wrapToolDefinition } from "./support/definition.ts";
 import { resolveToCwd } from "./support/path-utils.ts";
 import {
 	DEFAULT_MAX_BYTES,

@@ -42,7 +42,7 @@ describe("bash tool", () => {
 			getContext: () => ({ model: { provider: "faux", id: "m1" }, sessionId: "s1" }),
 		});
 
-		const result = await tool.execute("call-1", { command: "echo $PI_PROVIDER-$PI_MODEL-$PI_SESSION_ID" });
+		const result = await tool.execute("call-1", { command: "echo $PIPI_PROVIDER-$PIPI_MODEL-$PIPI_SESSION_ID" });
 
 		expect((result.content[0] as { text: string }).text).toBe("faux-m1-s1\n");
 	});

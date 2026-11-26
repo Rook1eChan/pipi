@@ -195,7 +195,7 @@ llm → tui → agent → harness → eval
 
 Agent 程序会读写：
 
-- 用户目录下的配置文件（`~/.pi/settings.json`）
+- 用户目录下的配置文件（`~/.pipi/agent/settings.json`）
 - 环境变量中的 API key
 - 本机的 git 配置
 

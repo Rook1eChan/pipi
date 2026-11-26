@@ -2,7 +2,7 @@ import { readdir as fsReaddir, stat as fsStat } from "node:fs/promises";
 import { join } from "node:path";
 import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
-import { type ToolDefinition, wrapToolDefinition } from "./support/definition.ts";
+import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { pathExists, resolveToCwd } from "./support/path-utils.ts";
 import { DEFAULT_MAX_BYTES, formatSize, type TruncationResult, truncateKeepHead } from "./support/truncate.ts";
 

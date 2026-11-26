@@ -2,8 +2,8 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { loadPhoton } from "../../src/images/photon.ts";
 import { createReadTool, createReadToolDefinition } from "../../src/tools/read.ts";
+import { loadPhoton } from "../../src/utils/images/photon.ts";
 
 const dirs: string[] = [];
 

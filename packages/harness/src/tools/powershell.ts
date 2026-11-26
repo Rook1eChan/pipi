@@ -5,7 +5,7 @@ import {
 	type ShellToolInput,
 	type ShellToolOptions,
 } from "./bash.ts";
-import { wrapToolDefinition } from "./support/definition.ts";
+import { wrapToolDefinition } from "./definition.ts";
 import { getPowerShellConfig, type ShellConfig } from "./support/shell.ts";
 
 const powershellConfig = {

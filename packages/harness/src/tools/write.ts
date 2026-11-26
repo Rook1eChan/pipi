@@ -2,7 +2,7 @@ import { mkdir as fsMkdir, writeFile as fsWriteFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
-import { type ToolDefinition, wrapToolDefinition } from "./support/definition.ts";
+import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { withFileMutationQueue } from "./support/file-mutation-queue.ts";
 import { resolveToCwd } from "./support/path-utils.ts";
 

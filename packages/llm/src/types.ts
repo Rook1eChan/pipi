@@ -373,7 +373,7 @@ export interface StreamOptions {
 	temperature?: number;
 	/**
 	 * 任意采样参数，原样合并进请求体，位置在具名字段之后，因此同名键会覆盖它们。
-	 * 用于让自定义 OpenAI 兼容服务（llama.cpp、vLLM、SGLang 等）收到 pi 未建模的参数，
+	 * 用于让自定义 OpenAI 兼容服务（llama.cpp、vLLM、SGLang 等）收到 pipi 未建模的参数，
 	 * 例如 `top_p`、`top_k`、`min_p`、`repetition_penalty`。
 	 * 按 key 覆盖 `Model.samplingParams`。仅 OpenAI 兼容 adapter 会应用；其它 API 忽略该选项。
 	 */

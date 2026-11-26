@@ -34,7 +34,7 @@ function parseAuthData(text: string): Record<string, Credential> {
  * `0600` 创建，目录以 `0700` 创建。跨进程锁不在本实现范围内。
  */
 export class FileCredentialStore implements CredentialStore {
-	/** credential 文件路径，例如 `~/.pi/auth.json`。 */
+	/** credential 文件路径，例如 `~/.pipi/agent/auth.json`。 */
 	readonly path: string;
 	/** 串行链，保证同一实例内的写操作按顺序执行。 */
 	private chain: Promise<unknown> = Promise.resolve();

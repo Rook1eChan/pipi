@@ -283,7 +283,7 @@ export function findMostRecentSession(sessionDir: string, cwd?: string): string 
 ### 2.10 存储位置
 
 ```text
-~/.pi/agent/sessions/--work-project--/2026-11-25T10-00-00-000Z_<id>.jsonl
+~/.pipi/agent/sessions/--work-project--/2026-11-25T10-00-00-000Z_<id>.jsonl
 ```
 
 目录名由 cwd 转义而来，文件名由时间戳与 id 组成。这样同一个项目的会话聚在一起，不同项目不混。
@@ -354,7 +354,7 @@ export function findMostRecentSession(sessionDir: string, cwd?: string): string 
 | 分支与 `createBranchedSession` | 复现 | 回退与分叉的产品基础 |
 | 分支摘要 | 后置到课程 15（D-070） | 摘要生成依赖压缩逻辑 |
 | 会话导出（JSONL） | 复现 | 仅 42 行，输出当前分支 |
-| 会话目录 | `~/.pipi/sessions/--cwd--` | 结构与原项目一致，前缀换成本项目名称 |
+| 会话目录 | `~/.pipi/agent/sessions/--cwd--` | 结构与原项目一致，前缀换成本项目名称 |
 | 扩展条目（custom / custom_message） | 复现（D-069） | 本课实现，读取时未知类型忽略 |
 | `bashExecution` 消息 | 后置 | 属于交互模式（课程 23） |
 | HTML 导出 / 分享 | 后置 | 展示层需求 |

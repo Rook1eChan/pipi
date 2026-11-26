@@ -84,7 +84,7 @@
 | D-055 | `read` 图片分支按原项目 | MIME 识别、EXIF 方向、等比缩放，超出限制时压缩；引入 `@silvia-odwyer/photon-node` 0.3.4 | 生效 | 2026-11-24 |
 | D-056 | 搜索与编辑跟随原项目 | rg / fd 系统 PATH 优先，缺失时从 GitHub Releases 下载；`edit` 含模糊匹配、diff 与 unified patch | 生效 | 2026-11-24 |
 | D-057 | 截断、输出累积与写入队列纳入课程 12 | 工具执行直接依赖这些能力；原计划单独成课的工具治理内容随之并入课程 12 | 生效 | 2026-11-24 |
-| D-058 | bash 注入 `PI_*` 环境变量 | `PI_SESSION_ID`、`PI_SESSION_FILE`、`PI_PROVIDER`、`PI_MODEL`、`PI_REASONING_LEVEL` 来自工具上下文，默认开启 | 生效 | 2026-11-24 |
+| D-058 | bash 注入 `PIPI_*` 环境变量 | `PIPI_SESSION_ID`、`PIPI_SESSION_FILE`、`PIPI_PROVIDER`、`PIPI_MODEL`、`PIPI_REASONING_LEVEL` 来自工具上下文，默认开启；原项目为 `PI_*`，本项目统一加 `PIPI_` 前缀 | 生效 | 2026-11-24 |
 | D-059 | 截断函数改名为 `truncateKeepHead` / `truncateKeepTail` | 原名 `truncateHead` / `truncateTail` 容易被读成“截掉头部 / 截掉尾部”，与“保留头部 / 保留尾部”的语义相反；仅改名，行为不变 | 生效 | 2026-11-24 |
 | D-060 | 修正尾部截断的 `truncatedBy` 误标 | 删除循环后的 `truncatedBy = "lines"` 兜底行；原项目在 `maxLines = 1` 且单行超字节时会错误报 `"lines"` | 生效 | 2026-11-24 |
 | D-061 | 课程 12 按“一个工具一次完整交付” | 每个任务交付一个工具的全部内容：路径/基础设施、实现、测试、导出、changelog；基础能力随首个使用它的工具一起实现 | 生效 | 2026-11-24 |
@@ -92,12 +92,20 @@
 | D-065 | 命令执行直接用 `node:child_process` | 不引入 `cross-spawn`；Windows 的 `.cmd` 解析差异后续按需处理 | 生效 | 2026-11-24 |
 | D-066 | 工具文件按“工具 + 支撑”分层 | 八个工具与注册表放 `tools/`，`path-utils`、`truncate`、`queue`、`edit-diff`、`shell` 等放 `tools/support/`，图片在 `images/`；与原项目的扁平结构不同 | 生效 | 2026-11-24 |
 | D-067 | 二进制下载器简化 | `rg` / `fd` 先查安装目录与系统 PATH，缺失时从 GitHub Releases 下载；不校验 checksum，不内置解压实现（调用 `tar` / `unzip`） | 生效 | 2026-11-24 |
+| D-075 | prompt 模块参数统一为 `projectDir` / `agentDir` | 上下文、技能、模板与资源加载器的选项字段统一用 `projectDir`，与 `agentDir` 对齐；`system-prompt` 仍用 `cwd`，因为它对应提示里输出的 “Current working directory” | 生效 | 2026-11-26 |
+| D-073 | 配置目录按原项目结构 | 用户级资源在 `~/.pipi/agent`（skills、prompts、sessions、AGENTS.md），项目级在 `<projectDir>/.pipi`；原项目对应 `~/.pi/agent` 与 `.pi/` | 生效 | 2026-11-26 |
 | D-071 | 不保留会话版本与迁移 | 删除 `CURRENT_SESSION_VERSION`、`SessionHeader.version` 与迁移函数，只读写当前格式；格式变更后旧会话文件不再兼容。原项目保留 v1→v3 迁移以兼容早期版本 | 生效 | 2026-11-25 |
 | D-069 | 课程 13 实现扩展条目 | `custom`、`custom_message`、`session_info` 与核心条目一起实现；读取时未知类型忽略 | 生效 | 2026-11-25 |
 | D-070 | 分支摘要后置到课程 15 | 课程 13 不实现 `branch_summary` 条目与 `branchWithSummary`，摘要生成随压缩一起做 | 生效 | 2026-11-25 |
 | D-068 | 取消课程 13（工具治理与安全） | 原计划覆盖的截断、输出累积、diff、写入队列、路径解析已并入课程 12（D-057）；剩余文件按归属前移：`render-utils.ts` → 课程 23，`bash-executor.ts` → 课程 19，`exec.ts` → 课程 20；后续课程编号整体前移一位，课程总数为 00–24 | 生效 | 2026-11-25 |
 | D-063 | 工具提示文案内联，不单独导出常量 | `promptSnippet` / `promptGuidelines` 直接写在工具定义里，后续工具一致；与上游的 `xxxToolSystemPromptContribution` 常量不同，代价是一致性测试要重复字面量 | 生效 | 2026-11-24 |
 | D-062 | 图片缩放同步执行 | 不实现 `image-resize-worker.ts` 的 worker 线程；缩放直接在进程内调用 photon，行为一致但会短暂占用事件循环 | 生效 | 2026-11-24 |
+| D-076 | 资源加载分 resolver 与 loader 两层 | `ResourceResolver` 接收 `ResourceSettings`（`agentDir`、`projectDir`、`projectTrusted`、extensions/skills/prompts 的 agent/project 条目），产出 `ResolvedResource { path, enabled, metadata }`；`ResourceLoader` 只按路径装载。原项目对应 `package-manager.resolve()` 与 `DefaultResourceLoader`；`SettingsManager` 在课程 16 填充快照。课程 16 接入前 `projectTrusted` 默认 `true` | 生效 | 2026-11-26 |
+| D-077 | resolver 只管 extensions、skills、prompts | resolver 负责默认目录（`~/.pipi/agent/*`、`.pipi/*`、`~/.agents/skills`、项目目录到 git 根的祖先 `.agents/skills`）、settings 条目、目录展开、ignore、启用/禁用模式与 project > user > package 优先级；项目规则与 `SYSTEM.md` / `APPEND_SYSTEM.md` 仍由 loader 查找。原项目同样把这三类交给 package manager | 生效 | 2026-11-26 |
+| D-078 | 保留 `extendResources` 命名 | 两个加载入口：`reload()` 全量、`extendResources()` 增量；不采用 `extendResourceLoad`。与原项目同名 | 生效 | 2026-11-26 |
+| D-079 | 课程 14 不实现 pi 文档路径段 | 系统提示默认文案省略 README/docs/examples 路径；文档体系建立后按原项目补回。原项目在提示中列出包内 `README.md`、`docs/`、`examples/` | 待文档体系建立时生效 | 2026-11-26 |
+| D-080 | 项目规则独立成文件 | `resources/context-files.ts` 单独存放 `loadProjectContextFiles` 与 worktree 遮盖逻辑；原项目写在 `resource-loader.ts` 内。用户确认独立便于阅读 | 生效 | 2026-11-26 |
+| D-081 | 项目自身品牌与作用域命名统一 | 扩展清单只读 `package.json` 的 `pipi.extensions`；技能发现模式 `"pipi"`；环境变量 `PIPI_*`；资源作用域 `user` 改为 `agent`（`SourceScope`、`ResourceEntries` 与服务标记同步）；代码注释里的示例路径改为 `~/.pipi/agent`。课程与 `SOURCE_COVERAGE` 中描述原项目 `my-pi` 的内容仍写 `pi` | 生效 | 2026-11-26 |
 | D-053 | 工具参数校验只走 TypeBox | 课程 11 只实现 TypeBox 路径：`structuredClone` → 删除可选 null → `Value.Convert` → `Compile().Check`；不实现普通 JSON Schema 的手写 coercion。上游 2026-11-01（`6536f80`）改为独立包 `@earendil-works/pi-schema`（draft 2020-12/7、无 eval、内建 coercion，约 12.4 万字节），本项目不引入；待接入 MCP 或第三方扩展提供的工具时重新评估 | 生效 | 2026-11-23 |
 
 维护规则：
@@ -109,7 +117,7 @@
 
 ## 4. 当前已批准任务
 
-课程 01–05、07、09–13 已完成并验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
+课程 01–05、07、09–14 已完成或待验收；课程 06 暂缓，课程 08 跳过。后续课程在 B 确认后按任务表推进。
 
 | 任务 ID | 课程 | 目标与范围 | 涉及文件/模块 | 依赖 | 测试与验收 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -163,7 +171,7 @@
 | T-12-3 | 12 | `write` 与写入队列 | `packages/harness/src/tools/write.ts`、`packages/harness/src/tools/support/file-mutation-queue.ts` | T-12-2 | 父目录自动创建；同文件并发写串行、不同文件并行 | 已验收 |
 | T-12-4 | 12 | `edit` 与 `edit-diff` | `packages/harness/src/tools/edit.ts`、`packages/harness/src/tools/support/edit-diff.ts` | T-12-3 | BOM/CRLF 保留；精确与模糊匹配；唯一性校验；返回 diff 与 patch | 已验收 |
 | T-12-5 | 12 | `ls` | `packages/harness/src/tools/ls.ts` | T-12-2 | 排序、条目上限、非目录报错 | 已验收 |
-| T-12-6 | 12 | `bash` 与 `PI_*` 环境变量 | `packages/harness/src/tools/bash.ts` | T-12-1、T-12-2 | 流式输出与进度事件；超时与中止杀进程树；非 0 退出码转错误 | 已验收 |
+| T-12-6 | 12 | `bash` 与 `PIPI_*` 环境变量 | `packages/harness/src/tools/bash.ts` | T-12-1、T-12-2 | 流式输出与进度事件；超时与中止杀进程树；非 0 退出码转错误 | 已验收 |
 | T-12-7 | 12 | `powershell` | `packages/harness/src/tools/powershell.ts` | T-12-6 | 复用 bash 实现，仅换 shell 配置 | 已验收 |
 | T-12-8 | 12 | `grep` 与 rg 获取 | `packages/harness/src/tools/grep.ts`、`packages/harness/src/tools/support/binary-manager.ts` | T-12-1、T-12-2 | 结果上限、长行截断、上下文行、`.gitignore` 生效 | 已验收 |
 | T-12-9 | 12 | `find` 与 fd 获取 | `packages/harness/src/tools/find.ts`、`packages/harness/src/tools/support/binary-manager.ts` | T-12-2、T-12-8 | glob 匹配、结果路径相对化、上限提示 | 已验收 |
@@ -173,6 +181,11 @@
 | T-13-3 | 13 | 分支：`branch`、`createBranchedSession` | `packages/harness/src/session/manager.ts` | T-13-2 | 回退后追加形成新分支；单路径导出正确 | 已验收 |
 | T-13-4 | 13 | 会话发现与恢复：目录规则、最近会话、cwd 匹配 | `packages/harness/src/session/discovery.ts` | T-13-1 | 按 cwd 分组、按修改时间选中最近会话 | 已验收 |
 | T-13-5 | 13 | 会话导出（JSONL）与公共导出、changelog | `packages/harness/src/session/export.ts`、`packages/harness/src/index.ts` | T-13-3 | 导出当前分支；`build`、`test`、`check` 通过 | 已验收 |
+| T-14-1 | 14 | `buildSystemPrompt`：工具列表、指南、追加片段、项目规则、技能索引；技能索引格式化归位到 `skills.ts` | `packages/harness/src/prompt/system-prompt.ts`、`packages/harness/src/resources/skills.ts` | T-13-5 | 工具按 snippet 显示、指南条件生成、上下文与技能拼接测试通过 | 待用户验收 |
+| T-14-2 | 14 | 路径工具、来源与诊断类型、`ResourceSettings` 契约 | `packages/harness/src/utils/paths.ts`、`packages/harness/src/resources/{source-info,diagnostics,settings}.ts` | T-14-1 | `~` 与 Unicode 空格解析、来源形状、设置快照测试通过 | 待用户验收 |
+| T-14-3 | 14 | `ResourceResolver`：默认目录、settings 条目、目录展开、启用模式、优先级 | `packages/harness/src/resources/resolver.ts` | T-14-2 | 默认目录发现、项目优先、真实路径去重、排除与 `+/-` 精确匹配、`.agents` 继承、未信任过滤测试通过 | 待用户验收 |
+| T-14-4 | 14 | 技能、命令模板、项目规则按原项目规则加载 | `packages/harness/src/resources/{skills,prompt-templates,context-files}.ts` | T-14-2 | 根目录 `.md`、名称回退、warning 后仍加载、模板静默跳过、worktree 遮盖测试通过 | 待用户验收 |
+| T-14-5 | 14 | `ResourceLoader` 编排：inert 构造、`reload()`、`extendResources()`、`loadExtensions` 接缝、来源标记、override、公共导出与 changelog | `packages/harness/src/resources/loader.ts`、`packages/harness/src/index.ts` | T-14-3、T-14-4 | 构造不装载、全量与增量、项目优先、开关保留追加路径、系统提示发现、扩展路径传递测试通过 | 待用户验收 |
 
 ## 5. 任务模板
 
@@ -256,7 +269,7 @@
 | 2026-11-23 | T-11-3 实现完成：`prepareToolCall` 接入校验，新增 4 项循环测试；agent 测试改用 TypeBox schema |
 | 2026-11-23 | T-11-4 实现完成：公共入口导出校验函数，llm 与 agent changelog 更新；build、test、check 通过 |
 | 2026-11-23 | 用户验收 T-11-1 至 T-11-4，课程 11 完成 |
-| 2026-11-24 | 用户确认课程 12 B：八个工具全做、图片按原项目、搜索与编辑跟随原项目、截断与队列纳入本课、注入 `PI_*`；D-054 至 D-058 生效，批准 T-12-1 至 T-12-13 |
+| 2026-11-24 | 用户确认课程 12 B：八个工具全做、图片按原项目、搜索与编辑跟随原项目、截断与队列纳入本课、注入 `PI_*`（2026-11-26 改名 `PIPI_*`）；D-054 至 D-058 生效，批准 T-12-1 至 T-12-13 |
 | 2026-11-24 | T-12-1 实现完成：`truncate` 与 `output-accumulator`，新增 18 项测试；待用户验收 |
 | 2026-11-24 | D-059 生效：截断函数改名为 `truncateKeepHead` / `truncateKeepTail` |
 | 2026-11-24 | D-060 生效：删除截断循环后的兜底赋值，修正 `truncatedBy` 误标；补回归测试 |
@@ -275,6 +288,16 @@
 | 2026-11-25 | T-13-4、T-13-5 实现完成：会话发现、最近会话恢复、JSONL 导出；harness 14 文件 81 项通过；待用户验收 |
 | 2026-11-25 | 课程 13 补漏：会话名称清洗与解析（`resolveSessionName`、`getSessionName`、列表统一读取）；harness 84 项通过 |
 | 2026-11-25 | 用户验收 T-13-1 至 T-13-5，课程 13 完成 |
+| 2026-11-26 | T-14-1 实现完成：系统提示拼装与技能索引格式化，新增 11 项测试；待用户验收 |
+| 2026-11-26 | T-14-2 实现完成：项目规则加载（候选优先级、向上继承、去重），新增 7 项测试；待用户验收 |
+| 2026-11-26 | D-073 生效：配置目录统一到 `~/.pipi` / `.pipi` |
+| 2026-11-26 | T-14-3 至 T-14-5 实现完成：技能加载、命令模板、资源加载器；harness 19 文件 121 项通过；待用户验收 |
+| 2026-11-26 | 修正：补回 loader 的 override 钩子、来源记录、`extendResources`、异步 reload；技能补回 ignore 文件、符号链接、任意 `.md` 入口、冲突双方路径与 `sourceInfo`；模板补回 `sourceInfo`；上下文补回 worktree 遮盖检测。目录调整为 `resources/`（装载）与 `prompt/`（拼装） |
+| 2026-11-26 | 目录按原项目逻辑：`prompt/`、`resources/`、`session/`、`tools/` 平铺在 `src/` 下，通用工具与图像放 `utils/`；配置根改为 `~/.pipi/agent` |
+| 2026-11-26 | D-075 生效：prompt 模块参数 `cwd` 改名为 `projectDir` |
+| 2026-11-26 | D-076 至 D-080 生效：资源加载改为 resolver + loader 两层；resolver 负责路径，loader 负责装载；课程 14 暂不实现文档路径段；项目规则独立成文件 |
+| 2026-11-26 | D-058 变更：`PI_*` 环境变量改为 `PIPI_*`；D-081 生效，扩展清单改为 `pipi.extensions`，技能发现模式改为 `pipi`，资源作用域 `user` 改为 `agent` |
+| 2026-11-26 | T-14-1 至 T-14-5 重写完成：新增 `utils/paths.ts`、`resources/{settings,source-info,resolver,ignore}.ts`；loader 改为 inert 构造 + `reload()`；技能、模板、项目规则对齐原项目；新增 `minimatch@10.2.5`；harness 20 文件 147 项通过；待用户验收 |
 
 ## 7. 最终验收目标
 

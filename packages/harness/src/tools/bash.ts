@@ -1,7 +1,7 @@
 import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
+import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { spawnCommand, waitForChildProcess } from "./support/child-process.ts";
-import { type ToolDefinition, wrapToolDefinition } from "./support/definition.ts";
 import { OutputAccumulator } from "./support/output-accumulator.ts";
 import {
 	getPowerShellConfig,
@@ -75,13 +75,13 @@ function buildEnv(options: ShellToolOptions): NodeJS.ProcessEnv {
 	const context = options.getContext?.();
 	if (!context) return env;
 
-	if (context.sessionId) env.PI_SESSION_ID = context.sessionId;
-	if (context.sessionFile) env.PI_SESSION_FILE = context.sessionFile;
+	if (context.sessionId) env.PIPI_SESSION_ID = context.sessionId;
+	if (context.sessionFile) env.PIPI_SESSION_FILE = context.sessionFile;
 	if (context.model) {
-		env.PI_PROVIDER = context.model.provider;
-		env.PI_MODEL = context.model.id;
+		env.PIPI_PROVIDER = context.model.provider;
+		env.PIPI_MODEL = context.model.id;
 	}
-	if (context.thinkingLevel) env.PI_REASONING_LEVEL = context.thinkingLevel;
+	if (context.thinkingLevel) env.PIPI_REASONING_LEVEL = context.thinkingLevel;
 	return env;
 }
 

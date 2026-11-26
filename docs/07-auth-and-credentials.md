@@ -129,7 +129,7 @@ interface CredentialStore {
 文件位置：
 
 ```text
-~/.pi/auth.json
+~/.pipi/agent/auth.json
 ```
 
 结构：

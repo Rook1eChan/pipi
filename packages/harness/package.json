@@ -19,6 +19,9 @@
     "@pipi/agent": "0.0.0",
     "@pipi/llm": "0.0.0",
     "@pipi/tui": "0.0.0",
-    "@silvia-odwyer/photon-node": "0.3.4"
+    "@silvia-odwyer/photon-node": "0.3.4",
+    "ignore": "7.0.5",
+    "minimatch": "10.2.5",
+    "yaml": "2.9.0"
   }
 }

@@ -2,7 +2,7 @@ import { constants } from "node:fs";
 import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "node:fs/promises";
 import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
-import { type ToolDefinition, wrapToolDefinition } from "./support/definition.ts";
+import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import {
 	applyEditsToNormalizedContent,
 	detectLineEnding,

@@ -111,7 +111,7 @@ export async function ensureTool(tool: "rg" | "fd"): Promise<string | null> {
 	const existing = getToolPath(tool);
 	if (existing) return existing;
 
-	const offline = process.env.PI_OFFLINE;
+	const offline = process.env.PIPI_OFFLINE;
 	if (offline === "1" || offline?.toLowerCase() === "true") return null;
 
 	try {

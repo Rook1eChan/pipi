@@ -3,9 +3,9 @@ import { access as fsAccess, readFile as fsReadFile } from "node:fs/promises";
 import type { AgentTool, AgentToolResult } from "@pipi/agent";
 import type { ImageContent, TextContent } from "@pipi/llm";
 import { Type } from "typebox";
-import { detectSupportedImageMimeTypeFromFile } from "../images/mime.ts";
-import { processImage } from "../images/process.ts";
-import { type ToolDefinition, wrapToolDefinition } from "./support/definition.ts";
+import { detectSupportedImageMimeTypeFromFile } from "../utils/images/mime.ts";
+import { processImage } from "../utils/images/process.ts";
+import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { resolveReadPath } from "./support/path-utils.ts";
 import {
 	DEFAULT_MAX_BYTES,
