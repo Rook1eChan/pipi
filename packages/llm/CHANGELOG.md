@@ -38,6 +38,8 @@
 - 新增 `validateToolArguments`：按 TypeBox schema 校验工具参数，克隆后删除可选 `null`、执行类型转换，失败时报告路径与原始参数。
 - 新增 `validateToolCall`：按名字找到工具后复用同一套校验，未知工具名单独报错。
 
+- 新增 `RetryPolicy`、`RetryCallbacks` 与 `retryAssistantCall`，按指数退避重试可恢复的 assistant 错误。
+
 ### Changed
 
 - 将 `InMemoryCredentialStore` 移到独立文件 `auth/in-memory-credential-store.ts`；公共导出不变。

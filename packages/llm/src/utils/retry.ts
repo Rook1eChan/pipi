@@ -1,3 +1,4 @@
+import type { AssistantMessage } from "../types.ts";
 import { ProviderHttpError } from "./error-body.ts";
 
 const DEFAULT_MAX_RETRY_DELAY_MS = 60_000;
@@ -106,5 +107,169 @@ export async function providerRequestWithRetry<T>(
 			// 等待
 			await abortableSleep(getRetryDelayMs(error, retryIndex, options.maxRetryDelayMs), options.signal);
 		}
+	}
+}
+
+// ============================================================================
+// Assistant call retry
+// ============================================================================
+
+function buildProviderErrorPattern(patterns: readonly string[]): RegExp {
+	return new RegExp(patterns.join("|"), "i");
+}
+
+const NON_RETRYABLE_PROVIDER_LIMIT_ERROR_PATTERN = buildProviderErrorPattern([
+	"GoUsageLimitError",
+	"FreeUsageLimitError",
+	"Monthly usage limit reached",
+	"available balance",
+	"insufficient_quota",
+	"out of budget",
+	"quota exceeded",
+	"billing",
+]);
+
+const RETRYABLE_PROVIDER_ERROR_PATTERN = buildProviderErrorPattern([
+	"overloaded",
+	"rate.?limit",
+	"too many requests",
+	"429",
+	"500",
+	"502",
+	"503",
+	"504",
+	"524",
+	"service.?unavailable",
+	"server.?error",
+	"internal.?error",
+	"provider.?returned.?error",
+	"exceeded request buffer limit while retrying upstream",
+	"network.?error",
+	"connection.?error",
+	"connection.?refused",
+	"connection.?lost",
+	"other side closed",
+	"fetch failed",
+	"getaddrinfo",
+	"ENOTFOUND",
+	"EAI_AGAIN",
+	"upstream.?connect",
+	"reset before headers",
+	"socket hang up",
+	"socket connection was closed",
+	"timed? out",
+	"timeout",
+	"terminated",
+	"websocket.?closed",
+	"websocket.?error",
+	"ended without",
+	"stream ended before message_stop",
+	"stream ended before a terminal response event",
+	"http2 request did not get a response",
+	"retry delay",
+	"you can retry your request",
+	"try your request again",
+	"please retry your request",
+	"ResourceExhausted",
+]);
+
+/** 摘要等一次性 assistant 调用的重试策略。 */
+export interface RetryPolicy {
+	enabled: boolean;
+	/** 最大重试次数；首次调用不计入。 */
+	maxRetries: number;
+	/** 指数退避的基准延迟，单位毫秒。 */
+	baseDelayMs: number;
+}
+
+/** 重试过程中的回调。 */
+export interface RetryCallbacks {
+	onRetryScheduled?: (
+		attempt: number,
+		maxAttempts: number,
+		delayMs: number,
+		errorMessage: string,
+	) => void | Promise<void>;
+	onRetryAttemptStart?: () => void | Promise<void>;
+	onRetryFinished?: (success: boolean, attempt: number, finalError?: string) => void | Promise<void>;
+}
+
+class RetrySleepAbortError extends Error {
+	constructor() {
+		super("Aborted");
+	}
+}
+
+function retrySleep(ms: number, signal?: AbortSignal): Promise<void> {
+	return new Promise((resolve, reject) => {
+		if (signal?.aborted) {
+			reject(new RetrySleepAbortError());
+			return;
+		}
+		const timeout = setTimeout(resolve, ms);
+		signal?.addEventListener(
+			"abort",
+			() => {
+				clearTimeout(timeout);
+				reject(new RetrySleepAbortError());
+			},
+			{ once: true },
+		);
+	});
+}
+
+/** 判断 assistant 错误是否值得重试。 */
+export function isRetryableAssistantError(message: AssistantMessage): boolean {
+	if (message.stopReason !== "error" || !message.errorMessage) return false;
+	if (NON_RETRYABLE_PROVIDER_LIMIT_ERROR_PATTERN.test(message.errorMessage)) return false;
+	return RETRYABLE_PROVIDER_ERROR_PATTERN.test(message.errorMessage);
+}
+
+/**
+ * 包住一次 assistant 调用，按策略重试可恢复错误。
+ * 成功、aborted、length 和非可重试错误直接返回；退避等待可被 signal 中断。
+ */
+export async function retryAssistantCall(
+	produce: () => Promise<AssistantMessage>,
+	policy: RetryPolicy | undefined,
+	signal: AbortSignal | undefined,
+	callbacks?: RetryCallbacks,
+): Promise<AssistantMessage> {
+	const maxAttempts = policy?.enabled ? policy.maxRetries : 0;
+
+	let attempt = 0;
+	let lastRetry: { attempt: number; errorMessage: string } | undefined;
+	for (;;) {
+		const response = await produce();
+
+		if (response.stopReason === "aborted") {
+			if (lastRetry) await callbacks?.onRetryFinished?.(false, lastRetry.attempt);
+			return response;
+		}
+		if (response.stopReason !== "error") {
+			if (lastRetry) await callbacks?.onRetryFinished?.(true, lastRetry.attempt);
+			return response;
+		}
+		if (attempt >= maxAttempts || !isRetryableAssistantError(response)) {
+			if (lastRetry) await callbacks?.onRetryFinished?.(false, lastRetry.attempt, response.errorMessage);
+			return response;
+		}
+
+		attempt++;
+		lastRetry = { attempt, errorMessage: response.errorMessage || "Unknown error" };
+		const delayMs = policy!.baseDelayMs * 2 ** (attempt - 1);
+		await callbacks?.onRetryScheduled?.(attempt, maxAttempts, delayMs, lastRetry.errorMessage);
+
+		try {
+			await retrySleep(delayMs, signal);
+		} catch (error) {
+			await callbacks?.onRetryFinished?.(false, attempt, lastRetry.errorMessage);
+			if (error instanceof RetrySleepAbortError) {
+				const { errorMessage: _errorMessage, ...rest } = response;
+				return { ...rest, stopReason: "aborted" };
+			}
+			throw error;
+		}
+		await callbacks?.onRetryAttemptStart?.();
 	}
 }

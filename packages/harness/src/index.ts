@@ -1,3 +1,4 @@
+export * from "./compaction/index.ts";
 export * from "./config.ts";
 export * from "./prompt/system-prompt.ts";
 export * from "./resources/context-files.ts";

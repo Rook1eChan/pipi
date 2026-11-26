@@ -9,6 +9,13 @@ export const COMPACTION_SUMMARY_PREFIX = `The conversation history before this p
 export const COMPACTION_SUMMARY_SUFFIX = `
 </summary>`;
 
+export const BRANCH_SUMMARY_PREFIX = `The following is a summary of a branch that this conversation came back from:
+
+<summary>
+`;
+
+export const BRANCH_SUMMARY_SUFFIX = `</summary>`;
+
 /** 扩展注入的消息：参与上下文，展示方式由 display 决定。 */
 export interface CustomMessage<T = unknown> {
 	role: "custom";
@@ -16,6 +23,14 @@ export interface CustomMessage<T = unknown> {
 	content: string | (TextContent | ImageContent)[];
 	display: boolean;
 	details?: T;
+	timestamp: number;
+}
+
+/** 分支摘要消息：把被放弃路径的经历带入当前上下文。 */
+export interface BranchSummaryMessage {
+	role: "branchSummary";
+	summary: string;
+	fromId: string | null;
 	timestamp: number;
 }
 
@@ -30,6 +45,7 @@ export interface CompactionSummaryMessage {
 declare module "@pipi/agent" {
 	interface CustomAgentMessages {
 		custom: CustomMessage;
+		branchSummary: BranchSummaryMessage;
 		compactionSummary: CompactionSummaryMessage;
 	}
 }
@@ -42,6 +58,19 @@ export function createCustomMessage(
 	timestamp: string,
 ): CustomMessage {
 	return { role: "custom", customType, content, display, details, timestamp: new Date(timestamp).getTime() };
+}
+
+export function createBranchSummaryMessage(
+	summary: string,
+	fromId: string | null,
+	timestamp: string,
+): BranchSummaryMessage {
+	return {
+		role: "branchSummary",
+		summary,
+		fromId,
+		timestamp: new Date(timestamp).getTime(),
+	};
 }
 
 export function createCompactionSummaryMessage(
@@ -65,6 +94,18 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 				result.push({ role: "user", content, timestamp: message.timestamp });
 				break;
 			}
+			case "branchSummary":
+				result.push({
+					role: "user",
+					content: [
+						{
+							type: "text",
+							text: BRANCH_SUMMARY_PREFIX + message.summary + BRANCH_SUMMARY_SUFFIX,
+						},
+					],
+					timestamp: message.timestamp,
+				});
+				break;
 			case "compactionSummary":
 				result.push({
 					role: "user",

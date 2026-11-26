@@ -45,6 +45,8 @@ export interface CompactionEntry<T = unknown> extends SessionEntryBase {
 	tokensBefore: number;
 	details?: T;
 	usage?: Usage;
+	/** 是否由扩展生成；扩展摘要不继承文件清单。 */
+	fromHook?: boolean;
 }
 
 /** 扩展私有数据，不进入 LLM 上下文。 */
@@ -69,11 +71,24 @@ export interface SessionInfoEntry extends SessionEntryBase {
 	name?: string;
 }
 
+/** 离开一条分支时生成的摘要，挂在导航目标之后。 */
+export interface BranchSummaryEntry<T = unknown> extends SessionEntryBase {
+	type: "branch_summary";
+	/** 旧分支的末端。 */
+	fromId: string;
+	summary: string;
+	details?: T;
+	usage?: Usage;
+	/** 是否由扩展生成；扩展摘要不继承文件清单。 */
+	fromHook?: boolean;
+}
+
 export type SessionEntry =
 	| SessionMessageEntry
 	| ModelChangeEntry
 	| ThinkingLevelChangeEntry
 	| CompactionEntry
+	| BranchSummaryEntry
 	| CustomEntry
 	| CustomMessageEntry
 	| SessionInfoEntry;

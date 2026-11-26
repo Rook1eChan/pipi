@@ -101,7 +101,7 @@
 | 12 | 26 | 已生成 | 已实现 |
 | 13 | 6 | 已生成 | 部分实现 |
 | 14 | 4 | 已生成 | 部分实现 |
-| 15 | 6 | 未生成 | 未开始 |
+| 15 | 6 | 已生成 | 部分实现 |
 | 16 | 21 | 未生成 | 未开始 |
 | 17 | 12 | 未生成 | 未开始 |
 | 18 | 15 | 未生成 | 未开始 |
@@ -317,10 +317,10 @@
 | `core/auth-storage.ts` | 506 | 认证与凭据 | 07 | 已登记 | 未生成 | 未开始 | 简化 |
 | `core/bash-executor.ts` | 156 | 内置工具 | 19 | 已登记 | 已生成 | 未开始 | 后置（交互模式直接执行命令） |
 | `core/cache-stats.ts` | 164 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/branch-summarization.ts` | 367 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/compaction.ts` | 987 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/index.ts` | 7 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/compaction/utils.ts` | 175 | 上下文压缩 | 15 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/compaction/branch-summarization.ts` | 367 | 上下文压缩 | 15 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/compaction/compaction.ts` | 987 | 上下文压缩 | 15 | 已登记 | 已生成 | 已实现 | 复现（触发与扩展钩子后置课程 17/20） |
+| `core/compaction/index.ts` | 7 | 上下文压缩 | 15 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/compaction/utils.ts` | 175 | 上下文压缩 | 15 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/defaults.ts` | 12 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/diagnostics.ts` | 15 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/event-bus.ts` | 33 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -358,7 +358,7 @@
 | `core/sdk.ts` | 410 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/session-cwd.ts` | 60 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现（合并进发现模块） |
 | `core/session-export.ts` | 42 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现 |
-| `core/session-manager.ts` | 1642 | 会话持久化 | 13 | 已登记 | 已生成 | 部分实现 | 复现 |
+| `core/session-manager.ts` | 1642 | 会话持久化 | 13、15 | 已登记 | 已生成 | 部分实现 | 复现（压缩与分支摘要存储已实现；导航后置 17） |
 | `core/settings-diagnostics.ts` | 25 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/settings-manager.ts` | 1389 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现（16 负责填充 14 定义的 `ResourceSettings`） |
 | `core/skills.ts` | 509 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |

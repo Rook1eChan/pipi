@@ -33,8 +33,8 @@
 | 11 | 工具执行语义 | 串行/并行、参数校验、前后钩子、结果回填如何工作？ | 工具执行 | `agent-loop.ts` 工具段、`ai/src/utils/validation.ts` | 09 | `11-tool-execution.md` | 已生成 | 验收通过 |
 | 12 | 内置工具 | 如何安全地读写文件、搜索代码、执行命令？ | 动手能力 | `coding-agent/src/core/tools/*`、`bash-executor.ts` | 11 | `12-builtin-tools.md` | 已生成 | 验收通过 |
 | 13 | 会话持久化与分支 | JSONL 会话、消息树、分支切换、上下文重建如何实现？ | 会话存储 | `session-manager.ts`、`messages.ts`、`session-export.ts` | 10 | `13-session-persistence.md` | 已生成 | 验收通过 |
-| 14 | 提示、上下文与技能 | 系统提示、AGENTS.md、技能、提示模板如何发现、解析与装载？ | 上下文构造 | `system-prompt.ts`、`resource-loader.ts`、`skills.ts`、`prompt-templates.ts`、`source-info.ts`、`package-manager.ts`（资源解析部分） | 13 | `14-prompts-context-skills.md` | 已生成 | 待用户验收 |
-| 15 | 上下文压缩与分支摘要 | 超出上下文窗口时如何压缩并保持可继续？ | 长会话 | `core/compaction/*`、`ai/src/utils/estimate.ts` | 14 | `15-compaction.md` | 未生成 | 待学习 |
+| 14 | 提示、上下文与技能 | 系统提示、AGENTS.md、技能、提示模板如何发现、解析与装载？ | 上下文构造 | `system-prompt.ts`、`resource-loader.ts`、`skills.ts`、`prompt-templates.ts`、`source-info.ts`、`package-manager.ts`（资源解析部分） | 13 | `14-prompts-context-skills.md` | 已生成 | 验收通过 |
+| 15 | 上下文压缩与分支摘要 | 超出上下文窗口时如何压缩并保持可继续？ | 长会话 | `core/compaction/*`、`ai/src/utils/estimate.ts` | 14 | `15-compaction.md` | 已生成 | 验收通过 |
 | 16 | CLI、配置与项目信任 | 参数、设置分层、项目信任、首次启动如何组织？settings 如何填充资源快照？ | 启动与配置 | `cli/*`、`main.ts`、`config.ts`、`settings-manager.ts`、`project-trust.ts` | 14 | `16-cli-config-trust.md` | 未生成 | 待学习 |
 | 17 | AgentSession 编排 | 如何把 Agent、会话、工具、扩展、压缩串成产品级会话？ | 会话编排 | `agent-session.ts`、`agent-session-runtime.ts`、`sdk.ts` | 15, 16 | `17-agent-session.md` | 未生成 | 待学习 |
 | 18 | 模型运行时与解析 | 模型选择、动态目录、自定义 provider、本地模型如何工作？ | 模型运行时 | `core/model-*.ts`、`provider-composer.ts`、`extensions/llama/*` | 16 | `18-model-runtime.md` | 未生成 | 待学习 |
@@ -49,14 +49,14 @@
 
 | 项 | 状态 |
 | --- | --- |
-| 当前课程 | 14 提示、上下文与技能 |
-| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表）、05（API adapter）、07（API Key 认证与凭据）、09（Agent 循环与事件协议）、10（Agent 状态机）、11（工具执行语义）、12（内置工具）、13（会话持久化与分支） |
-| 已完成 A 的课程 | 00、01、02、03、04、05、07、09、10、11 |
-| 已确认 B 的课程 | 00、01、02、03、04、05、07、09、10、11、12、13 |
-| 已生成文档 | 00–14 |
-| 已实现课程 | 01、02、03、04、05、07、09、10、11、12、13、14 |
+| 当前课程 | 16 CLI、配置与项目信任 |
+| 已完成课程 | 00（约定类）、01（工程基座）、02（LLM 数据契约）、03（流式响应协议）、04（Provider 注册表）、05（API adapter）、07（API Key 认证与凭据）、09（Agent 循环与事件协议）、10（Agent 状态机）、11（工具执行语义）、12（内置工具）、13（会话持久化与分支）、14（提示、上下文与技能）、15（上下文压缩与分支摘要） |
+| 已完成 A 的课程 | 00、01、02、03、04、05、07、09、10、11、12、13、14 |
+| 已确认 B 的课程 | 00、01、02、03、04、05、07、09、10、11、12、13、14、15 |
+| 已生成文档 | 00–15 |
+| 已实现课程 | 01、02、03、04、05、07、09、10、11、12、13、14、15 |
 | 已跳过课程 | 08（用户决定跳过，不实现图像生成） |
-| 当前阶段 | 课程 06 暂缓；课程 08 跳过；课程 14 已按 resolver + loader 重写，待用户验收 |
+| 当前阶段 | 课程 15 验收通过；课程 06 暂缓，课程 08 跳过 |
 
 ## 4. 待确认前提索引
 

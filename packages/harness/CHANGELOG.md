@@ -37,6 +37,10 @@
 - 新增 `ResourceLoader`：构造为空、`reload()` 装载、`extendResources()` 增量追加，含 `loadExtensions` 接缝、override、来源标记与 `SYSTEM.md` / `APPEND_SYSTEM.md` 发现。
 - 新增 `minimatch@10.2.5`，用于资源启用模式匹配。
 
+- 新增 `compaction` 模块：token 估算、切点、结构化摘要、split turn 与文件清单。
+- 新增分支摘要：收集被放弃的路径、按预算裁剪、生成 `branch_summary`。
+- 会话层新增 `BranchSummaryEntry`、`branchWithSummary`、`getLatestCompactionEntry`；`appendCompaction` 支持 `details`、`fromHook`、`usage`。
+
 ### Changed
 
 - 提示与资源加载相关选项的 `cwd` 字段改名为 `projectDir`，与 `agentDir` 对齐。

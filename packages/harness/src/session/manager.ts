@@ -3,11 +3,12 @@ import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readSync, s
 import { join, resolve } from "node:path";
 import { StringDecoder } from "node:string_decoder";
 import type { AgentMessage } from "@pipi/agent";
-import type { ImageContent, TextContent } from "@pipi/llm";
+import type { ImageContent, TextContent, Usage } from "@pipi/llm";
 import { getSessionsRoot } from "../config.ts";
 import { buildSessionContext, type SessionContext, selectContextEntries } from "./context.ts";
 import { resolveSessionName, sanitizeSessionName } from "./name.ts";
 import type {
+	BranchSummaryEntry,
 	CompactionEntry,
 	CustomEntry,
 	CustomMessageEntry,
@@ -38,6 +39,14 @@ export interface SessionManagerOptions {
 }
 
 export { getSessionsRoot } from "../config.ts";
+
+/** 路径上最新的一条压缩条目；没有返回 null。 */
+export function getLatestCompactionEntry(entries: SessionEntry[]): CompactionEntry | null {
+	for (let index = entries.length - 1; index >= 0; index--) {
+		if (entries[index].type === "compaction") return entries[index] as CompactionEntry;
+	}
+	return null;
+}
 
 /** 把 cwd 转成安全的目录名。 */
 export function getDefaultSessionDir(cwd: string): string {
@@ -269,8 +278,15 @@ export class SessionManager {
 	}
 
 	/** 记录一次压缩；摘要文本由调用方生成。 */
-	appendCompaction(summary: string, firstKeptEntryId: string, tokensBefore: number): string {
-		const entry: CompactionEntry = {
+	appendCompaction<T = unknown>(
+		summary: string,
+		firstKeptEntryId: string,
+		tokensBefore: number,
+		details?: T,
+		fromHook?: boolean,
+		usage?: Usage,
+	): string {
+		const entry: CompactionEntry<T> = {
 			type: "compaction",
 			id: generateEntryId(this.byId),
 			parentId: this.leafId,
@@ -278,6 +294,9 @@ export class SessionManager {
 			summary,
 			firstKeptEntryId,
 			tokensBefore,
+			details,
+			fromHook,
+			usage,
 		};
 		return this.appendEntry(entry);
 	}
@@ -333,6 +352,32 @@ export class SessionManager {
 	}
 
 	/** 把叶指针指向指定条目；下一次的追加形成一个分支。 */
+	branchWithSummary(
+		branchFromId: string | null,
+		summary: string,
+		details?: unknown,
+		fromHook?: boolean,
+		usage?: Usage,
+	): string {
+		if (branchFromId !== null && !this.byId.has(branchFromId)) {
+			throw new Error(`Entry ${branchFromId} not found`);
+		}
+		const fromId = this.leafId ?? "root";
+		this.leafId = branchFromId;
+		const entry: BranchSummaryEntry = {
+			type: "branch_summary",
+			id: generateEntryId(this.byId),
+			parentId: branchFromId,
+			timestamp: new Date().toISOString(),
+			fromId,
+			summary,
+			details,
+			usage,
+			fromHook,
+		};
+		return this.appendEntry(entry);
+	}
+
 	branch(branchFromId: string): void {
 		if (!this.byId.has(branchFromId)) throw new Error(`Entry ${branchFromId} not found`);
 		this.leafId = branchFromId;

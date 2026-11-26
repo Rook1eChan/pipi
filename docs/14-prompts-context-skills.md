@@ -1,6 +1,6 @@
 # 14 提示、上下文与技能
 
-> 课程状态：待用户验收
+> 课程状态：验收通过
 > 覆盖模块：`coding-agent/src/core/system-prompt.ts`、`resource-loader.ts`、`skills.ts`、`prompt-templates.ts`、`package-manager.ts`（资源解析部分）、`source-info.ts`、`diagnostics.ts`
 > 课程文件：14-prompts-context-skills.md
 > 本课产出：模型每次请求看到的系统提示，由默认说明、项目规则、技能索引与命令模板拼装而成。
