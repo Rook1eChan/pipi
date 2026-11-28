@@ -3,7 +3,7 @@ import { buildSystemPrompt } from "../../src/prompt/system-prompt.ts";
 import { formatSkillsForPrompt, type Skill } from "../../src/resources/skills.ts";
 
 const baseOptions = {
-	cwd: "/work/project",
+	projectDir: "/work/project",
 	selectedTools: ["read", "bash", "edit", "write"],
 	toolSnippets: {
 		read: "Read file contents",
@@ -25,7 +25,7 @@ function skill(name: string, description: string, disableModelInvocation = false
 }
 
 describe("buildSystemPrompt", () => {
-	it("lists tools that have snippets and always-ending cwd", () => {
+	it("lists tools that have snippets and always-ending projectDir", () => {
 		const prompt = buildSystemPrompt(baseOptions);
 
 		expect(prompt).toContain("You are an expert coding assistant");
@@ -68,7 +68,7 @@ describe("buildSystemPrompt", () => {
 		expect(prompt).not.toContain("pipi documentation");
 	});
 
-	it("uses the custom prompt but keeps context, skills and cwd", () => {
+	it("uses the custom prompt but keeps context, skills and projectDir", () => {
 		const prompt = buildSystemPrompt({
 			...baseOptions,
 			customPrompt: "custom instructions",

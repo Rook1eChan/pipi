@@ -45,7 +45,7 @@ describe("substituteArgs", () => {
 });
 
 describe("loadPromptTemplates", () => {
-	it("loads global and project templates with source info", async () => {
+	it("loads agent and project templates with source info", async () => {
 		const agentDir = await tempDir();
 		const projectDir = await tempDir();
 		await mkdir(join(agentDir, "prompts"), { recursive: true });

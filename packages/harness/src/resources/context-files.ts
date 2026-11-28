@@ -66,10 +66,10 @@ export function loadProjectContextFiles(options: LoadProjectContextFilesOptions)
 	const files: ContextFile[] = [];
 	const seen = new Set<string>();
 
-	const globalFile = loadContextFileFromDir(resolvedAgentDir);
-	if (globalFile) {
-		files.push(globalFile);
-		seen.add(globalFile.path);
+	const agentFile = loadContextFileFromDir(resolvedAgentDir);
+	if (agentFile) {
+		files.push(agentFile);
+		seen.add(agentFile.path);
 	}
 
 	const shadowed = findShadowedContextFile(resolvedProjectDir);

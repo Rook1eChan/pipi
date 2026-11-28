@@ -22,13 +22,13 @@ export type PowerShellToolInput = ShellToolInput;
 export type PowerShellToolDetails = ShellToolDetails;
 export type PowerShellToolOptions = ShellToolOptions;
 
-export function createPowerShellToolDefinition(cwd: string, options?: PowerShellToolOptions) {
-	return createShellToolDefinition(cwd, powershellConfig, options);
+export function createPowerShellToolDefinition(projectDir: string, options?: PowerShellToolOptions) {
+	return createShellToolDefinition(projectDir, powershellConfig, options);
 }
 
 export function createPowerShellTool(
-	cwd: string,
+	projectDir: string,
 	options?: PowerShellToolOptions,
 ): AgentTool<Record<string, unknown>, ShellToolDetails> {
-	return wrapToolDefinition(createPowerShellToolDefinition(cwd, options));
+	return wrapToolDefinition(createPowerShellToolDefinition(projectDir, options));
 }

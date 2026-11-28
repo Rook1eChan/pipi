@@ -148,17 +148,17 @@ export interface LoadPromptTemplatesOptions {
 export function loadPromptTemplates(options: LoadPromptTemplatesOptions): PromptTemplate[] {
 	const resolvedProjectDir = resolvePath(options.projectDir);
 	const resolvedAgentDir = resolvePath(options.agentDir);
-	const globalPromptsDir = join(resolvedAgentDir, "prompts");
+	const agentPromptsDir = join(resolvedAgentDir, "prompts");
 	const projectPromptsDir = resolve(resolvedProjectDir, PROJECT_CONFIG_DIR, "prompts");
 
 	const templates: PromptTemplate[] = [];
 
 	const getSourceInfo = (resolvedPath: string): SourceInfo => {
-		if (isUnderPath(resolvedPath, globalPromptsDir)) {
+		if (isUnderPath(resolvedPath, agentPromptsDir)) {
 			return createSyntheticSourceInfo(resolvedPath, {
 				source: "local",
 				scope: "agent",
-				baseDir: globalPromptsDir,
+				baseDir: agentPromptsDir,
 			});
 		}
 		if (isUnderPath(resolvedPath, projectPromptsDir)) {
@@ -181,7 +181,7 @@ export function loadPromptTemplates(options: LoadPromptTemplatesOptions): Prompt
 	};
 
 	if (options.includeDefaults) {
-		templates.push(...loadTemplatesFromDir(globalPromptsDir, getSourceInfo));
+		templates.push(...loadTemplatesFromDir(agentPromptsDir, getSourceInfo));
 		templates.push(...loadTemplatesFromDir(projectPromptsDir, getSourceInfo));
 	}
 

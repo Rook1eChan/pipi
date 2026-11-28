@@ -16,7 +16,7 @@ export function exportSessionToJsonl(manager: SessionManager, outputPath?: strin
 		type: "session" as const,
 		id: manager.getSessionId(),
 		timestamp: new Date().toISOString(),
-		cwd: manager.getCwd(),
+		projectDir: manager.getProjectDir(),
 	};
 	const lines = [JSON.stringify(header)];
 	let parentId: string | null = null;

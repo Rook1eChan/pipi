@@ -14,7 +14,7 @@ import {
 	splitBom,
 } from "./support/edit-diff.ts";
 import { withFileMutationQueue } from "./support/file-mutation-queue.ts";
-import { resolveToCwd } from "./support/path-utils.ts";
+import { resolveToProjectDir } from "./support/path-utils.ts";
 
 const editSchema = Type.Object({
 	path: Type.String({ description: "Path to the file to edit (relative or absolute)" }),
@@ -86,7 +86,7 @@ export interface EditToolOptions {
 }
 
 export function createEditToolDefinition(
-	cwd: string,
+	projectDir: string,
 	options?: EditToolOptions,
 ): ToolDefinition<EditToolInput, EditToolDetails> {
 	const ops = options?.operations ?? defaultOperations;
@@ -105,7 +105,7 @@ export function createEditToolDefinition(
 		constrainedSampling: { type: "json_schema", strict: "prefer" },
 		prepareArguments: prepareEditArguments as (args: unknown) => Record<string, unknown>,
 		execute: async (_toolCallId, input, signal) => {
-			const absolutePath = resolveToCwd(input.path, cwd);
+			const absolutePath = resolveToProjectDir(input.path, projectDir);
 
 			return withFileMutationQueue(absolutePath, async () => {
 				const throwIfAborted = () => {
@@ -160,8 +160,8 @@ export function createEditToolDefinition(
 }
 
 export function createEditTool(
-	cwd: string,
+	projectDir: string,
 	options?: EditToolOptions,
 ): AgentTool<Record<string, unknown>, EditToolDetails> {
-	return wrapToolDefinition(createEditToolDefinition(cwd, options));
+	return wrapToolDefinition(createEditToolDefinition(projectDir, options));
 }

@@ -22,10 +22,14 @@ export function waitForChildProcess(child: {
 }
 
 /** 按 shell 配置执行命令：参数传递或写入 stdin。 */
-export function spawnCommand(config: ShellConfig, command: string, options: { cwd: string; env: NodeJS.ProcessEnv }) {
+export function spawnCommand(
+	config: ShellConfig,
+	command: string,
+	options: { projectDir: string; env: NodeJS.ProcessEnv },
+) {
 	const fromStdin = config.commandTransport === "stdin";
 	const child = spawn(config.shell, fromStdin ? config.args : [...config.args, command], {
-		cwd: options.cwd,
+		cwd: options.projectDir,
 		// 独立进程组，便于中止时整树杀死
 		detached: process.platform !== "win32",
 		env: options.env,

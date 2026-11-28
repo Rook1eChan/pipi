@@ -29,7 +29,7 @@ export function readSessionHeader(filePath: string): SessionHeader | null {
 	}
 }
 
-function sameCwd(a: string | undefined, b: string): boolean {
+function sameProjectDir(a: string | undefined, b: string): boolean {
 	return a !== undefined && resolve(a) === resolve(b);
 }
 
@@ -76,15 +76,19 @@ export function listSessionFiles(sessionDir: string): SessionFile[] {
 	return files.sort((a, b) => b.modified.getTime() - a.modified.getTime());
 }
 
-/** 最近一次会话；传 cwd 时只考虑同一工作目录。 */
-export function findMostRecentSession(sessionDir: string, cwd?: string): string | null {
-	const files = listSessionFiles(sessionDir).filter((file) => cwd === undefined || sameCwd(file.header.cwd, cwd));
+/** 最近一次会话；传 projectDir 时只考虑同一工作目录。 */
+export function findMostRecentSession(sessionDir: string, projectDir?: string): string | null {
+	const files = listSessionFiles(sessionDir).filter(
+		(file) => projectDir === undefined || sameProjectDir(file.header.projectDir, projectDir),
+	);
 	return files[0]?.path ?? null;
 }
 
 /** 会话摘要列表，供恢复选择器使用。 */
-export function listSessions(sessionDir: string, cwd?: string): SessionInfo[] {
-	const files = listSessionFiles(sessionDir).filter((file) => cwd === undefined || sameCwd(file.header.cwd, cwd));
+export function listSessions(sessionDir: string, projectDir?: string): SessionInfo[] {
+	const files = listSessionFiles(sessionDir).filter(
+		(file) => projectDir === undefined || sameProjectDir(file.header.projectDir, projectDir),
+	);
 
 	return files.map((file) => {
 		const fileEntries = loadEntriesFromFile(file.path);
@@ -93,7 +97,7 @@ export function listSessions(sessionDir: string, cwd?: string): SessionInfo[] {
 		return {
 			path: file.path,
 			id: file.header.id,
-			cwd: file.header.cwd,
+			projectDir: file.header.projectDir,
 			created: new Date(file.header.timestamp),
 			modified: file.modified,
 			messageCount,
@@ -105,10 +109,10 @@ export function listSessions(sessionDir: string, cwd?: string): SessionInfo[] {
 }
 
 /** 打开当前目录最近一次会话；没有则新建。 */
-export function openMostRecentSession(cwd: string, options: SessionManagerOptions = {}): SessionManager {
-	const sessionDir = options.sessionDir ?? getDefaultSessionDir(cwd);
-	const manager = new SessionManager(cwd, { ...options, sessionDir });
-	const file = findMostRecentSession(sessionDir, cwd);
+export function openMostRecentSession(projectDir: string, options: SessionManagerOptions = {}): SessionManager {
+	const sessionDir = options.sessionDir ?? getDefaultSessionDir(projectDir);
+	const manager = new SessionManager(projectDir, { ...options, sessionDir });
+	const file = findMostRecentSession(sessionDir, projectDir);
 	if (file) manager.load(file);
 	return manager;
 }

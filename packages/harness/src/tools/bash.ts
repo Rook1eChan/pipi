@@ -86,7 +86,7 @@ function buildEnv(options: ShellToolOptions): NodeJS.ProcessEnv {
 }
 
 export function createShellToolDefinition(
-	cwd: string,
+	projectDir: string,
 	config: ShellToolConfig,
 	options: ShellToolOptions = {},
 ): ToolDefinition<ShellToolInput, ShellToolDetails> {
@@ -144,7 +144,7 @@ export function createShellToolDefinition(
 			};
 
 			const child = spawnCommand(config.resolveShellConfig(options.shellPath), command, {
-				cwd,
+				projectDir,
 				env: buildEnv(options),
 			});
 			if (child.pid) trackDetachedChildPid(child.pid);
@@ -241,17 +241,17 @@ export const bashConfig: ShellToolConfig = {
 };
 
 export function createBashToolDefinition(
-	cwd: string,
+	projectDir: string,
 	options?: ShellToolOptions,
 ): ToolDefinition<ShellToolInput, ShellToolDetails> {
-	return createShellToolDefinition(cwd, bashConfig, options);
+	return createShellToolDefinition(projectDir, bashConfig, options);
 }
 
 export function createBashTool(
-	cwd: string,
+	projectDir: string,
 	options?: ShellToolOptions,
 ): AgentTool<Record<string, unknown>, ShellToolDetails> {
-	return wrapToolDefinition(createBashToolDefinition(cwd, options));
+	return wrapToolDefinition(createBashToolDefinition(projectDir, options));
 }
 
 export { getPowerShellConfig };

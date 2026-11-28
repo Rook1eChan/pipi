@@ -107,7 +107,7 @@ function readText(buffer: Buffer, path: string, offset: number | undefined, limi
 }
 
 export function createReadToolDefinition(
-	cwd: string,
+	projectDir: string,
 	options?: ReadToolOptions,
 ): ToolDefinition<ReadToolInput, ReadToolDetails | undefined> {
 	const autoResizeImages = options?.autoResizeImages ?? true;
@@ -138,7 +138,7 @@ export function createReadToolDefinition(
 
 				void (async () => {
 					try {
-						const absolutePath = await resolveReadPath(input.path, cwd);
+						const absolutePath = await resolveReadPath(input.path, projectDir);
 						if (aborted) return;
 						await ops.access(absolutePath);
 						if (aborted) return;
@@ -180,8 +180,8 @@ export function createReadToolDefinition(
 }
 
 export function createReadTool(
-	cwd: string,
+	projectDir: string,
 	options?: ReadToolOptions,
 ): AgentTool<Record<string, unknown>, ReadToolDetails | undefined> {
-	return wrapToolDefinition(createReadToolDefinition(cwd, options));
+	return wrapToolDefinition(createReadToolDefinition(projectDir, options));
 }

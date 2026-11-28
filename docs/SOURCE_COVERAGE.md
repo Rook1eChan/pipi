@@ -102,7 +102,7 @@
 | 13 | 6 | 已生成 | 部分实现 |
 | 14 | 4 | 已生成 | 部分实现 |
 | 15 | 6 | 已生成 | 部分实现 |
-| 16 | 21 | 未生成 | 未开始 |
+| 16 | 21 | 已生成 | 部分实现 |
 | 17 | 12 | 未生成 | 未开始 |
 | 18 | 15 | 未生成 | 未开始 |
 | 19 | 9 | 未生成 | 未开始 |
@@ -297,8 +297,8 @@
 | `bun/restore-sandbox-env.ts` | 36 | Bun 运行时适配 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
 | `bun/runtime-setup.ts` | 6 | Bun 运行时适配 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
 | `bun/sandbox-env-setup.ts` | 4 | Bun 运行时适配 | 24 | 已登记 | 未生成 | 未开始 | 仅了解 |
-| `cli.ts` | 24 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `cli/args.ts` | 426 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `cli.ts` | 24 | CLI 启动 | 16 | 已登记 | 已生成 | 部分实现 | 复现（启动编排合并进 `startup.ts`） |
+| `cli/args.ts` | 426 | CLI 启动 | 16 | 已登记 | 已生成 | 已实现 | 复现 |
 | `cli/auth-check.ts` | 73 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `cli/auth-command.ts` | 126 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `cli/config-selector.ts` | 59 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -309,7 +309,7 @@
 | `cli/project-trust.ts` | 62 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `cli/session-picker.ts` | 55 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `cli/startup-ui.ts` | 188 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `config.ts` | 576 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `config.ts` | 576 | 配置与信任 | 16 | 已登记 | 已生成 | 部分实现 | 复现（目录与环境覆盖已实现；文档/分享路径后续） |
 | `core/agent-session-runtime.ts` | 449 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/agent-session-services.ts` | 317 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/agent-session.ts` | 3529 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -347,7 +347,7 @@
 | `core/output-guard.ts` | 108 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/package-manager.ts` | 2636 | 扩展与包管理 | 20 | 已登记 | 未生成 | 部分实现 | 复现（资源解析部分已在 14 以 `ResourceResolver` 实现；包安装、更新与包内资源清单仍在 20） |
 | `core/pi-manifest.ts` | 34 | 扩展与包管理 | 20 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/project-trust.ts` | 96 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/project-trust.ts` | 96 | 配置与信任 | 16 | 已登记 | 已生成 | 部分实现 | 复现（判定顺序已实现；扩展钩子与 UI 选择器后续课程接入） |
 | `core/prompt-templates.ts` | 285 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/provider-attribution.ts` | 69 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/provider-composer.ts` | 577 | 模型运行时 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
@@ -359,8 +359,8 @@
 | `core/session-cwd.ts` | 60 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现（合并进发现模块） |
 | `core/session-export.ts` | 42 | 会话持久化 | 13 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/session-manager.ts` | 1642 | 会话持久化 | 13、15 | 已登记 | 已生成 | 部分实现 | 复现（压缩与分支摘要存储已实现；导航后置 17） |
-| `core/settings-diagnostics.ts` | 25 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
-| `core/settings-manager.ts` | 1389 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现（16 负责填充 14 定义的 `ResourceSettings`） |
+| `core/settings-diagnostics.ts` | 25 | 配置与信任 | 16 | 已登记 | 已生成 | 已实现 | 复现 |
+| `core/settings-manager.ts` | 1389 | 配置与信任 | 16 | 已登记 | 已生成 | 部分实现 | 复现（核心存储、合并、getter/setter 与写回已实现；界面/遥测字段后续补） |
 | `core/skills.ts` | 509 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/slash-commands.ts` | 43 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `core/source-info.ts` | 40 | 提示与上下文装载 | 14 | 已登记 | 已生成 | 已实现 | 复现 |
@@ -391,7 +391,7 @@
 | `core/tools/tool-definition-wrapper.ts` | 47 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/truncate.ts` | 276 | 工具治理 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/tools/write.ts` | 97 | 内置工具 | 12 | 已登记 | 已生成 | 已实现 | 复现 |
-| `core/trust-manager.ts` | 244 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `core/trust-manager.ts` | 244 | 配置与信任 | 16 | 已登记 | 已生成 | 已实现 | 复现 |
 | `core/usage-totals.ts` | 70 | 会话编排 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
 | `extensions/index.ts` | 4 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 复现 |
 | `extensions/llama/client.ts` | 343 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
@@ -400,7 +400,7 @@
 | `extensions/llama/provider.ts` | 180 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
 | `extensions/llama/ui.ts` | 542 | 本地模型接入 | 18 | 已登记 | 未生成 | 未开始 | 后置 |
 | `index.ts` | 421 | SDK 导出面 | 17 | 已登记 | 未生成 | 未开始 | 复现 |
-| `main.ts` | 1120 | CLI 启动 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
+| `main.ts` | 1120 | CLI 启动 | 16 | 已登记 | 已生成 | 部分实现 | 复现（启动编排已实现；运行模式、包命令、首次启动 UI 后续） |
 | `migrations.ts` | 315 | 配置与信任 | 16 | 已登记 | 未生成 | 未开始 | 复现 |
 | `modes/index.ts` | 16 | 运行模式 | 19 | 已登记 | 未生成 | 未开始 | 复现 |
 | `modes/interactive/chat-viewport.ts` | 46 | 交互模式 | 23 | 已登记 | 未生成 | 未开始 | 复现 |

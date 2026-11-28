@@ -4,7 +4,7 @@ import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
 import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { withFileMutationQueue } from "./support/file-mutation-queue.ts";
-import { resolveToCwd } from "./support/path-utils.ts";
+import { resolveToProjectDir } from "./support/path-utils.ts";
 
 const writeSchema = Type.Object({
 	path: Type.String({ description: "Path to the file to write (relative or absolute)" }),
@@ -28,7 +28,7 @@ export interface WriteToolOptions {
 }
 
 export function createWriteToolDefinition(
-	cwd: string,
+	projectDir: string,
 	options?: WriteToolOptions,
 ): ToolDefinition<WriteToolInput, undefined> {
 	const ops = options?.operations ?? defaultOperations;
@@ -43,7 +43,7 @@ export function createWriteToolDefinition(
 		parameters: writeSchema,
 		constrainedSampling: { type: "json_schema", strict: "prefer" },
 		execute: async (_toolCallId, input, signal) => {
-			const absolutePath = resolveToCwd(input.path, cwd);
+			const absolutePath = resolveToProjectDir(input.path, projectDir);
 			const dir = dirname(absolutePath);
 
 			return withFileMutationQueue(absolutePath, async () => {
@@ -68,8 +68,8 @@ export function createWriteToolDefinition(
 }
 
 export function createWriteTool(
-	cwd: string,
+	projectDir: string,
 	options?: WriteToolOptions,
 ): AgentTool<Record<string, unknown>, undefined> {
-	return wrapToolDefinition(createWriteToolDefinition(cwd, options));
+	return wrapToolDefinition(createWriteToolDefinition(projectDir, options));
 }

@@ -6,7 +6,7 @@ export interface SessionHeader {
 	type: "session";
 	id: string;
 	timestamp: string;
-	cwd: string;
+	projectDir: string;
 	parentSession?: string; // fork出的会话的父指针
 }
 
@@ -105,7 +105,7 @@ export interface SessionTreeNode {
 export interface SessionInfo {
 	path: string;
 	id: string;
-	cwd: string;
+	projectDir: string;
 	created: Date;
 	modified: Date;
 	messageCount: number;

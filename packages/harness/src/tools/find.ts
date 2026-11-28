@@ -5,7 +5,7 @@ import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
 import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { ensureTool } from "./support/binary-manager.ts";
-import { pathExists, resolveToCwd } from "./support/path-utils.ts";
+import { pathExists, resolveToProjectDir } from "./support/path-utils.ts";
 import { DEFAULT_MAX_BYTES, formatSize, type TruncationResult, truncateKeepHead } from "./support/truncate.ts";
 
 const findSchema = Type.Object({
@@ -33,7 +33,7 @@ export function relativizeFindResultPath(resultPath: string, searchPath: string)
 	return hadTrailingSeparator && !posix.endsWith("/") ? `${posix}/` : posix;
 }
 
-export function createFindToolDefinition(cwd: string): ToolDefinition<FindToolInput, FindToolDetails> {
+export function createFindToolDefinition(projectDir: string): ToolDefinition<FindToolInput, FindToolDetails> {
 	return {
 		name: "find",
 		label: "find",
@@ -47,7 +47,7 @@ export function createFindToolDefinition(cwd: string): ToolDefinition<FindToolIn
 			const fdPath = await ensureTool("fd");
 			if (!fdPath) throw new Error("fd is not available and could not be downloaded");
 
-			const searchPath = resolveToCwd(input.path ?? ".", cwd);
+			const searchPath = resolveToProjectDir(input.path ?? ".", projectDir);
 			if (!(await pathExists(searchPath))) throw new Error(`Path not found: ${searchPath}`);
 			const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -125,6 +125,6 @@ export function createFindToolDefinition(cwd: string): ToolDefinition<FindToolIn
 	};
 }
 
-export function createFindTool(cwd: string): AgentTool<Record<string, unknown>, FindToolDetails> {
-	return wrapToolDefinition(createFindToolDefinition(cwd));
+export function createFindTool(projectDir: string): AgentTool<Record<string, unknown>, FindToolDetails> {
+	return wrapToolDefinition(createFindToolDefinition(projectDir));
 }

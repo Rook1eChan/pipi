@@ -44,50 +44,55 @@ function assistant(text: string): AssistantMessage {
 }
 
 describe("session discovery", () => {
-	it("finds the most recent session for a cwd", async () => {
+	it("finds the most recent session for a projectDir", async () => {
 		const sessionDir = await tempDir();
-		const cwd = await tempDir();
-		const first = new SessionManager(cwd, { sessionDir });
+		const projectDir = await tempDir();
+		const first = new SessionManager(projectDir, { sessionDir });
 		first.appendMessage(user("first"));
 		first.appendMessage(assistant("ok"));
 
 		// 文件系统 mtime 精度有限，隔开一点再建第二个会话
 		await new Promise((resolve) => setTimeout(resolve, 20));
 
-		const second = new SessionManager(cwd, { sessionDir });
+		const second = new SessionManager(projectDir, { sessionDir });
 		second.appendMessage(user("second"));
 		second.appendMessage(assistant("ok"));
 
-		expect(findMostRecentSession(sessionDir, cwd)).toBe(second.getSessionFile());
-		expect(findMostRecentSession(sessionDir, join(cwd, "missing"))).toBeNull();
+		expect(findMostRecentSession(sessionDir, projectDir)).toBe(second.getSessionFile());
+		expect(findMostRecentSession(sessionDir, join(projectDir, "missing"))).toBeNull();
 	});
 
-	it("lists sessions with metadata and filters by cwd", async () => {
+	it("lists sessions with metadata and filters by projectDir", async () => {
 		const sessionDir = await tempDir();
-		const cwd = await tempDir();
-		const manager = new SessionManager(cwd, { sessionDir });
+		const projectDir = await tempDir();
+		const manager = new SessionManager(projectDir, { sessionDir });
 		manager.appendMessage(user("hello there"));
 		manager.appendMessage(assistant("ok"));
 		manager.appendSessionInfo("named session");
 
-		const sessions = listSessions(sessionDir, cwd);
+		const sessions = listSessions(sessionDir, projectDir);
 
 		expect(sessions).toHaveLength(1);
-		expect(sessions[0]).toMatchObject({ id: manager.getSessionId(), cwd, messageCount: 2, name: "named session" });
+		expect(sessions[0]).toMatchObject({
+			id: manager.getSessionId(),
+			projectDir,
+			messageCount: 2,
+			name: "named session",
+		});
 		expect(sessions[0].firstMessage).toBe("hello there");
-		expect(listSessions(sessionDir, join(cwd, "other"))).toHaveLength(0);
+		expect(listSessions(sessionDir, join(projectDir, "other"))).toHaveLength(0);
 	});
 
 	it("returns no name when the latest session_info is empty", async () => {
 		const sessionDir = await tempDir();
-		const cwd = await tempDir();
-		const manager = new SessionManager(cwd, { sessionDir });
+		const projectDir = await tempDir();
+		const manager = new SessionManager(projectDir, { sessionDir });
 		manager.appendMessage(user("hello"));
 		manager.appendMessage(assistant("ok"));
 		manager.appendSessionInfo("named");
 		manager.appendSessionInfo("");
 
-		const sessions = listSessions(sessionDir, cwd);
+		const sessions = listSessions(sessionDir, projectDir);
 
 		expect(sessions[0].name).toBeUndefined();
 		expect(sessions[0].firstMessage).toBe("hello");
@@ -95,12 +100,12 @@ describe("session discovery", () => {
 
 	it("reopens the most recent session", async () => {
 		const sessionDir = await tempDir();
-		const cwd = await tempDir();
-		const manager = new SessionManager(cwd, { sessionDir });
+		const projectDir = await tempDir();
+		const manager = new SessionManager(projectDir, { sessionDir });
 		manager.appendMessage(user("hi"));
 		manager.appendMessage(assistant("ok"));
 
-		const reopened = openMostRecentSession(cwd, { sessionDir });
+		const reopened = openMostRecentSession(projectDir, { sessionDir });
 
 		expect(reopened.getSessionId()).toBe(manager.getSessionId());
 		expect(reopened.getEntries()).toHaveLength(2);

@@ -61,8 +61,8 @@ execute    真正干活，拿经过校验的参数
 ```ts
 export type ToolName = "read" | "bash" | "powershell" | "edit" | "write" | "grep" | "find" | "ls";
 
-export function createCodingTools(cwd, options): Tool[]     // read, bash, edit, write
-export function createReadOnlyTools(cwd, options): Tool[]   // read, grep, find, ls
+export function createCodingTools(projectDir, options): Tool[]     // read, bash, edit, write
+export function createReadOnlyTools(projectDir, options): Tool[]   // read, grep, find, ls
 ```
 
 | 集合 | 包含 | 用途 |
@@ -71,15 +71,15 @@ export function createReadOnlyTools(cwd, options): Tool[]   // read, grep, find,
 | read-only | read、grep、find、ls | 只读探索，例如审查或问答模式 |
 | all | 全部八个 | 需要按名字动态启用的场景 |
 
-每个工具都是 `createXxxTool(cwd, options)`，`cwd` 是解析相对路径的基准。
+每个工具都是 `createXxxTool(projectDir, options)`，`projectDir` 是解析相对路径的基准。
 
 ### 2.3 定义层与运行时层
 
 同一份逻辑存在两种形态：
 
 ```ts
-export function createReadTool(cwd, options): AgentTool<typeof readSchema> {
-	return wrapToolDefinition(createReadToolDefinition(cwd, options));
+export function createReadTool(projectDir, options): AgentTool<typeof readSchema> {
+	return wrapToolDefinition(createReadToolDefinition(projectDir, options));
 }
 ```
 
@@ -211,7 +211,7 @@ args.push("--", pattern, searchPath);
 
 ```ts
 const child = spawn(shellConfig.shell, [...shellConfig.args, command], {
-	cwd,
+	projectDir,
 	detached: process.platform !== "win32",   // 独立进程组，便于整树杀死
 	env: env ?? getShellEnv(),
 	stdio: [commandFromStdin ? "pipe" : "ignore", "pipe", "pipe"],
@@ -242,7 +242,7 @@ const child = spawn(shellConfig.shell, [...shellConfig.args, command], {
 
 | 手段 | 限制了什么 |
 |---|---|
-| `cwd` 基准 | 相对路径落在工作目录，但绝对路径仍可访问其他位置 |
+| `projectDir` 基准 | 相对路径落在工作目录，但绝对路径仍可访问其他位置 |
 | 4 字符截断与上限 | 输出不会撑爆上下文 |
 | 超时与中止 | 命令不会无限挂起 |
 | 写入队列 | 不会互相覆盖 |

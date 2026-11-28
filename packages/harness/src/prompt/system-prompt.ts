@@ -17,7 +17,7 @@ export interface BuildSystemPromptOptions {
 	/** 追加在提示末尾的自定义内容。 */
 	appendSystemPrompt?: string;
 	/** 工作目录，写在提示最后。 */
-	cwd: string;
+	projectDir: string;
 	/** 已加载的项目规则文件。 */
 	contextFiles?: ContextFile[];
 	/** 已加载的技能。 */
@@ -96,6 +96,6 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 		prompt += formatSkillsForPrompt(options.skills, readTool);
 	}
 
-	prompt += `\nCurrent working directory: ${options.cwd.replace(/\\/g, "/")}`;
+	prompt += `\nCurrent working directory: ${options.projectDir.replace(/\\/g, "/")}`;
 	return prompt;
 }

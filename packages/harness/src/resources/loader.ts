@@ -501,8 +501,8 @@ export class ResourceLoader {
 		const projectPath = join(this.projectDir, PROJECT_CONFIG_DIR, "SYSTEM.md");
 		if (this.settings.projectTrusted && existsSync(projectPath)) return projectPath;
 
-		const globalPath = join(this.agentDir, "SYSTEM.md");
-		if (existsSync(globalPath)) return globalPath;
+		const agentPath = join(this.agentDir, "SYSTEM.md");
+		if (existsSync(agentPath)) return agentPath;
 
 		return undefined;
 	}
@@ -511,8 +511,8 @@ export class ResourceLoader {
 		const projectPath = join(this.projectDir, PROJECT_CONFIG_DIR, "APPEND_SYSTEM.md");
 		if (this.settings.projectTrusted && existsSync(projectPath)) return projectPath;
 
-		const globalPath = join(this.agentDir, "APPEND_SYSTEM.md");
-		if (existsSync(globalPath)) return globalPath;
+		const agentPath = join(this.agentDir, "APPEND_SYSTEM.md");
+		if (existsSync(agentPath)) return agentPath;
 
 		return undefined;
 	}

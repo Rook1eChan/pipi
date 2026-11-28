@@ -54,7 +54,7 @@ export interface SessionHeader {
 	type: "session";
 	id: string;
 	timestamp: string;
-	cwd: string;
+	projectDir: string;
 	parentSession?: string;   // fork 来源
 }
 ```
@@ -62,7 +62,7 @@ export interface SessionHeader {
 实际文件长这样（省略细节字段）：
 
 ```jsonl
-{"type":"session","id":"a1b2","timestamp":"2026-11-25T10:00:00.000Z","cwd":"/work/project"}
+{"type":"session","id":"a1b2","timestamp":"2026-11-25T10:00:00.000Z","projectDir":"/work/project"}
 {"type":"message","id":"e1","parentId":null,"timestamp":"2026-11-25T10:00:01.000Z","message":{"role":"user","content":"读一下 read.ts"}}
 {"type":"message","id":"e2","parentId":"e1","timestamp":"2026-11-25T10:00:02.000Z","message":{"role":"assistant","content":[...]}}
 ```
@@ -259,11 +259,11 @@ _persist(entry: SessionEntry): void {
 恢复时按修改时间找最近的会话：
 
 ```ts
-export function findMostRecentSession(sessionDir: string, cwd?: string): string | null {
+export function findMostRecentSession(sessionDir: string, projectDir?: string): string | null {
 	const files = readdirSync(sessionDir)
 		.filter((f) => f.endsWith(".jsonl"))
 		.map((path) => ({ path, header: readSessionHeaderForDiscovery(path) }))
-		.filter((file) => file.header !== null && (!cwd || sessionCwdMatches(file.header.cwd, cwd)))
+		.filter((file) => file.header !== null && (!projectDir || sameProjectDir(file.header.projectDir, projectDir)))
 		.map(({ path }) => ({ path, mtime: statSync(path).mtime }))
 		.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 	return files[0]?.path || null;
@@ -286,7 +286,7 @@ export function findMostRecentSession(sessionDir: string, cwd?: string): string 
 ~/.pipi/agent/sessions/--work-project--/2026-11-25T10-00-00-000Z_<id>.jsonl
 ```
 
-目录名由 cwd 转义而来，文件名由时间戳与 id 组成。这样同一个项目的会话聚在一起，不同项目不混。
+目录名由 projectDir 转义而来，文件名由时间戳与 id 组成。这样同一个项目的会话聚在一起，不同项目不混。
 
 ### 2.11 与整体系统的关系
 
@@ -309,7 +309,7 @@ export function findMostRecentSession(sessionDir: string, cwd?: string): string 
 | 上下文靠上溯 + 裁剪 | 沿 parentId 到根，再让 compaction 替换旧段 |
 | 状态单独重放 | 模型与思考级别不混在消息里 |
 | 延迟写盘 | 没有助手回复前不建文件 |
-| 恢复按最近修改 | 目录按 cwd 分组，文件按时间排序 |
+| 恢复按最近修改 | 目录按 projectDir 分组，文件按时间排序 |
 
 ---
 
@@ -354,7 +354,7 @@ export function findMostRecentSession(sessionDir: string, cwd?: string): string 
 | 分支与 `createBranchedSession` | 复现 | 回退与分叉的产品基础 |
 | 分支摘要 | 后置到课程 15（D-070） | 摘要生成依赖压缩逻辑 |
 | 会话导出（JSONL） | 复现 | 仅 42 行，输出当前分支 |
-| 会话目录 | `~/.pipi/agent/sessions/--cwd--` | 结构与原项目一致，前缀换成本项目名称 |
+| 会话目录 | `~/.pipi/agent/sessions/--projectDir--` | 结构与原项目一致，前缀换成本项目名称 |
 | 扩展条目（custom / custom_message） | 复现（D-069） | 本课实现，读取时未知类型忽略 |
 | `bashExecution` 消息 | 后置 | 属于交互模式（课程 23） |
 | HTML 导出 / 分享 | 后置 | 展示层需求 |
@@ -369,7 +369,7 @@ export function findMostRecentSession(sessionDir: string, cwd?: string): string 
 | T-13-1 | 条目类型与 JSONL 读写：头部、逐行解析、延迟写盘 |
 | T-13-2 | 树与上下文重建：`id`/`parentId`、`getEntryPath`、`selectContextEntries`、消息转换 |
 | T-13-3 | 分支：`branch`、`branchWithSummary`、`createBranchedSession` |
-| T-13-4 | 会话发现与恢复：目录规则、最近会话、cwd 匹配 |
+| T-13-4 | 会话发现与恢复：目录规则、最近会话、projectDir 匹配 |
 | T-13-5 | 与 `AgentSession` 的接线（课程 17 完成） |
 
 ### 4.4 复现选项

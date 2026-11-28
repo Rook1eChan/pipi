@@ -41,6 +41,11 @@
 - 新增分支摘要：收集被放弃的路径、按预算裁剪、生成 `branch_summary`。
 - 会话层新增 `BranchSummaryEntry`、`branchWithSummary`、`getLatestCompactionEntry`；`appendCompaction` 支持 `details`、`fromHook`、`usage`。
 
+
+- 新增 `SettingsManager`：agent/project 两层 settings、深合并、字段级写回与写队列，使用 `proper-lockfile@4.1.2`。
+- 新增 settings getter/setter、配置诊断与 `toResourceSettings` 快照转换。
+- 新增 `ProjectTrustStore`、需信任资源检测与 `resolveProjectTrusted` 信任判定。
+- 新增完整 CLI `parseArgs`、`resolveStartup` 启动编排，以及 `PIPI_CODING_AGENT_DIR` / `PIPI_CODING_AGENT_SESSION_DIR` 路径覆盖。
 ### Changed
 
 - 提示与资源加载相关选项的 `cwd` 字段改名为 `projectDir`，与 `agentDir` 对齐。

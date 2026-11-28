@@ -59,14 +59,14 @@ describe("loadProjectContextFiles", () => {
 		expect(files.map((file) => file.content)).toEqual(["outer", "inner"]);
 	});
 
-	it("puts the global file first and dedupes the same path", async () => {
+	it("puts the agent file first and dedupes the same path", async () => {
 		const root = await tempDir();
-		await writeFile(join(root, "AGENTS.md"), "global");
+		await writeFile(join(root, "AGENTS.md"), "agent");
 
 		const files = loadProjectContextFiles({ projectDir: root, agentDir: root });
 
 		expect(files).toHaveLength(1);
-		expect(files[0].content).toBe("global");
+		expect(files[0].content).toBe("agent");
 	});
 
 	it("returns an empty list when there are no files", async () => {

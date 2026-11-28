@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
 import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
-import { pathExists, resolveToCwd } from "./support/path-utils.ts";
+import { pathExists, resolveToProjectDir } from "./support/path-utils.ts";
 import { DEFAULT_MAX_BYTES, formatSize, type TruncationResult, truncateKeepHead } from "./support/truncate.ts";
 
 const lsSchema = Type.Object({
@@ -37,7 +37,7 @@ export interface LsToolOptions {
 }
 
 export function createLsToolDefinition(
-	cwd: string,
+	projectDir: string,
 	options?: LsToolOptions,
 ): ToolDefinition<LsToolInput, LsToolDetails> {
 	const ops = options?.operations ?? defaultOperations;
@@ -53,7 +53,7 @@ export function createLsToolDefinition(
 		execute: async (_toolCallId, input, signal) => {
 			if (signal?.aborted) throw new Error("Operation aborted");
 
-			const dirPath = resolveToCwd(input.path ?? ".", cwd);
+			const dirPath = resolveToProjectDir(input.path ?? ".", projectDir);
 			const limit = input.limit ?? DEFAULT_LIMIT;
 
 			if (!(await ops.exists(dirPath))) throw new Error(`Path not found: ${dirPath}`);
@@ -105,6 +105,9 @@ export function createLsToolDefinition(
 	};
 }
 
-export function createLsTool(cwd: string, options?: LsToolOptions): AgentTool<Record<string, unknown>, LsToolDetails> {
-	return wrapToolDefinition(createLsToolDefinition(cwd, options));
+export function createLsTool(
+	projectDir: string,
+	options?: LsToolOptions,
+): AgentTool<Record<string, unknown>, LsToolDetails> {
+	return wrapToolDefinition(createLsToolDefinition(projectDir, options));
 }

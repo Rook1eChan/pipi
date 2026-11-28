@@ -32,7 +32,7 @@ describe("ResourceLoader", () => {
 	it("stays empty until reload is called", async () => {
 		const agentDir = await tempDir();
 		const projectDir = await tempDir();
-		await writeFile(join(agentDir, "AGENTS.md"), "global rules");
+		await writeFile(join(agentDir, "AGENTS.md"), "agent rules");
 		await writeSkill(join(agentDir, "skills", "pdf"), "pdf");
 		await writePrompt(join(agentDir, "prompts"), "review");
 
@@ -44,7 +44,7 @@ describe("ResourceLoader", () => {
 
 		await loader.reload();
 
-		expect(loader.getAgentsFiles().agentsFiles.map((file) => file.content)).toContain("global rules");
+		expect(loader.getAgentsFiles().agentsFiles.map((file) => file.content)).toContain("agent rules");
 		expect(loader.getSkills().skills.map((skill) => skill.name)).toEqual(["pdf"]);
 		expect(loader.getPrompts().prompts.map((template) => template.name)).toEqual(["review"]);
 	});
@@ -150,14 +150,14 @@ describe("ResourceLoader", () => {
 		const projectDir = await tempDir();
 		await mkdir(join(projectDir, ".pipi"), { recursive: true });
 		await writeFile(join(projectDir, ".pipi", "SYSTEM.md"), "project system");
-		await writeFile(join(agentDir, "SYSTEM.md"), "global system");
-		await writeFile(join(agentDir, "APPEND_SYSTEM.md"), "global append");
+		await writeFile(join(agentDir, "SYSTEM.md"), "agent system");
+		await writeFile(join(agentDir, "APPEND_SYSTEM.md"), "agent append");
 
 		const loader = new ResourceLoader({ projectDir, agentDir });
 		await loader.reload();
 
 		expect(loader.getSystemPrompt()).toBe("project system");
-		expect(loader.getAppendSystemPrompt()).toEqual(["global append"]);
+		expect(loader.getAppendSystemPrompt()).toEqual(["agent append"]);
 	});
 
 	it("skips project SYSTEM.md when the project is not trusted", async () => {
@@ -165,12 +165,12 @@ describe("ResourceLoader", () => {
 		const projectDir = await tempDir();
 		await mkdir(join(projectDir, ".pipi"), { recursive: true });
 		await writeFile(join(projectDir, ".pipi", "SYSTEM.md"), "project system");
-		await writeFile(join(agentDir, "SYSTEM.md"), "global system");
+		await writeFile(join(agentDir, "SYSTEM.md"), "agent system");
 
 		const loader = new ResourceLoader({ projectDir, agentDir, projectTrusted: false });
 		await loader.reload();
 
-		expect(loader.getSystemPrompt()).toBe("global system");
+		expect(loader.getSystemPrompt()).toBe("agent system");
 	});
 
 	it("applies override hooks", async () => {

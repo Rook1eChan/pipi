@@ -14,10 +14,10 @@ export function expandPath(filePath: string): string {
 	return normalized;
 }
 
-/** 相对路径按 cwd 解析，绝对路径原样返回。 */
-export function resolveToCwd(filePath: string, cwd: string): string {
+/** 相对路径按 projectDir 解析，绝对路径原样返回。 */
+export function resolveToProjectDir(filePath: string, projectDir: string): string {
 	const expanded = expandPath(filePath);
-	return isAbsolute(expanded) ? expanded : resolve(cwd, expanded);
+	return isAbsolute(expanded) ? expanded : resolve(projectDir, expanded);
 }
 
 export async function pathExists(filePath: string): Promise<boolean> {
@@ -40,8 +40,8 @@ function pathVariants(filePath: string): string[] {
 }
 
 /** 读取前解析路径：先按常规解析，不存在时尝试 macOS 常见变体。 */
-export async function resolveReadPath(filePath: string, cwd: string): Promise<string> {
-	const resolved = resolveToCwd(filePath, cwd);
+export async function resolveReadPath(filePath: string, projectDir: string): Promise<string> {
+	const resolved = resolveToProjectDir(filePath, projectDir);
 	for (const candidate of pathVariants(resolved)) {
 		if (await pathExists(candidate)) return candidate;
 	}
@@ -49,8 +49,8 @@ export async function resolveReadPath(filePath: string, cwd: string): Promise<st
 }
 
 /** 把路径解析成真实路径；文件不存在时返回解析后的绝对路径。 */
-export async function resolveMutationPath(filePath: string, cwd: string): Promise<string> {
-	const resolved = resolveToCwd(filePath, cwd);
+export async function resolveMutationPath(filePath: string, projectDir: string): Promise<string> {
+	const resolved = resolveToProjectDir(filePath, projectDir);
 	try {
 		return await realpath(resolved);
 	} catch {

@@ -32,7 +32,7 @@ export interface NewSessionOptions {
 
 /** 会话存储的选项。 */
 export interface SessionManagerOptions {
-	/** 会话目录；省略时按 cwd 推导到 `~/.pipi/sessions/--cwd--`。 */
+	/** 会话目录；省略时按 projectDir 推导到 `~/.pipi/sessions/--projectDir--`。 */
 	sessionDir?: string;
 	/** 是否落盘。 */
 	persist?: boolean;
@@ -48,9 +48,9 @@ export function getLatestCompactionEntry(entries: SessionEntry[]): CompactionEnt
 	return null;
 }
 
-/** 把 cwd 转成安全的目录名。 */
-export function getDefaultSessionDir(cwd: string): string {
-	const resolved = resolve(cwd);
+/** 把 projectDir 转成安全的目录名。 */
+export function getDefaultSessionDir(projectDir: string): string {
+	const resolved = resolve(projectDir);
 	const safe = `--${resolved.replace(/^[/\\]/, "").replace(/[/\\:]/g, "-")}--`;
 	return join(getSessionsRoot(), safe);
 }
@@ -129,32 +129,32 @@ export class SessionManager {
 	private sessionId = ""; // 会话唯一标识
 	private sessionFile: string | undefined; // 会话文件的路径
 	private readonly sessionDir: string; // 会话文件夹
-	private readonly cwd: string; // 工作目录
+	private readonly projectDir: string; // 工作目录
 	private readonly persist: boolean; // 是否持久化
 	private flushed = false; // 内存里的内容是否全部写入文件
 	private fileEntries: FileEntry[] = []; // 内存里的完整会话文件内容
 	private byId = new Map<string, SessionEntry>(); // id-entry的索引
 	private leafId: string | null = null; // 最后一个entry的id
 
-	constructor(cwd: string, options: SessionManagerOptions = {}) {
-		this.cwd = resolve(cwd);
+	constructor(projectDir: string, options: SessionManagerOptions = {}) {
+		this.projectDir = resolve(projectDir);
 		this.persist = options.persist ?? true;
-		// sessionDir指项目会话存储的位置，不指定通过cwd推导
-		this.sessionDir = options.sessionDir ?? getDefaultSessionDir(this.cwd);
+		// sessionDir指项目会话存储的位置，不指定通过projectDir推导
+		this.sessionDir = options.sessionDir ?? getDefaultSessionDir(this.projectDir);
 		if (this.persist) mkdirSync(this.sessionDir, { recursive: true });
 		this.newSession();
 	}
 
 	// 打开已有会话
-	static open(cwd: string, filePath: string, options: SessionManagerOptions = {}): SessionManager {
-		const manager = new SessionManager(cwd, options);
+	static open(projectDir: string, filePath: string, options: SessionManagerOptions = {}): SessionManager {
+		const manager = new SessionManager(projectDir, options);
 		manager.load(filePath);
 		return manager;
 	}
 
 	/** 只存在内存里，不写文件。 */
-	static inMemory(cwd: string): SessionManager {
-		return new SessionManager(cwd, { persist: false });
+	static inMemory(projectDir: string): SessionManager {
+		return new SessionManager(projectDir, { persist: false });
 	}
 
 	newSession(options: NewSessionOptions = {}): string | undefined {
@@ -165,7 +165,7 @@ export class SessionManager {
 			type: "session",
 			id: this.sessionId,
 			timestamp,
-			cwd: this.cwd,
+			projectDir: this.projectDir,
 			parentSession: options.parentSession,
 		};
 		this.fileEntries = [header];
@@ -329,8 +329,8 @@ export class SessionManager {
 		return this.sessionDir;
 	}
 
-	getCwd(): string {
-		return this.cwd;
+	getProjectDir(): string {
+		return this.projectDir;
 	}
 
 	getLeafId(): string | null {
@@ -405,7 +405,7 @@ export class SessionManager {
 			type: "session",
 			id: newSessionId,
 			timestamp,
-			cwd: this.cwd,
+			projectDir: this.projectDir,
 			parentSession: this.persist ? previousFile : undefined,
 		};
 

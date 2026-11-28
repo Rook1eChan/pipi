@@ -6,7 +6,7 @@ import type { AgentTool } from "@pipi/agent";
 import { Type } from "typebox";
 import { type ToolDefinition, wrapToolDefinition } from "./definition.ts";
 import { ensureTool } from "./support/binary-manager.ts";
-import { resolveToCwd } from "./support/path-utils.ts";
+import { resolveToProjectDir } from "./support/path-utils.ts";
 import {
 	DEFAULT_MAX_BYTES,
 	formatSize,
@@ -45,7 +45,7 @@ export interface GrepToolDetails {
 }
 
 export interface GrepToolOptions {
-	cwd?: string;
+	projectDir?: string;
 }
 
 interface Match {
@@ -55,10 +55,10 @@ interface Match {
 }
 
 export function createGrepToolDefinition(
-	cwd: string,
+	projectDir: string,
 	options?: GrepToolOptions,
 ): ToolDefinition<GrepToolInput, GrepToolDetails> {
-	const root = options?.cwd ?? cwd;
+	const root = options?.projectDir ?? projectDir;
 
 	return {
 		name: "grep",
@@ -73,7 +73,7 @@ export function createGrepToolDefinition(
 			const rgPath = await ensureTool("rg");
 			if (!rgPath) throw new Error("ripgrep is not available and could not be downloaded");
 
-			const searchPath = resolveToCwd(input.path ?? ".", root);
+			const searchPath = resolveToProjectDir(input.path ?? ".", root);
 			const limit = input.limit ?? DEFAULT_LIMIT;
 			const contextValue = input.context ?? 0;
 
@@ -216,8 +216,8 @@ export function createGrepToolDefinition(
 }
 
 export function createGrepTool(
-	cwd: string,
+	projectDir: string,
 	options?: GrepToolOptions,
 ): AgentTool<Record<string, unknown>, GrepToolDetails> {
-	return wrapToolDefinition(createGrepToolDefinition(cwd, options));
+	return wrapToolDefinition(createGrepToolDefinition(projectDir, options));
 }

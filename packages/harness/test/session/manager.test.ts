@@ -56,7 +56,7 @@ describe("SessionManager persistence", () => {
 
 		const lines = (await readFile(file, "utf-8")).trim().split("\n");
 		expect(lines).toHaveLength(3);
-		expect(JSON.parse(lines[0])).toMatchObject({ type: "session", cwd: dir });
+		expect(JSON.parse(lines[0])).toMatchObject({ type: "session", projectDir: dir });
 		expect(JSON.parse(lines[0])).not.toHaveProperty("version");
 	});
 
@@ -107,7 +107,7 @@ describe("loadEntriesFromFile", () => {
 		await writeFile(
 			file,
 			[
-				JSON.stringify({ type: "session", version: 3, id: "abc", timestamp: "t", cwd: dir }),
+				JSON.stringify({ type: "session", version: 3, id: "abc", timestamp: "t", projectDir: dir }),
 				"{not json",
 				JSON.stringify({ type: "message", id: "e1", parentId: null, timestamp: "t", message: user("hi") }),
 				"",
@@ -148,7 +148,7 @@ describe("format tolerance", () => {
 		await writeFile(
 			file,
 			[
-				JSON.stringify({ type: "session", id: "abc", timestamp: "t", cwd: dir }),
+				JSON.stringify({ type: "session", id: "abc", timestamp: "t", projectDir: dir }),
 				JSON.stringify({ type: "future_entry", id: "f1", parentId: null, timestamp: "t" }),
 			].join("\n"),
 		);

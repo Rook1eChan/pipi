@@ -55,7 +55,7 @@ export interface BuildSystemPromptOptions {
 	toolSnippets?: Record<string, string>;
 	promptGuidelines?: string[];
 	appendSystemPrompt?: string;
-	cwd: string;
+	projectDir: string;
 	contextFiles?: Array<{ path: string; content: string }>;
 	skills?: Skill[];
 }
@@ -374,5 +374,5 @@ AgentSession / buildSystemPrompt
 | 文档路径段 | 本课不实现，文档体系建好后补（D-079） |
 | 项目规则文件 | 独立 `resources/context-files.ts`（D-080） |
 | 配置目录 | `~/.pipi/agent` 与 `<projectDir>/.pipi`（D-073） |
-| 选项命名 | 资源选项用 `projectDir`，提示输出用 `cwd`（D-075） |
+| 选项命名 | 所有模块统一用 `projectDir`（D-075） |
 | 扩展装载 | 不在本课，留到课程 20 |
